@@ -27,11 +27,11 @@ namespace CemuUpdateTool
                 @"\fs11\par\fs19" +
                 @"{\i subfolderLocalPath,True}\par" +
                 @"\fs11\par\fs19" +
-                @" whereas {\i subFolderLocalPath} is the subdirectory path relative to the Cemu installation folder (e.g. /mlc01/usr/title). Please take note that any custom option will be lost as soon as you modify the options through the program. In the future there will be the opportunity to add them via GUI, which will fix this inconvenience.\par" +
+                @" whereas {\i subFolderLocalPath} is the subdirectory path relative to the Cemu installation folder (e.g. /mlc01/usr/title).\par" +
                 @"\par" +
                 @"{\b FOUND A BUG?}\par" +
                 @"\fs8\par\fs19" +
-                @" While I'm implementing logging feature in the program, you can report me any crash or unexpected behavior (there shouldn't be any, hopefully) specifying exactly what the program was doing at that moment. The right place where you should submit your reports is the official thread in Cemu forum, but you can also send me a PM on Discord \fs18 (my username: Fs00#9393).}";   
+                @" If the application crashed printing out an error message, send me the cvmt-crashlog file you find in executable folder. Otherwise you can report any unexpected behavior (there shouldn't be any, hopefully) in the official thread in Cemu forum, or sending me a PM on Discord \fs18 (my username: Fs00#9393).}";   
         }
 
         private void btnBack_Click(object sender, EventArgs e)

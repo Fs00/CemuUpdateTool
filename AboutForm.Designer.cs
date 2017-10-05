@@ -62,9 +62,9 @@
             this.lblVersion.AutoSize = true;
             this.lblVersion.Location = new System.Drawing.Point(104, 46);
             this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(123, 13);
+            this.lblVersion.Size = new System.Drawing.Size(132, 13);
             this.lblVersion.TabIndex = 2;
-            this.lblVersion.Text = "Version 1.0 (25-09-2017)";
+            this.lblVersion.Text = "Version 1.0.1 (05-10-2017)";
             // 
             // lblCredit
             // 
