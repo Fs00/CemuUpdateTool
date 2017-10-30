@@ -264,16 +264,16 @@ namespace CemuUpdateTool
             progressBarSingle.Maximum = Convert.ToInt32(currentFolderSize);
         }
 
-        private void ResetEverything(byte exitCode)
+        private void ResetEverything(WorkOutcome outcome)
         {
             // Callback that tells the form the outcome of the task, resets the GUI and FileOperations class
-            if (exitCode == 0)
+            if (outcome == WorkOutcome.Success)
                 MessageBox.Show("Operation successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else if (exitCode == 1)
-                MessageBox.Show("Operation failed due to an unexpected error.", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-            else if (exitCode == 2)
-                MessageBox.Show("Operation aborted by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else if (exitCode == 3)
+            else if (outcome == WorkOutcome.Aborted)
+                MessageBox.Show("Operation aborted due to an unexpected error.", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+            else if (outcome == WorkOutcome.CancelledByUser)
+                MessageBox.Show("Operation cancelled by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            else if (outcome == WorkOutcome.CompletedWithErrors)
                 MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             progressBarSingle.SetCustomText("");

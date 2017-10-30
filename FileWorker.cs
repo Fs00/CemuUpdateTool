@@ -6,6 +6,14 @@ using System.IO;
 
 namespace CemuUpdateTool
 {
+    public enum WorkOutcome
+    {
+        Success,
+        Aborted,
+        CancelledByUser,
+        CompletedWithErrors
+    }
+
     public class FileWorker
     {
         public string baseSourcePath { private set; get; }                  // older Cemu folder
@@ -15,7 +23,7 @@ namespace CemuUpdateTool
         public bool workAborted { set; get; } = false;
         public bool errorsEncountered { set; get; } = false;
 
-        public byte operationInProgress { set; get; } = 0;                   // index of the currently copying folder
+        public byte currentFolderIndex { set; get; } = 0;                   // index of the currently copying folder
         public List<long> foldersSizes { set; get; }                         // contains the sizes (in bytes) of the folders to copy
         public List<FileInfo> filesAlreadyCopied { set; get; }               // list of files that have already been copied, necessary if you want to restore the original situation when you cancel the operation
         public List<DirectoryInfo> directoriesAlreadyCopied { set; get; }    // list of directories that have already been copied, necessary if you want to restore the original situation when you cancel the operation
@@ -33,12 +41,12 @@ namespace CemuUpdateTool
         {
             foreach (string folder in foldersToCopy)
             {
-                if (foldersSizes[operationInProgress] > 0)       // avoiding to copy empty/unexisting folders
+                if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
                 {
-                    PerformingWork(folder, foldersSizes[operationInProgress]);      // tell the main form which folder I'm about to copy
+                    PerformingWork(folder, foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
                     FileOperations.CopyDir(folder, CopyingFile, FileCopied, this);
                 }
-                operationInProgress++;
+                currentFolderIndex++;
 
                 if (workIsCancelled || workAborted)
                 {
@@ -64,18 +72,18 @@ namespace CemuUpdateTool
                     finally
                     {
                         if (workIsCancelled)
-                            WorkCompleted(2);
+                            WorkCompleted(WorkOutcome.CancelledByUser);
                         else
-                            WorkCompleted(1);
+                            WorkCompleted(WorkOutcome.Aborted);
                     }
                     return;
                 }
             }
             // If the program arrives here, it means that the copy process has been completed
             if (!errorsEncountered)
-                WorkCompleted(0);
+                WorkCompleted(WorkOutcome.Success);
             else
-                WorkCompleted(3);
+                WorkCompleted(WorkOutcome.CompletedWithErrors);
         }
 
         public void CancelWork()

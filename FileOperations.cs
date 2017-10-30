@@ -10,7 +10,7 @@ namespace CemuUpdateTool
     public delegate void FileCopiedCallback(long dim);
     public delegate void FolderInfoCallback(string name, long dim);
     public delegate void ActualFileCallback(string name);
-    public delegate void CompletionCallback(byte exitCode);        // exitCode: 0 = succesfully terminated, 1 = fatal error, 2 = cancelled by user, 3 = completed with errors
+    public delegate void CompletionCallback(WorkOutcome outcome);
 
     public class FileOperations
     {
