@@ -39,8 +39,10 @@ namespace CemuUpdateTool
 
         public void PerformOperations(List<string> foldersToCopy, FolderInfoCallback PerformingWork, ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, CompletionCallback WorkCompleted)
         {
+            // TODO: extra operations to be added (copy settings file)
             foreach (string folder in foldersToCopy)
             {
+                // TODO: add destination folder contents removal here
                 if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
                 {
                     PerformingWork(folder, foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
@@ -79,6 +81,7 @@ namespace CemuUpdateTool
                     return;
                 }
             }
+
             // If the program arrives here, it means that the copy process has been completed
             if (!errorsEncountered)
                 WorkCompleted(WorkOutcome.Success);

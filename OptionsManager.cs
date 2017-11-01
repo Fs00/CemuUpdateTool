@@ -47,7 +47,7 @@ namespace CemuUpdateTool
                         parsedLine = line.Split(',');
                         options.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
                     }
-                    // If it's not arrived to the EOF, read one last line
+                    // If it's not arrived to the EOF, read one last line -- TODO: da modificare
                     if (!optionsFile.EndOfStream)
                         deleteDestFolderContents = Convert.ToBoolean(optionsFile.ReadLine());
                 }
@@ -73,16 +73,21 @@ namespace CemuUpdateTool
             foreach (KeyValuePair<string, bool> option in options)
                 dataToWrite += option.Key + "," + option.Value + "\r\n";        // \r\n -> CR-LF
             dataToWrite += "##";
-            //dataToWrite += "\n" + deleteDestFolderContents;       // not necessary at the moment
+
             try
             {
+                // Create destination directory if it doesn't exist
+                string optionsFileDir = Path.GetDirectoryName(optionsFilePath);
+                if (!FileOperations.DirectoryExists(optionsFileDir))
+                    Directory.CreateDirectory(optionsFileDir);
+
                 // Write string on file overwriting any existing content
                 File.WriteAllText(optionsFilePath, dataToWrite);
             }
             catch(Exception exc)
             {
                 MessageBox.Show("An unexpected error occurred when saving options file: " + exc.Message +
-                        "\r\nOptions won't be preserved after you close the program.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        "\r\nOptions won't be preserved after closing the program.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -108,7 +113,8 @@ namespace CemuUpdateTool
             options.Add(@"controllerProfiles", true);
             options.Add(@"gameProfiles", false);
             options.Add(@"graphicPacks", true);
-            options.Add(@"mlc01\emulatorSave", true);
+            options.Add(@"mlc01\emulatorSave", true);       // savegame directory before 1.11
+            options.Add(@"mlc01\usr\save", true);           // savegame directory since 1.11
             options.Add(@"mlc01\usr\title", true);
             options.Add(@"shaderCache\transferable", true);
         }

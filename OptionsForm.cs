@@ -24,7 +24,7 @@ namespace CemuUpdateTool
                 chkBoxGameProfiles.Checked = handler.options["gameProfiles"];
             if (handler.options.ContainsKey("graphicPacks"))
                 chkBoxGfxPacks.Checked = handler.options["graphicPacks"];
-            if (handler.options.ContainsKey(@"mlc01\emulatorSave"))
+            if (handler.options.ContainsKey(@"mlc01\emulatorSave"))     // to be improved
                 chkBoxSavegames.Checked = handler.options[@"mlc01\emulatorSave"];
             if (handler.options.ContainsKey(@"mlc01\usr\title"))
                 chkBoxDLCUpds.Checked = handler.options[@"mlc01\usr\title"];
@@ -60,6 +60,10 @@ namespace CemuUpdateTool
                 handler.options[@"mlc01\emulatorSave"] = chkBoxSavegames.Checked;
             else
                 handler.options.Add(@"mlc01\emulatorSave", chkBoxSavegames.Checked);
+            if (handler.options.ContainsKey(@"mlc01\usr\save"))
+                handler.options[@"mlc01\usr\save"] = chkBoxSavegames.Checked;
+            else
+                handler.options.Add(@"mlc01\usr\save", chkBoxSavegames.Checked);
 
             if (handler.options.ContainsKey(@"mlc01\usr\title"))
                 handler.options[@"mlc01\usr\title"] = chkBoxDLCUpds.Checked;
@@ -71,7 +75,7 @@ namespace CemuUpdateTool
             else
                 handler.options.Add(@"shaderCache\transferable", chkBoxShaderCaches.Checked);
 
-            handler.deleteDestFolderContents = chkBoxDeletePrevContent.Checked;     // at the moment it will always be false
+            // TODO: additional options
 
             if (optionsFileLocationChanged)
             {
