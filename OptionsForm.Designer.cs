@@ -39,10 +39,11 @@
             this.chkBoxGfxPacks = new System.Windows.Forms.CheckBox();
             this.chkBoxGameProfiles = new System.Windows.Forms.CheckBox();
             this.grpBoxProgramOpts = new System.Windows.Forms.GroupBox();
+            this.chkBoxSettingsOnFile = new System.Windows.Forms.CheckBox();
             this.btnDeleteSettingsFile = new System.Windows.Forms.Button();
             this.radioBtnAppDataFolder = new System.Windows.Forms.RadioButton();
             this.radioBtnExecFolder = new System.Windows.Forms.RadioButton();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lblFileLocation = new System.Windows.Forms.Label();
             this.btnSaveOpts = new System.Windows.Forms.Button();
             this.btnDiscard = new System.Windows.Forms.Button();
             this.toolTipInfo = new System.Windows.Forms.ToolTip(this.components);
@@ -140,20 +141,32 @@
             // 
             // grpBoxProgramOpts
             // 
+            this.grpBoxProgramOpts.Controls.Add(this.chkBoxSettingsOnFile);
             this.grpBoxProgramOpts.Controls.Add(this.btnDeleteSettingsFile);
             this.grpBoxProgramOpts.Controls.Add(this.radioBtnAppDataFolder);
             this.grpBoxProgramOpts.Controls.Add(this.radioBtnExecFolder);
-            this.grpBoxProgramOpts.Controls.Add(this.label1);
+            this.grpBoxProgramOpts.Controls.Add(this.lblFileLocation);
             this.grpBoxProgramOpts.Location = new System.Drawing.Point(12, 219);
             this.grpBoxProgramOpts.Name = "grpBoxProgramOpts";
-            this.grpBoxProgramOpts.Size = new System.Drawing.Size(284, 99);
+            this.grpBoxProgramOpts.Size = new System.Drawing.Size(284, 124);
             this.grpBoxProgramOpts.TabIndex = 2;
             this.grpBoxProgramOpts.TabStop = false;
             this.grpBoxProgramOpts.Text = "Program options";
             // 
+            // chkBoxSettingsOnFile
+            // 
+            this.chkBoxSettingsOnFile.AutoSize = true;
+            this.chkBoxSettingsOnFile.Location = new System.Drawing.Point(19, 24);
+            this.chkBoxSettingsOnFile.Name = "chkBoxSettingsOnFile";
+            this.chkBoxSettingsOnFile.Size = new System.Drawing.Size(126, 17);
+            this.chkBoxSettingsOnFile.TabIndex = 4;
+            this.chkBoxSettingsOnFile.Text = "Save settings in a file";
+            this.chkBoxSettingsOnFile.UseVisualStyleBackColor = true;
+            this.chkBoxSettingsOnFile.CheckedChanged += new System.EventHandler(this.chkBoxSettingsOnFile_CheckedChanged);
+            // 
             // btnDeleteSettingsFile
             // 
-            this.btnDeleteSettingsFile.Location = new System.Drawing.Point(135, 66);
+            this.btnDeleteSettingsFile.Location = new System.Drawing.Point(135, 91);
             this.btnDeleteSettingsFile.Name = "btnDeleteSettingsFile";
             this.btnDeleteSettingsFile.Size = new System.Drawing.Size(143, 23);
             this.btnDeleteSettingsFile.TabIndex = 3;
@@ -164,11 +177,10 @@
             // radioBtnAppDataFolder
             // 
             this.radioBtnAppDataFolder.AutoSize = true;
-            this.radioBtnAppDataFolder.Location = new System.Drawing.Point(142, 41);
+            this.radioBtnAppDataFolder.Location = new System.Drawing.Point(142, 67);
             this.radioBtnAppDataFolder.Name = "radioBtnAppDataFolder";
             this.radioBtnAppDataFolder.Size = new System.Drawing.Size(112, 17);
             this.radioBtnAppDataFolder.TabIndex = 2;
-            this.radioBtnAppDataFolder.TabStop = true;
             this.radioBtnAppDataFolder.Text = "%AppData% folder";
             this.toolTipInfo.SetToolTip(this.radioBtnAppDataFolder, "(%AppData%\\Fs00\\CemuUpdateTool)");
             this.radioBtnAppDataFolder.UseVisualStyleBackColor = true;
@@ -176,7 +188,8 @@
             // radioBtnExecFolder
             // 
             this.radioBtnExecFolder.AutoSize = true;
-            this.radioBtnExecFolder.Location = new System.Drawing.Point(32, 41);
+            this.radioBtnExecFolder.Checked = true;
+            this.radioBtnExecFolder.Location = new System.Drawing.Point(32, 67);
             this.radioBtnExecFolder.Name = "radioBtnExecFolder";
             this.radioBtnExecFolder.Size = new System.Drawing.Size(107, 17);
             this.radioBtnExecFolder.TabIndex = 1;
@@ -185,18 +198,18 @@
             this.radioBtnExecFolder.UseVisualStyleBackColor = true;
             this.radioBtnExecFolder.CheckedChanged += new System.EventHandler(this.radioBtnExecFolder_CheckedChanged);
             // 
-            // label1
+            // lblFileLocation
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 23);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(101, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Save settings file in:";
+            this.lblFileLocation.AutoSize = true;
+            this.lblFileLocation.Location = new System.Drawing.Point(16, 49);
+            this.lblFileLocation.Name = "lblFileLocation";
+            this.lblFileLocation.Size = new System.Drawing.Size(104, 13);
+            this.lblFileLocation.TabIndex = 0;
+            this.lblFileLocation.Text = "Settings file location:";
             // 
             // btnSaveOpts
             // 
-            this.btnSaveOpts.Location = new System.Drawing.Point(98, 326);
+            this.btnSaveOpts.Location = new System.Drawing.Point(98, 349);
             this.btnSaveOpts.Name = "btnSaveOpts";
             this.btnSaveOpts.Size = new System.Drawing.Size(91, 25);
             this.btnSaveOpts.TabIndex = 3;
@@ -206,7 +219,7 @@
             // 
             // btnDiscard
             // 
-            this.btnDiscard.Location = new System.Drawing.Point(195, 326);
+            this.btnDiscard.Location = new System.Drawing.Point(195, 349);
             this.btnDiscard.Name = "btnDiscard";
             this.btnDiscard.Size = new System.Drawing.Size(101, 25);
             this.btnDiscard.TabIndex = 4;
@@ -224,7 +237,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(309, 360);
+            this.ClientSize = new System.Drawing.Size(309, 381);
             this.Controls.Add(this.btnDiscard);
             this.Controls.Add(this.btnSaveOpts);
             this.Controls.Add(this.grpBoxProgramOpts);
@@ -256,9 +269,10 @@
         private System.Windows.Forms.Button btnDeleteSettingsFile;
         private System.Windows.Forms.RadioButton radioBtnAppDataFolder;
         private System.Windows.Forms.RadioButton radioBtnExecFolder;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblFileLocation;
         private System.Windows.Forms.Button btnSaveOpts;
         private System.Windows.Forms.Button btnDiscard;
         private System.Windows.Forms.ToolTip toolTipInfo;
+        private System.Windows.Forms.CheckBox chkBoxSettingsOnFile;
     }
 }

@@ -47,16 +47,16 @@
             this.grpBoxProgress = new System.Windows.Forms.GroupBox();
             this.lblPercentOverall = new System.Windows.Forms.Label();
             this.lblOverallProgress = new System.Windows.Forms.Label();
+            this.progressBarOverall = new CemuUpdateTool.CustomProgressBar();
             this.lblPercentSingle = new System.Windows.Forms.Label();
             this.lblSingleProgress = new System.Windows.Forms.Label();
+            this.progressBarSingle = new CemuUpdateTool.CustomProgressBar();
             this.btnHelp = new System.Windows.Forms.Button();
             this.btnAbout = new System.Windows.Forms.Button();
             this.btnExit = new System.Windows.Forms.Button();
             this.lblVersion = new System.Windows.Forms.Label();
             this.errProviderOldFolder = new System.Windows.Forms.ErrorProvider(this.components);
             this.errProviderNewFolder = new System.Windows.Forms.ErrorProvider(this.components);
-            this.progressBarOverall = new CemuUpdateTool.CustomProgressBar();
-            this.progressBarSingle = new CemuUpdateTool.CustomProgressBar();
             this.grpBoxFolderSelect.SuspendLayout();
             this.grpBoxProgress.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).BeginInit();
@@ -245,6 +245,15 @@
             this.lblOverallProgress.TabIndex = 4;
             this.lblOverallProgress.Text = "Overall progress";
             // 
+            // progressBarOverall
+            // 
+            this.progressBarOverall.CustomText = null;
+            this.progressBarOverall.DisplayStyle = CemuUpdateTool.ProgressBarDisplayText.Percentage;
+            this.progressBarOverall.Location = new System.Drawing.Point(21, 102);
+            this.progressBarOverall.Name = "progressBarOverall";
+            this.progressBarOverall.Size = new System.Drawing.Size(414, 30);
+            this.progressBarOverall.TabIndex = 3;
+            // 
             // lblPercentSingle
             // 
             this.lblPercentSingle.AutoSize = true;
@@ -263,6 +272,15 @@
             this.lblSingleProgress.Size = new System.Drawing.Size(154, 13);
             this.lblSingleProgress.TabIndex = 1;
             this.lblSingleProgress.Text = "Waiting for operations to start...";
+            // 
+            // progressBarSingle
+            // 
+            this.progressBarSingle.CustomText = null;
+            this.progressBarSingle.DisplayStyle = CemuUpdateTool.ProgressBarDisplayText.Percentage;
+            this.progressBarSingle.Location = new System.Drawing.Point(21, 43);
+            this.progressBarSingle.Name = "progressBarSingle";
+            this.progressBarSingle.Size = new System.Drawing.Size(414, 30);
+            this.progressBarSingle.TabIndex = 0;
             // 
             // btnHelp
             // 
@@ -299,9 +317,9 @@
             this.lblVersion.AutoSize = true;
             this.lblVersion.Location = new System.Drawing.Point(72, 353);
             this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(69, 13);
+            this.lblVersion.Size = new System.Drawing.Size(81, 13);
             this.lblVersion.TabIndex = 5;
-            this.lblVersion.Text = "Version 1.0.1";
+            this.lblVersion.Text = "Version 1.1-dev";
             // 
             // errProviderOldFolder
             // 
@@ -312,24 +330,6 @@
             // 
             this.errProviderNewFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
             this.errProviderNewFolder.ContainerControl = this;
-            // 
-            // progressBarOverall
-            // 
-            this.progressBarOverall.CustomText = null;
-            this.progressBarOverall.DisplayStyle = CemuUpdateTool.ProgressBarDisplayText.Percentage;
-            this.progressBarOverall.Location = new System.Drawing.Point(21, 102);
-            this.progressBarOverall.Name = "progressBarOverall";
-            this.progressBarOverall.Size = new System.Drawing.Size(414, 30);
-            this.progressBarOverall.TabIndex = 3;
-            // 
-            // progressBarSingle
-            // 
-            this.progressBarSingle.CustomText = null;
-            this.progressBarSingle.DisplayStyle = CemuUpdateTool.ProgressBarDisplayText.Percentage;
-            this.progressBarSingle.Location = new System.Drawing.Point(21, 43);
-            this.progressBarSingle.Name = "progressBarSingle";
-            this.progressBarSingle.Size = new System.Drawing.Size(414, 30);
-            this.progressBarSingle.TabIndex = 0;
             // 
             // MainForm
             // 

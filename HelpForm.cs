@@ -21,8 +21,8 @@ namespace CemuUpdateTool
                 @"\par" +
                 @"{\b OPTIONS SECTION}\par" +
                 @"\fs8\par\fs19" +
-                @" In the options form you can choose which folders must be copied to the new Cemu installation. There's one option that can't be checked - don't worry, it'll be implemented in a next update.\par" +
-                @" You can also decide whether to save the program options file in the same folder as the executable (default setting), or in %AppData% folder. If both files exist, the program will give priority to the file in the executable folder.\par" +
+                @" In the options form you can choose which folders must be copied to the new Cemu installation. There's one option that can't be checked - don't worry, it'll be implemented in a next update.\par" +  // TODO: DA MODIFICARE!
+                @" You can also decide whether to save the program options file (which is not mandatory) in the same folder as the executable (default setting), or in %AppData% folder. If both files exist, the program will give priority to the file in the executable folder.\par" +
                 @" That file (called settings.dat) includes the paths of Cemu subfolders and whether they have to be copied or not. You can also add your custom folder options {\ul before the line containing '##'} in order to copy the folders you want in the following format:\par" +
                 @"\fs11\par\fs19" +
                 @"{\i subfolderLocalPath,True}\par" +

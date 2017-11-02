@@ -7,9 +7,9 @@ namespace CemuUpdateTool
 {
     public class OptionsManager
     {
-        public Dictionary<string, bool> options { set; get; }
-        public bool deleteDestFolderContents { set; get; } = false;      // To be implemented
-        public string optionsFilePath { set; get; }
+        public Dictionary<string, bool> folderOptions { set; get; }
+        public Dictionary<string, bool> additionalOptions { set; get; }     // to be implemented
+        public string optionsFilePath { set; get; } = "";
 
         // Useful constants to make code more clean & readable
         public readonly string LOCAL_FILEPATH = @".\settings.dat";
@@ -30,7 +30,7 @@ namespace CemuUpdateTool
 
             if((localFileExists = FileOperations.FileExists(LOCAL_FILEPATH)) || FileOperations.FileExists(APPDATA_FILEPATH))
             {
-                options = new Dictionary<string, bool>();
+                folderOptions = new Dictionary<string, bool>();
 
                 // Set the file path property according to the current file position
                 if (localFileExists)
@@ -45,11 +45,11 @@ namespace CemuUpdateTool
                     while ((line = optionsFile.ReadLine()) != "##")
                     {
                         parsedLine = line.Split(',');
-                        options.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
+                        folderOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
                     }
                     // If it's not arrived to the EOF, read one last line -- TODO: da modificare
-                    if (!optionsFile.EndOfStream)
-                        deleteDestFolderContents = Convert.ToBoolean(optionsFile.ReadLine());
+                    /*if (!optionsFile.EndOfStream)
+                        deleteDestFolderContents = Convert.ToBoolean(optionsFile.ReadLine());*/
                 }
                 catch(Exception exc)
                 {
@@ -63,14 +63,14 @@ namespace CemuUpdateTool
                 }
                 return readingOutcome;
             }
-            else       // if there's no option file
+            else       // if there's no option file, optionsFilePath remains at its default value ("")
                 return false;
         }
 
         public void WriteOptionsToFile()
         {
             string dataToWrite = "";
-            foreach (KeyValuePair<string, bool> option in options)
+            foreach (KeyValuePair<string, bool> option in folderOptions)
                 dataToWrite += option.Key + "," + option.Value + "\r\n";        // \r\n -> CR-LF
             dataToWrite += "##";
 
@@ -108,22 +108,22 @@ namespace CemuUpdateTool
 
         public void SetDefaultOptions()
         {
-            options = new Dictionary<string, bool>();       // necessary to avoid dirty data if ReadOptionsFromFile() fails
-            optionsFilePath = LOCAL_FILEPATH;
-            options.Add(@"controllerProfiles", true);
-            options.Add(@"gameProfiles", false);
-            options.Add(@"graphicPacks", true);
-            options.Add(@"mlc01\emulatorSave", true);       // savegame directory before 1.11
-            options.Add(@"mlc01\usr\save", true);           // savegame directory since 1.11
-            options.Add(@"mlc01\usr\title", true);
-            options.Add(@"shaderCache\transferable", true);
+            folderOptions = new Dictionary<string, bool> {      // necessary to avoid dirty data if ReadOptionsFromFile() fails
+                { @"controllerProfiles", true },
+                { @"gameProfiles", false },
+                { @"graphicPacks", true },
+                { @"mlc01\emulatorSave", true },       // savegame directory before 1.11
+                { @"mlc01\usr\save", true },           // savegame directory since 1.11
+                { @"mlc01\usr\title", true },
+                { @"shaderCache\transferable", true }
+            };
         }
 
         public List<string> GetFoldersToCopy()
         {
             // Returns a list of the folders which need to be copied
             List<string> foldersToCopy = new List<string>();
-            foreach(KeyValuePair<string, bool> option in options)
+            foreach(KeyValuePair<string, bool> option in folderOptions)
             {
                 if (option.Value == true)
                     foldersToCopy.Add(option.Key);
