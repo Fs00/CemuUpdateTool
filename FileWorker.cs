@@ -37,7 +37,8 @@ namespace CemuUpdateTool
             directoriesAlreadyCopied = new List<DirectoryInfo>();
         }
 
-        public void PerformOperations(List<string> foldersToCopy, FolderInfoCallback PerformingWork, ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, CompletionCallback WorkCompleted)
+        public void PerformOperations(List<string> foldersToCopy, Dictionary<string, bool> additionalOptions, FolderInfoCallback PerformingWork, 
+                                      ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, CompletionCallback WorkCompleted)
         {
             // TODO: extra operations to be added (copy settings file)
             foreach (string folder in foldersToCopy)

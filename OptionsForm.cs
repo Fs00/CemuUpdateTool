@@ -75,14 +75,17 @@ namespace CemuUpdateTool
             else
                 handler.folderOptions.Add("graphicPacks", chkBoxGfxPacks.Checked);
 
-            if (handler.folderOptions.ContainsKey(@"mlc01\emulatorSave"))
-                handler.folderOptions[@"mlc01\emulatorSave"] = chkBoxSavegames.Checked;
-            else
-                handler.folderOptions.Add(@"mlc01\emulatorSave", chkBoxSavegames.Checked);
-            if (handler.folderOptions.ContainsKey(@"mlc01\usr\save"))
-                handler.folderOptions[@"mlc01\usr\save"] = chkBoxSavegames.Checked;
-            else
-                handler.folderOptions.Add(@"mlc01\usr\save", chkBoxSavegames.Checked);
+            if (chkBoxSavegames.CheckState != CheckState.Indeterminate)
+            {
+                if (handler.folderOptions.ContainsKey(@"mlc01\emulatorSave"))
+                    handler.folderOptions[@"mlc01\emulatorSave"] = chkBoxSavegames.Checked;
+                else
+                    handler.folderOptions.Add(@"mlc01\emulatorSave", chkBoxSavegames.Checked);
+                if (handler.folderOptions.ContainsKey(@"mlc01\usr\save"))
+                    handler.folderOptions[@"mlc01\usr\save"] = chkBoxSavegames.Checked;
+                else
+                    handler.folderOptions.Add(@"mlc01\usr\save", chkBoxSavegames.Checked);
+            }
 
             if (handler.folderOptions.ContainsKey(@"mlc01\usr\title"))
                 handler.folderOptions[@"mlc01\usr\title"] = chkBoxDLCUpds.Checked;

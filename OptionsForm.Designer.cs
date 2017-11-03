@@ -156,7 +156,7 @@
             // chkBoxSettingsOnFile
             // 
             this.chkBoxSettingsOnFile.AutoSize = true;
-            this.chkBoxSettingsOnFile.Location = new System.Drawing.Point(19, 24);
+            this.chkBoxSettingsOnFile.Location = new System.Drawing.Point(17, 24);
             this.chkBoxSettingsOnFile.Name = "chkBoxSettingsOnFile";
             this.chkBoxSettingsOnFile.Size = new System.Drawing.Size(126, 17);
             this.chkBoxSettingsOnFile.TabIndex = 4;
@@ -177,7 +177,7 @@
             // radioBtnAppDataFolder
             // 
             this.radioBtnAppDataFolder.AutoSize = true;
-            this.radioBtnAppDataFolder.Location = new System.Drawing.Point(142, 67);
+            this.radioBtnAppDataFolder.Location = new System.Drawing.Point(141, 67);
             this.radioBtnAppDataFolder.Name = "radioBtnAppDataFolder";
             this.radioBtnAppDataFolder.Size = new System.Drawing.Size(112, 17);
             this.radioBtnAppDataFolder.TabIndex = 2;
@@ -189,7 +189,7 @@
             // 
             this.radioBtnExecFolder.AutoSize = true;
             this.radioBtnExecFolder.Checked = true;
-            this.radioBtnExecFolder.Location = new System.Drawing.Point(32, 67);
+            this.radioBtnExecFolder.Location = new System.Drawing.Point(31, 67);
             this.radioBtnExecFolder.Name = "radioBtnExecFolder";
             this.radioBtnExecFolder.Size = new System.Drawing.Size(107, 17);
             this.radioBtnExecFolder.TabIndex = 1;
@@ -201,7 +201,7 @@
             // lblFileLocation
             // 
             this.lblFileLocation.AutoSize = true;
-            this.lblFileLocation.Location = new System.Drawing.Point(16, 49);
+            this.lblFileLocation.Location = new System.Drawing.Point(14, 48);
             this.lblFileLocation.Name = "lblFileLocation";
             this.lblFileLocation.Size = new System.Drawing.Size(104, 13);
             this.lblFileLocation.TabIndex = 0;

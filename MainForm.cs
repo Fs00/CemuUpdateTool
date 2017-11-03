@@ -107,7 +107,8 @@ namespace CemuUpdateTool
             if (OldVersionCheck() == false)
             {
                 DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
-                    "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested", 
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
                 if (choice == DialogResult.No)
                     return;
@@ -124,7 +125,8 @@ namespace CemuUpdateTool
             // Check if the list is empty (no folders to copy)
             if (foldersToCopy.Count == 0)
             {
-                MessageBox.Show("It seems that there are no folders to copy. Probably you set up options incorrectly.", "Empty folders list", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("It seems that there are no folders to copy. Probably you set up options incorrectly.",
+                    "Empty folders list", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -138,7 +140,8 @@ namespace CemuUpdateTool
             progressBarOverall.Maximum = Convert.ToInt32(overallSize);
             
             // Start operations in a secondary thread
-            Thread operationsThread = new Thread(() => worker.PerformOperations(foldersToCopy, ResetSingleProgressBar, UpdateCurrentFileText, UpdateProgressBars, ResetEverything));
+            Thread operationsThread = new Thread(() => worker.PerformOperations(foldersToCopy, opts.additionalOptions, ResetSingleProgressBar,
+                                      UpdateCurrentFileText, UpdateProgressBars, ResetEverything));
             operationsThread.Start();
 
             // Enable/disable buttons

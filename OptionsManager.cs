@@ -8,7 +8,8 @@ namespace CemuUpdateTool
     public class OptionsManager
     {
         public Dictionary<string, bool> folderOptions { set; get; }
-        public Dictionary<string, bool> additionalOptions { set; get; }     // to be implemented
+        public Dictionary<string, bool> additionalOptions { set; get; }
+        public string mlcFolderExternalPath { get; set; }
         public string optionsFilePath { set; get; } = "";
 
         // Useful constants to make code more clean & readable
@@ -30,7 +31,9 @@ namespace CemuUpdateTool
 
             if((localFileExists = FileOperations.FileExists(LOCAL_FILEPATH)) || FileOperations.FileExists(APPDATA_FILEPATH))
             {
+                // Create the dictionaries here so we are sure that OptionsForm won't throw NullReferenceException if there aren't any options in the file
                 folderOptions = new Dictionary<string, bool>();
+                additionalOptions = new Dictionary<string, bool>();
 
                 // Set the file path property according to the current file position
                 if (localFileExists)
@@ -47,9 +50,16 @@ namespace CemuUpdateTool
                         parsedLine = line.Split(',');
                         folderOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
                     }
-                    // If it's not arrived to the EOF, read one last line -- TODO: da modificare
-                    /*if (!optionsFile.EndOfStream)
-                        deleteDestFolderContents = Convert.ToBoolean(optionsFile.ReadLine());*/
+
+                    if (!optionsFile.EndOfStream)
+                    {
+                        // Retrieve additional options from file
+                        while ((line = optionsFile.ReadLine()) != "###")
+                        {
+                            parsedLine = line.Split(',');
+                            additionalOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
+                        }
+                    }
                 }
                 catch(Exception exc)
                 {
@@ -70,9 +80,15 @@ namespace CemuUpdateTool
         public void WriteOptionsToFile()
         {
             string dataToWrite = "";
+            // Write folder options
             foreach (KeyValuePair<string, bool> option in folderOptions)
                 dataToWrite += option.Key + "," + option.Value + "\r\n";        // \r\n -> CR-LF
-            dataToWrite += "##";
+            dataToWrite += "##\r\n";
+
+            // Write additional options
+            foreach (KeyValuePair<string, bool> option in additionalOptions)
+                dataToWrite += option.Key + "," + option.Value + "\r\n";
+            dataToWrite += "###";
 
             try
             {
@@ -116,6 +132,13 @@ namespace CemuUpdateTool
                 { @"mlc01\usr\save", true },           // savegame directory since 1.11
                 { @"mlc01\usr\title", true },
                 { @"shaderCache\transferable", true }
+            };
+
+            additionalOptions = new Dictionary<string, bool> {
+                { "copyCemuSettingsFile", true },
+                { "deleteDestFolderContents", false },
+                { "dontCopyMlcFolderFor1.10+", false },
+                { "askForDesktopShortcut", false }          // DA VALUTARE
             };
         }
 
