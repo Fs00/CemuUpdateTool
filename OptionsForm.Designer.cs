@@ -47,6 +47,9 @@
             this.btnSaveOpts = new System.Windows.Forms.Button();
             this.btnDiscard = new System.Windows.Forms.Button();
             this.toolTipInfo = new System.Windows.Forms.ToolTip(this.components);
+            this.chkBoxCemuSettings = new System.Windows.Forms.CheckBox();
+            this.chkBoxCustomMlc01Path = new System.Windows.Forms.CheckBox();
+            this.txtBoxCustomMlc01Path = new System.Windows.Forms.TextBox();
             this.grpBoxMigrationOpts.SuspendLayout();
             this.grpBoxProgramOpts.SuspendLayout();
             this.SuspendLayout();
@@ -63,6 +66,9 @@
             // 
             // grpBoxMigrationOpts
             // 
+            this.grpBoxMigrationOpts.Controls.Add(this.txtBoxCustomMlc01Path);
+            this.grpBoxMigrationOpts.Controls.Add(this.chkBoxCustomMlc01Path);
+            this.grpBoxMigrationOpts.Controls.Add(this.chkBoxCemuSettings);
             this.grpBoxMigrationOpts.Controls.Add(this.chkBoxDeletePrevContent);
             this.grpBoxMigrationOpts.Controls.Add(this.chkBoxShaderCaches);
             this.grpBoxMigrationOpts.Controls.Add(this.chkBoxDLCUpds);
@@ -72,21 +78,19 @@
             this.grpBoxMigrationOpts.Controls.Add(this.chkBoxControllerProfiles);
             this.grpBoxMigrationOpts.Location = new System.Drawing.Point(12, 12);
             this.grpBoxMigrationOpts.Name = "grpBoxMigrationOpts";
-            this.grpBoxMigrationOpts.Size = new System.Drawing.Size(285, 200);
+            this.grpBoxMigrationOpts.Size = new System.Drawing.Size(285, 269);
             this.grpBoxMigrationOpts.TabIndex = 1;
             this.grpBoxMigrationOpts.TabStop = false;
             this.grpBoxMigrationOpts.Text = "Migration options";
             // 
             // chkBoxDeletePrevContent
             // 
-            this.chkBoxDeletePrevContent.AutoCheck = false;
             this.chkBoxDeletePrevContent.AutoSize = true;
-            this.chkBoxDeletePrevContent.Location = new System.Drawing.Point(17, 170);
+            this.chkBoxDeletePrevContent.Location = new System.Drawing.Point(17, 191);
             this.chkBoxDeletePrevContent.Name = "chkBoxDeletePrevContent";
             this.chkBoxDeletePrevContent.Size = new System.Drawing.Size(262, 17);
-            this.chkBoxDeletePrevContent.TabIndex = 6;
+            this.chkBoxDeletePrevContent.TabIndex = 7;
             this.chkBoxDeletePrevContent.Text = "Delete destination folder contents before migration";
-            this.toolTipInfo.SetToolTip(this.chkBoxDeletePrevContent, "Feature to be added in the near future");
             this.chkBoxDeletePrevContent.UseVisualStyleBackColor = true;
             // 
             // chkBoxShaderCaches
@@ -146,7 +150,7 @@
             this.grpBoxProgramOpts.Controls.Add(this.radioBtnAppDataFolder);
             this.grpBoxProgramOpts.Controls.Add(this.radioBtnExecFolder);
             this.grpBoxProgramOpts.Controls.Add(this.lblFileLocation);
-            this.grpBoxProgramOpts.Location = new System.Drawing.Point(12, 219);
+            this.grpBoxProgramOpts.Location = new System.Drawing.Point(12, 289);
             this.grpBoxProgramOpts.Name = "grpBoxProgramOpts";
             this.grpBoxProgramOpts.Size = new System.Drawing.Size(284, 124);
             this.grpBoxProgramOpts.TabIndex = 2;
@@ -159,7 +163,7 @@
             this.chkBoxSettingsOnFile.Location = new System.Drawing.Point(17, 24);
             this.chkBoxSettingsOnFile.Name = "chkBoxSettingsOnFile";
             this.chkBoxSettingsOnFile.Size = new System.Drawing.Size(126, 17);
-            this.chkBoxSettingsOnFile.TabIndex = 4;
+            this.chkBoxSettingsOnFile.TabIndex = 1;
             this.chkBoxSettingsOnFile.Text = "Save settings in a file";
             this.chkBoxSettingsOnFile.UseVisualStyleBackColor = true;
             this.chkBoxSettingsOnFile.CheckedChanged += new System.EventHandler(this.chkBoxSettingsOnFile_CheckedChanged);
@@ -169,7 +173,7 @@
             this.btnDeleteSettingsFile.Location = new System.Drawing.Point(135, 91);
             this.btnDeleteSettingsFile.Name = "btnDeleteSettingsFile";
             this.btnDeleteSettingsFile.Size = new System.Drawing.Size(143, 23);
-            this.btnDeleteSettingsFile.TabIndex = 3;
+            this.btnDeleteSettingsFile.TabIndex = 4;
             this.btnDeleteSettingsFile.Text = "Delete current settings file";
             this.btnDeleteSettingsFile.UseVisualStyleBackColor = true;
             this.btnDeleteSettingsFile.Click += new System.EventHandler(this.btnDeleteSettingsFile_Click);
@@ -180,7 +184,7 @@
             this.radioBtnAppDataFolder.Location = new System.Drawing.Point(141, 67);
             this.radioBtnAppDataFolder.Name = "radioBtnAppDataFolder";
             this.radioBtnAppDataFolder.Size = new System.Drawing.Size(112, 17);
-            this.radioBtnAppDataFolder.TabIndex = 2;
+            this.radioBtnAppDataFolder.TabIndex = 3;
             this.radioBtnAppDataFolder.Text = "%AppData% folder";
             this.toolTipInfo.SetToolTip(this.radioBtnAppDataFolder, "(%AppData%\\Fs00\\CemuUpdateTool)");
             this.radioBtnAppDataFolder.UseVisualStyleBackColor = true;
@@ -192,7 +196,7 @@
             this.radioBtnExecFolder.Location = new System.Drawing.Point(31, 67);
             this.radioBtnExecFolder.Name = "radioBtnExecFolder";
             this.radioBtnExecFolder.Size = new System.Drawing.Size(107, 17);
-            this.radioBtnExecFolder.TabIndex = 1;
+            this.radioBtnExecFolder.TabIndex = 2;
             this.radioBtnExecFolder.TabStop = true;
             this.radioBtnExecFolder.Text = "Executable folder";
             this.radioBtnExecFolder.UseVisualStyleBackColor = true;
@@ -209,7 +213,7 @@
             // 
             // btnSaveOpts
             // 
-            this.btnSaveOpts.Location = new System.Drawing.Point(98, 349);
+            this.btnSaveOpts.Location = new System.Drawing.Point(98, 420);
             this.btnSaveOpts.Name = "btnSaveOpts";
             this.btnSaveOpts.Size = new System.Drawing.Size(91, 25);
             this.btnSaveOpts.TabIndex = 3;
@@ -219,7 +223,7 @@
             // 
             // btnDiscard
             // 
-            this.btnDiscard.Location = new System.Drawing.Point(195, 349);
+            this.btnDiscard.Location = new System.Drawing.Point(195, 420);
             this.btnDiscard.Name = "btnDiscard";
             this.btnDiscard.Size = new System.Drawing.Size(101, 25);
             this.btnDiscard.TabIndex = 4;
@@ -229,15 +233,44 @@
             // 
             // toolTipInfo
             // 
-            this.toolTipInfo.AutoPopDelay = 4000;
+            this.toolTipInfo.AutoPopDelay = 12000;
             this.toolTipInfo.InitialDelay = 300;
             this.toolTipInfo.ReshowDelay = 100;
+            // 
+            // chkBoxCemuSettings
+            // 
+            this.chkBoxCemuSettings.AutoSize = true;
+            this.chkBoxCemuSettings.Location = new System.Drawing.Point(17, 161);
+            this.chkBoxCemuSettings.Name = "chkBoxCemuSettings";
+            this.chkBoxCemuSettings.Size = new System.Drawing.Size(105, 17);
+            this.chkBoxCemuSettings.TabIndex = 6;
+            this.chkBoxCemuSettings.Text = "Copy settings file";
+            this.chkBoxCemuSettings.UseVisualStyleBackColor = true;
+            // 
+            // chkBoxCustomMlc01Path
+            // 
+            this.chkBoxCustomMlc01Path.AutoSize = true;
+            this.chkBoxCustomMlc01Path.Location = new System.Drawing.Point(17, 214);
+            this.chkBoxCustomMlc01Path.Name = "chkBoxCustomMlc01Path";
+            this.chkBoxCustomMlc01Path.Size = new System.Drawing.Size(211, 17);
+            this.chkBoxCustomMlc01Path.TabIndex = 8;
+            this.chkBoxCustomMlc01Path.Text = "Use custom mlc01 folder path (v1.10+):";
+            this.toolTipInfo.SetToolTip(this.chkBoxCustomMlc01Path, resources.GetString("chkBoxCustomMlc01Path.ToolTip"));
+            this.chkBoxCustomMlc01Path.UseVisualStyleBackColor = true;
+            this.chkBoxCustomMlc01Path.CheckedChanged += new System.EventHandler(this.chkBoxCustomMlc01Path_CheckedChanged);
+            // 
+            // txtBoxCustomMlc01Path
+            // 
+            this.txtBoxCustomMlc01Path.Location = new System.Drawing.Point(36, 235);
+            this.txtBoxCustomMlc01Path.Name = "txtBoxCustomMlc01Path";
+            this.txtBoxCustomMlc01Path.Size = new System.Drawing.Size(242, 20);
+            this.txtBoxCustomMlc01Path.TabIndex = 9;
             // 
             // OptionsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(309, 381);
+            this.ClientSize = new System.Drawing.Size(309, 453);
             this.Controls.Add(this.btnDiscard);
             this.Controls.Add(this.btnSaveOpts);
             this.Controls.Add(this.grpBoxProgramOpts);
@@ -274,5 +307,8 @@
         private System.Windows.Forms.Button btnDiscard;
         private System.Windows.Forms.ToolTip toolTipInfo;
         private System.Windows.Forms.CheckBox chkBoxSettingsOnFile;
+        private System.Windows.Forms.CheckBox chkBoxCemuSettings;
+        private System.Windows.Forms.TextBox txtBoxCustomMlc01Path;
+        private System.Windows.Forms.CheckBox chkBoxCustomMlc01Path;
     }
 }

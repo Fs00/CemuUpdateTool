@@ -9,7 +9,7 @@ namespace CemuUpdateTool
     {
         public Dictionary<string, bool> folderOptions { set; get; }
         public Dictionary<string, bool> additionalOptions { set; get; }
-        public string mlcFolderExternalPath { get; set; }
+        public string mlcFolderExternalPath { get; set; } = "";
         public string optionsFilePath { set; get; } = "";
 
         // Useful constants to make code more clean & readable
@@ -59,6 +59,10 @@ namespace CemuUpdateTool
                             parsedLine = line.Split(',');
                             additionalOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
                         }
+
+                        // Retrieve custom mlc01 folder path if present
+                        if (!optionsFile.EndOfStream)
+                            mlcFolderExternalPath = optionsFile.ReadLine();
                     }
                 }
                 catch(Exception exc)
@@ -80,15 +84,18 @@ namespace CemuUpdateTool
         public void WriteOptionsToFile()
         {
             string dataToWrite = "";
+
             // Write folder options
             foreach (KeyValuePair<string, bool> option in folderOptions)
                 dataToWrite += option.Key + "," + option.Value + "\r\n";        // \r\n -> CR-LF
             dataToWrite += "##\r\n";
-
             // Write additional options
             foreach (KeyValuePair<string, bool> option in additionalOptions)
                 dataToWrite += option.Key + "," + option.Value + "\r\n";
             dataToWrite += "###";
+            // Write mlc01 custom folder path
+            if (mlcFolderExternalPath != "")
+                dataToWrite += "\r\n" + mlcFolderExternalPath;
 
             try
             {
@@ -138,7 +145,7 @@ namespace CemuUpdateTool
                 { "copyCemuSettingsFile", true },
                 { "deleteDestFolderContents", false },
                 { "dontCopyMlcFolderFor1.10+", false },
-                { "askForDesktopShortcut", false }          // DA VALUTARE
+                { "askForDesktopShortcut", true }
             };
         }
 

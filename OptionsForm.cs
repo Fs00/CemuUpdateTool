@@ -12,6 +12,7 @@ namespace CemuUpdateTool
         {
             InitializeComponent();
             handler = classInstance;
+            // rilettura opzioni da file?
             SetCheckboxesAccordingToOptions();
         }
 
@@ -39,7 +40,16 @@ namespace CemuUpdateTool
             if (handler.folderOptions.ContainsKey(@"shaderCache\transferable"))
                 chkBoxShaderCaches.Checked = handler.folderOptions[@"shaderCache\transferable"];
 
-            // Additional options to be added
+            // ADDITIONAL OPTIONS
+            if (handler.additionalOptions.ContainsKey("copyCemuSettingsFile"))
+                chkBoxCemuSettings.Checked = handler.additionalOptions["copyCemuSettingsFile"];
+            if (handler.additionalOptions.ContainsKey("deleteDestFolderContents"))
+                chkBoxDeletePrevContent.Checked = handler.additionalOptions["deleteDestFolderContents"];
+            if (handler.additionalOptions.ContainsKey("dontCopyMlcFolderFor1.10+"))
+                chkBoxCustomMlc01Path.Checked = handler.additionalOptions["dontCopyMlcFolderFor1.10+"];
+            if (!string.IsNullOrWhiteSpace(handler.mlcFolderExternalPath))
+                txtBoxCustomMlc01Path.Text = handler.mlcFolderExternalPath;
+            chkBoxCustomMlc01Path_CheckedChanged(null, null);   // make sure that textbox state is correct in relation to the checkbox
 
             // SETTINGS FILE LOCATION
             if (handler.optionsFilePath == "")
@@ -97,7 +107,24 @@ namespace CemuUpdateTool
             else
                 handler.folderOptions.Add(@"shaderCache\transferable", chkBoxShaderCaches.Checked);
 
-            // TODO: additional options
+            // ADDITIONAL OPTIONS
+            if (handler.additionalOptions.ContainsKey("copyCemuSettingsFile"))
+                handler.additionalOptions["copyCemuSettingsFile"] = chkBoxCemuSettings.Checked;
+            else
+                handler.additionalOptions.Add("copyCemuSettingsFile", chkBoxCemuSettings.Checked);
+
+            if (handler.additionalOptions.ContainsKey("deleteDestFolderContents"))
+                handler.additionalOptions["deleteDestFolderContents"] = chkBoxDeletePrevContent.Checked;
+            else
+                handler.additionalOptions.Add("deleteDestFolderContents", chkBoxDeletePrevContent.Checked);
+
+            if (handler.additionalOptions.ContainsKey("dontCopyMlcFolderFor1.10+"))
+                handler.additionalOptions["dontCopyMlcFolderFor1.10+"] = chkBoxCustomMlc01Path.Checked;
+            else
+                handler.additionalOptions.Add("dontCopyMlcFolderFor1.10+", chkBoxCustomMlc01Path.Checked);
+
+            if (!string.IsNullOrWhiteSpace(txtBoxCustomMlc01Path.Text))
+                handler.mlcFolderExternalPath = txtBoxCustomMlc01Path.Text;
 
             // SETTINGS FILE LOCATION
             if (chkBoxSettingsOnFile.Checked)
@@ -125,7 +152,7 @@ namespace CemuUpdateTool
 
         private void btnDeleteSettingsFile_Click(object sender, EventArgs e)
         {
-            handler.DeleteOptionsFile();            // To be improved, telling the user if options file existed before clicking the button
+            handler.DeleteOptionsFile();            // To be improved, telling the user if options file existed before clicking the button(?)
             btnDeleteSettingsFile.Enabled = false;
 
             MessageBox.Show("Please take note that unless you uncheck \"Save options in a file\", options file will be recreated when you click on \"Save options\".",
@@ -183,6 +210,14 @@ namespace CemuUpdateTool
                 if (handler.optionsFilePath == "")
                     optionsFileLocationChanged = true;
             }
+        }
+
+        private void chkBoxCustomMlc01Path_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkBoxCustomMlc01Path.Checked)
+                txtBoxCustomMlc01Path.Enabled = true;
+            else
+                txtBoxCustomMlc01Path.Enabled = false;
         }
     }
 }

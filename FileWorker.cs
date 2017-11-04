@@ -40,7 +40,36 @@ namespace CemuUpdateTool
         public void PerformOperations(List<string> foldersToCopy, Dictionary<string, bool> additionalOptions, FolderInfoCallback PerformingWork, 
                                       ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, CompletionCallback WorkCompleted)
         {
-            // TODO: extra operations to be added (copy settings file)
+            // Copy Cemu settings file
+            if (additionalOptions.ContainsKey("copyCemuSettingsFile") && additionalOptions["copyCemuSettingsFile"] == true)
+            {
+                if (FileOperations.FileExists(Path.Combine(baseSourcePath, "settings.bin")))
+                {
+                    bool copySuccessful = false;
+                    PerformingWork("settings.bin", 1);      // display in the MainForm the label "Copying settings.bin..." (1 is a placeholder)
+                    FileInfo settingsFile = new FileInfo(Path.Combine(baseSourcePath, "settings.bin"));
+                    while (!copySuccessful)
+                    {
+                        try
+                        {
+                            settingsFile.CopyTo(Path.Combine(baseDestinationPath, "settings.bin"), true);
+                            copySuccessful = true;
+                        }
+                        catch (Exception exc)
+                        {
+                            // If an error is encountered, ask the user if he wants to retry, otherwise skip the process
+                            DialogResult choice = MessageBox.Show("Unexpected error when copying Cemu settings file: " + exc.Message + " Do you want to retry? (if you click No, the file will be skipped)",
+                                    "Error during settings.bin copy", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                            if (choice == DialogResult.No)
+                            {
+                                errorsEncountered = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             foreach (string folder in foldersToCopy)
             {
                 // TODO: add destination folder contents removal here

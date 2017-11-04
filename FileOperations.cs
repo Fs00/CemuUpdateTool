@@ -68,7 +68,7 @@ namespace CemuUpdateTool
                     bool copySuccessful = false;
                     FileInfo destinationFile = null;
 
-                    CopyingFile(file.Name);                                     // Tell the form the name of the file I'm about to copy
+                    CopyingFile(file.Name);         // Tell the form the name of the file I'm about to copy
                     string destPath = Path.Combine(worker.baseDestinationPath, localDirPath, file.Name);
                     while(!copySuccessful)
                     {
