@@ -5,8 +5,10 @@ using System.Drawing;
 
 namespace CemuUpdateTool
 {
-    // Custom progress bar class originally made by [] and adapted for the program.
-    // Needed to display "Current file" text without any bugs.
+    /*
+     *  Custom progress bar class originally made by Barry Mooring and adapted for the program.
+     *  Needed in order to display "Current file" transparent text without any bugs.
+     */
 
     public enum ProgressBarDisplayText
     {
@@ -25,9 +27,9 @@ namespace CemuUpdateTool
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
         }
 
+        // Text flickering workaround by Hans Passant
         [DllImportAttribute("uxtheme.dll")]
         private static extern int SetWindowTheme(IntPtr hWnd, string appname, string idlist);
-
         protected override void OnHandleCreated(EventArgs e)
         {
             SetWindowTheme(Handle, "", "");

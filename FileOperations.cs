@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace CemuUpdateTool
 {
+    // SET OF CALLBACKS SIGNATURES FOR THE MAINFORM
     public delegate void FileCopiedCallback(long dim);
     public delegate void FolderInfoCallback(string name, long dim);
     public delegate void ActualFileCallback(string name);
@@ -14,6 +15,10 @@ namespace CemuUpdateTool
 
     public class FileOperations
     {
+        /*
+         *  Calculates the sizes of every folder in the list using CalculateDirSize() and puts them in the worker.
+         *  Returns the overall size
+         */
         public static long CalculateFoldersSizes(List<string> foldersToCopy, FileWorker worker)
         {
             worker.foldersSizes = new List<long>();
@@ -21,38 +26,47 @@ namespace CemuUpdateTool
 
             // Calculate the size of every folder to copy
             foreach(string folder in foldersToCopy)
-                worker.foldersSizes.Add(CalculateDirSize(Path.Combine(folder), worker));
+                worker.foldersSizes.Add(CalculateDirSize(folder, worker));
 
             // Calculate the overall size and return it
             foreach (long folderSize in worker.foldersSizes)
                 overallSize += folderSize;
+
             return overallSize;
         }
 
+        /*
+         *  Method that calculates the size of all the files contained in the passed directory and its subdirectories, then returns it
+         */
         public static long CalculateDirSize(string localDirPath, FileWorker worker)
         {
-            // This method calculates the size of all the files contained in the main directory and its subdirectories. Then returns it
             long dirSize = 0;
 
             // Check if target folder exists, if not exit
             if (!DirectoryExists(Path.Combine(worker.baseSourcePath, localDirPath)))
                 return 0;
 
+            // Retrieve informations for files and subdirectories
             DirectoryInfo dirToCompute = new DirectoryInfo(Path.Combine(worker.baseSourcePath, localDirPath));
             DirectoryInfo[] subdirsArray = dirToCompute.GetDirectories();
             FileInfo[] filesArray = dirToCompute.GetFiles();
 
-            foreach (FileInfo file in filesArray)
+            foreach (FileInfo file in filesArray)               // calculate files sizes
                 dirSize += file.Length;
 
-            foreach (DirectoryInfo subdir in subdirsArray)
+            foreach (DirectoryInfo subdir in subdirsArray)      // calculate subdirs sizes recursively
                 dirSize += CalculateDirSize(Path.Combine(worker.baseSourcePath, localDirPath, subdir.Name), worker);
 
             return dirSize;
         }
 
+        /*
+         *  Method that copies a Cemu subdir from old installation to new one.
+         *  Sends callbacks to MainForm in order to update progress bars.
+         */
         public static void CopyDir(string localDirPath, ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, FileWorker worker)
         {
+            // Retrieve informations for files and subdirectories
             DirectoryInfo sourceDir = new DirectoryInfo(Path.Combine(worker.baseSourcePath, localDirPath));
             DirectoryInfo[] srcSubdirsArray = sourceDir.GetDirectories();
             FileInfo[] srcFilesArray = sourceDir.GetFiles();
@@ -61,14 +75,15 @@ namespace CemuUpdateTool
             if (!DirectoryExists(Path.Combine(worker.baseDestinationPath, localDirPath)))
                 worker.directoriesAlreadyCopied.Add(Directory.CreateDirectory(Path.Combine(worker.baseDestinationPath, localDirPath)));
 
+            // Copy files
             foreach (FileInfo file in srcFilesArray)
             {
-                if (!worker.workIsCancelled && !worker.workAborted)
+                if (!worker.workIsCancelled && !worker.workAborted)     // check that work hasn't been cancelled
                 {
                     bool copySuccessful = false;
                     FileInfo destinationFile = null;
 
-                    CopyingFile(file.Name);         // Tell the form the name of the file I'm about to copy
+                    CopyingFile(file.Name);         // Tell the MainForm the name of the file I'm about to copy
                     string destPath = Path.Combine(worker.baseDestinationPath, localDirPath, file.Name);
                     while(!copySuccessful)
                     {
@@ -94,13 +109,14 @@ namespace CemuUpdateTool
                         copySuccessful = true;
                     }
                     if (destinationFile != null)
-                        worker.filesAlreadyCopied.Add(destinationFile);         // Add to the list of copied files the destination file
-                    FileCopied(file.Length);                                    // Notify to the form that the current file has been copied
+                        worker.filesAlreadyCopied.Add(destinationFile);     // Add to the list of copied files the destination file
+                    FileCopied(file.Length);                                // Notify to the form that the current file has been copied
                 }
                 else
                     return;
             }
 
+            // Copy subdirs recursively
             foreach (DirectoryInfo subdir in srcSubdirsArray)
             {
                 if (!worker.workIsCancelled && !worker.workAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
@@ -110,7 +126,9 @@ namespace CemuUpdateTool
             }
         }
 
-        // Custom case-sensitive implementations of File.Exists() and Directory.Exists() -- based on original solution by Eric Bole-Feysot
+        /*
+         * Custom case-sensitive implementations of File.Exists() and Directory.Exists() -- based on original solution by Eric Bole-Feysot
+         */
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern int GetLongPathName(string path, StringBuilder longPath, int longPathLength);
         public static bool FileExists(string filePath)
@@ -133,6 +151,5 @@ namespace CemuUpdateTool
             else
                 return false;
         }
-
     }
 }

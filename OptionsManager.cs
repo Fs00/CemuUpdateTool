@@ -7,10 +7,10 @@ namespace CemuUpdateTool
 {
     public class OptionsManager
     {
-        public Dictionary<string, bool> folderOptions { set; get; }
-        public Dictionary<string, bool> additionalOptions { set; get; }
-        public string mlcFolderExternalPath { get; set; } = "";
-        public string optionsFilePath { set; get; } = "";
+        public Dictionary<string, bool> folderOptions { set; get; }      // contains a list of Cemu subfolders and whether they have to be copied
+        public Dictionary<string, bool> additionalOptions { set; get; }  // contains a set of options for the program
+        public string mlcFolderExternalPath { get; set; } = "";          // mlc01 folder's external path for Cemu 1.10+
+        public string optionsFilePath { set; get; } = "";                // the path of the settings file
 
         // Useful constants to make code more clean & readable
         public readonly string LOCAL_FILEPATH = @".\settings.dat";
@@ -22,6 +22,11 @@ namespace CemuUpdateTool
                 SetDefaultOptions();
         }
 
+        /*
+         *  Method that populates options dictionaries reading settings file.
+         *  If there's no options file or a fatal error happens when parsing it, SetDefaultOptions() is called instead.
+         *  Priority is given to the file in the local folder.
+         */
         public bool ReadOptionsFromFile()
         {
             bool localFileExists;
@@ -81,6 +86,35 @@ namespace CemuUpdateTool
                 return false;
         }
 
+        /*
+         *  Method that sets options dictionaries to their default values for the program.
+         *  Called if settings.dat is not found or ReadOptionsFromFile() throws an error
+         */
+        public void SetDefaultOptions()
+        {
+            folderOptions = new Dictionary<string, bool> {      // necessary to avoid dirty data if ReadOptionsFromFile() fails
+                { @"controllerProfiles", true },
+                { @"gameProfiles", false },
+                { @"graphicPacks", true },
+                { @"mlc01\emulatorSave", true },       // savegame directory before 1.11
+                { @"mlc01\usr\save", true },           // savegame directory since 1.11
+                { @"mlc01\usr\title", true },
+                { @"shaderCache\transferable", true }
+            };
+
+            additionalOptions = new Dictionary<string, bool> {
+                { "copyCemuSettingsFile", true },
+                { "deleteDestFolderContents", false },
+                { "dontCopyMlcFolderFor1.10+", false },
+                { "askForDesktopShortcut", true }
+            };
+        }
+
+        /*
+         *  Writes all options to file.
+         *  Options are saved one per line, in the following format: key,value
+         *  Folder options terminate with "##", additional options with "###"
+         */
         public void WriteOptionsToFile()
         {
             string dataToWrite = "";
@@ -114,9 +148,11 @@ namespace CemuUpdateTool
             }
         }
 
+        /*
+         *  Deletes the options file, returning true if the file existed and has been removed, otherwise false
+         */
         public bool DeleteOptionsFile()
         {
-            // Returns true if options file existed and has been removed, otherwise false
             if (FileOperations.FileExists(optionsFilePath))
             {
                 File.Delete(optionsFilePath);
@@ -129,36 +165,41 @@ namespace CemuUpdateTool
 
         }
 
-        public void SetDefaultOptions()
+        /*
+         *  Method that returns a list containing the paths of the folders which have to be copied
+         */
+        public List<string> GetFoldersToCopy(bool cemuVersionIsAtLeast110)
         {
-            folderOptions = new Dictionary<string, bool> {      // necessary to avoid dirty data if ReadOptionsFromFile() fails
-                { @"controllerProfiles", true },
-                { @"gameProfiles", false },
-                { @"graphicPacks", true },
-                { @"mlc01\emulatorSave", true },       // savegame directory before 1.11
-                { @"mlc01\usr\save", true },           // savegame directory since 1.11
-                { @"mlc01\usr\title", true },
-                { @"shaderCache\transferable", true }
-            };
+            List<string> foldersToCopy = new List<string>();
 
-            additionalOptions = new Dictionary<string, bool> {
-                { "copyCemuSettingsFile", true },
-                { "deleteDestFolderContents", false },
-                { "dontCopyMlcFolderFor1.10+", false },
-                { "askForDesktopShortcut", true }
-            };
+            // Ignore mlc01 subfolders if source Cemu version is at least 1.10 and custom mlc folder option is selected
+            if (cemuVersionIsAtLeast110 && additionalOptions.ContainsKey("dontCopyMlcFolderFor1.10+") && additionalOptions["dontCopyMlcFolderFor1.10+"] == true)
+            {
+                foreach (string folder in SelectedFolders())
+                {
+                    if (!folder.StartsWith(@"mlc01\"))
+                        foldersToCopy.Add(folder);
+                }
+            }
+            else    // otherwise append folders without any extra check 
+            {
+                foreach (string folder in SelectedFolders())
+                    foldersToCopy.Add(folder);
+            }
+            
+            return foldersToCopy;
         }
 
-        public List<string> GetFoldersToCopy()
+        /*
+         *  Iterator method that returns a folder path every iteration only if the corresponding option is selected
+         */
+        public IEnumerable<string> SelectedFolders()
         {
-            // Returns a list of the folders which need to be copied
-            List<string> foldersToCopy = new List<string>();
             foreach(KeyValuePair<string, bool> option in folderOptions)
             {
                 if (option.Value == true)
-                    foldersToCopy.Add(option.Key);
+                    yield return option.Key;
             }
-            return foldersToCopy;
         }
     }
 }

@@ -119,8 +119,8 @@ namespace CemuUpdateTool
             // Set Cemu folders in the class
             worker = new FileWorker(txtBoxOldFolder.Text, txtBoxNewFolder.Text);
 
-            // Get the list of folders to copy 
-            List<string> foldersToCopy = opts.GetFoldersToCopy();
+            // Get the list of folders to copy telling the method if source Cemu version is >= 1.10
+            List<string> foldersToCopy = opts.GetFoldersToCopy((oldCemuExe.FileMajorPart > 1 || oldCemuExe.FileMinorPart >= 10));
 
             // Check if the list is empty (no folders to copy)
             if (foldersToCopy.Count == 0)

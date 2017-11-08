@@ -125,6 +125,8 @@ namespace CemuUpdateTool
 
             if (!string.IsNullOrWhiteSpace(txtBoxCustomMlc01Path.Text))
                 handler.mlcFolderExternalPath = txtBoxCustomMlc01Path.Text;
+            else
+                handler.mlcFolderExternalPath = "";
 
             // SETTINGS FILE LOCATION
             if (chkBoxSettingsOnFile.Checked)

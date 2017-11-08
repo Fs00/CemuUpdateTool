@@ -23,7 +23,7 @@ namespace CemuUpdateTool
         public bool workAborted { set; get; } = false;
         public bool errorsEncountered { set; get; } = false;
 
-        public byte currentFolderIndex { set; get; } = 0;                   // index of the currently copying folder
+        public byte currentFolderIndex { set; get; } = 0;                    // index of the currently copying folder
         public List<long> foldersSizes { set; get; }                         // contains the sizes (in bytes) of the folders to copy
         public List<FileInfo> filesAlreadyCopied { set; get; }               // list of files that have already been copied, necessary if you want to restore the original situation when you cancel the operation
         public List<DirectoryInfo> directoriesAlreadyCopied { set; get; }    // list of directories that have already been copied, necessary if you want to restore the original situation when you cancel the operation
@@ -37,10 +37,14 @@ namespace CemuUpdateTool
             directoriesAlreadyCopied = new List<DirectoryInfo>();
         }
 
+        /*
+         *  Method that performs all the operations requested by user.
+         *  To be run in a separate thread.
+         */
         public void PerformOperations(List<string> foldersToCopy, Dictionary<string, bool> additionalOptions, FolderInfoCallback PerformingWork, 
                                       ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, CompletionCallback WorkCompleted)
         {
-            // Copy Cemu settings file
+            // COPY CEMU SETTINGS FILE
             if (additionalOptions.ContainsKey("copyCemuSettingsFile") && additionalOptions["copyCemuSettingsFile"] == true)
             {
                 if (FileOperations.FileExists(Path.Combine(baseSourcePath, "settings.bin")))
@@ -70,6 +74,7 @@ namespace CemuUpdateTool
                 }
             }
 
+            // FOLDER OPERATIONS
             foreach (string folder in foldersToCopy)
             {
                 // TODO: add destination folder contents removal here
