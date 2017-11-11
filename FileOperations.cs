@@ -126,6 +126,60 @@ namespace CemuUpdateTool
             }
         }
 
+        public static void RemoveDirContents(string folderPath, FileWorker worker)
+        {
+            // Retrieve informations for files and subdirectories
+            DirectoryInfo directory = new DirectoryInfo(folderPath);
+            DirectoryInfo[] subdirsArray = directory.GetDirectories();
+            FileInfo[] filesArray = directory.GetFiles();
+
+            // Check if destination folder exists, if not exit
+            if (!DirectoryExists(folderPath))
+                return;
+
+            // Delete files
+            foreach (FileInfo file in filesArray)
+            {
+                if (!worker.workIsCancelled && !worker.workAborted)     // check that work hasn't been cancelled
+                {
+                    bool deletionSuccessful = false;
+                    while (!deletionSuccessful)
+                    {
+                        try
+                        {
+                            file.Delete();
+                            deletionSuccessful = true;
+                        }
+                        catch (Exception exc)
+                        {
+                            DialogResult choice = MessageBox.Show("Unexpected error when deleting file " + file.Name + ": " + exc.Message +
+                                " Do you want to retry or skip folder contents removal?",
+                                "Error during file deletion", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+
+                            if (choice == DialogResult.Retry)
+                                continue;
+                            else if (choice == DialogResult.Cancel)
+                            {
+                                worker.errorsEncountered = true;
+                                return;
+                            }
+                        }
+                    }
+                }
+                else
+                    return;
+            }
+
+            // Delete subdirs recursively
+            foreach (DirectoryInfo subdir in subdirsArray)
+            {
+                if (!worker.workIsCancelled && !worker.workAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
+                    RemoveDirContents(Path.Combine(folderPath, subdir.Name), worker);
+                else
+                    return;
+            }
+        }
+
         /*
          * Custom case-sensitive implementations of File.Exists() and Directory.Exists() -- based on original solution by Eric Bole-Feysot
          */

@@ -46,13 +46,17 @@ namespace CemuUpdateTool
             new OptionsForm(opts).Show();
         }
 
+        /*
+         *  Folder selection using FolderBrowserDialog for old Cemu folder
+         */
         private void btnSelectOldFolder_Click(object sender, EventArgs e)
         {
-            // Folder selection using FolderBrowserDialog for old Cemu folder
+            // Open folder picker in %UserProfile% folder and save the selected path
             var folderPicker = new FolderBrowserDialog();
             folderPicker.RootFolder = Environment.SpecialFolder.UserProfile;
             DialogResult result = folderPicker.ShowDialog();
 
+            // Check whether result is OK
             if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderPicker.SelectedPath))
             {
                 if (folderPicker.SelectedPath != txtBoxNewFolder.Text)
@@ -62,13 +66,17 @@ namespace CemuUpdateTool
             }
         }
 
+        /*
+         *  Folder selection using FolderBrowserDialog for new Cemu folder
+         */
         private void btnSelectNewFolder_Click(object sender, EventArgs e)
         {
-            // Folder selection using FolderBrowserDialog for new Cemu folder
+            // Open folder picker in %UserProfile% folder and save the selected path
             var folderPicker = new FolderBrowserDialog();
             folderPicker.RootFolder = Environment.SpecialFolder.UserProfile;
             DialogResult result = folderPicker.ShowDialog();
 
+            // Check whether result is OK
             if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderPicker.SelectedPath))
             {
                 if (folderPicker.SelectedPath != txtBoxOldFolder.Text)
@@ -78,9 +86,11 @@ namespace CemuUpdateTool
             }
         }
 
+        /*
+         *  Method that checks if source Cemu version is actually older than destination one
+         */
         private bool OldVersionCheck()
         {
-            // Checks if source Cemu version is actually older than destination one
             if (oldCemuExe.FileMajorPart > newCemuExe.FileMajorPart)
                 return false;
             else if (oldCemuExe.FileMajorPart == newCemuExe.FileMajorPart)
@@ -233,9 +243,11 @@ namespace CemuUpdateTool
             }
         }
 
+        /*
+         *  Callback method that updates progress bars after a file has been copied
+         */
         private void UpdateProgressBars(long dim)
         {
-            // Callback that updates progress bars after a file has been copied
             if (singleProgressBarMaxDivided)
                 progressBarSingle.Value += Convert.ToInt32(dim/1000);
             else
@@ -250,26 +262,32 @@ namespace CemuUpdateTool
             lblPercentOverall.Text = Math.Floor(progressBarOverall.Value / (double)progressBarOverall.Maximum * 100) + "%";
         }
 
-        private void ResetSingleProgressBar(string copyingFolder, long currentFolderSize)
+        /*
+         *  Callback method that resets single progress bar after a folder operation has been completed and
+         *  updates labels and progress bars according to the next task
+         */
+        private void ResetSingleProgressBar(string newLabelText, long newProgressBarSize)
         {
-            // Callback that resets single progress bar after a folder has been copied and there's another to copy
             singleProgressBarMaxDivided = false;
+            progressBarSingle.CustomText = "";
             progressBarSingle.Value = 0;
             lblPercentSingle.Text = "0%";
 
-            lblSingleProgress.Text = "Copying " + copyingFolder + "...";    // TO BE IMPROVED
+            lblSingleProgress.Text = newLabelText + "...";
 
-            if (currentFolderSize > Int32.MaxValue)
+            if (newProgressBarSize > Int32.MaxValue)
             {
-                currentFolderSize /= 1000;
+                newProgressBarSize /= 1000;
                 singleProgressBarMaxDivided = true;
             }
-            progressBarSingle.Maximum = Convert.ToInt32(currentFolderSize);
+            progressBarSingle.Maximum = Convert.ToInt32(newProgressBarSize);
         }
 
+        /*
+         *  Callback method that tells the form the outcome of the task, resets the GUI and FileWorker class
+         */
         private void ResetEverything(WorkOutcome outcome)
         {
-            // Callback that tells the form the outcome of the task, resets the GUI and FileOperations class
             if (outcome == WorkOutcome.Success)
                 MessageBox.Show("Operation successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
             else if (outcome == WorkOutcome.Aborted)
@@ -279,13 +297,15 @@ namespace CemuUpdateTool
             else if (outcome == WorkOutcome.CompletedWithErrors)
                 MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            progressBarSingle.SetCustomText("");
+            // Reset progress bars
+            progressBarSingle.CustomText = "";
             progressBarSingle.Value = 0;
             progressBarOverall.Value = 0;
             lblPercentSingle.Text = "0%";
             lblPercentOverall.Text = "0%";
             lblSingleProgress.Text = "Waiting for operations to start...";
 
+            // Reset textboxes and Cancel button (Start button's enabled state is handled by TextChanged methods above)
             txtBoxOldFolder.Text = "";
             txtBoxNewFolder.Text = "";
             btnCancel.Enabled = false;
@@ -293,9 +313,11 @@ namespace CemuUpdateTool
             worker = null;
         }
 
+        /*
+         *  Callback method that updates the single progress bar's current file text every time there's a file to copy
+         */
         private void UpdateCurrentFileText(string name)
         {
-            // Callback that updates the single progress bar's current file text every time there's a file to copy
             if (name.Length > 50)
                 name = name.Substring(0,49) + "...";
             progressBarSingle.SetCustomText("Current file: " + name);

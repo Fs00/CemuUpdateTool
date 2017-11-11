@@ -50,7 +50,7 @@ namespace CemuUpdateTool
                 if (FileOperations.FileExists(Path.Combine(baseSourcePath, "settings.bin")))
                 {
                     bool copySuccessful = false;
-                    PerformingWork("settings.bin", 1);      // display in the MainForm the label "Copying settings.bin..." (1 is a placeholder)
+                    PerformingWork("Copying settings.bin", 1);      // display in the MainForm the label "Copying settings.bin..." (1 is a placeholder)
                     FileInfo settingsFile = new FileInfo(Path.Combine(baseSourcePath, "settings.bin"));
                     while (!copySuccessful)
                     {
@@ -61,7 +61,7 @@ namespace CemuUpdateTool
                         }
                         catch (Exception exc)
                         {
-                            // If an error is encountered, ask the user if he wants to retry, otherwise skip the process
+                            // If an error is encountered, ask the user if he wants to retry, otherwise skip the task
                             DialogResult choice = MessageBox.Show("Unexpected error when copying Cemu settings file: " + exc.Message + " Do you want to retry? (if you click No, the file will be skipped)",
                                     "Error during settings.bin copy", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                             if (choice == DialogResult.No)
@@ -77,10 +77,21 @@ namespace CemuUpdateTool
             // FOLDER OPERATIONS
             foreach (string folder in foldersToCopy)
             {
-                // TODO: add destination folder contents removal here
+                // Destination folder contents removal
+                if (additionalOptions.ContainsKey("deleteDestFolderContents") && additionalOptions["deleteDestFolderContents"] == true)
+                {
+                    string destFolderPath = Path.Combine(baseDestinationPath, folder);
+                    if (FileOperations.DirectoryExists(destFolderPath))
+                    {
+                        PerformingWork("Removing destination " + folder + " folder previous contents", 1);
+                        FileOperations.RemoveDirContents(destFolderPath, this);
+                    }
+                }
+
+                // Folder copy
                 if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
                 {
-                    PerformingWork(folder, foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
+                    PerformingWork("Copying " + folder, foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
                     FileOperations.CopyDir(folder, CopyingFile, FileCopied, this);
                 }
                 currentFolderIndex++;
@@ -92,8 +103,8 @@ namespace CemuUpdateTool
                         if (filesAlreadyCopied.Count > 0 || directoriesAlreadyCopied.Count > 0)
                         {
                             // Ask if the user wants to remove files that have already been copied and, if the user accepts, performs the task. Then exit from the function.
-                            DialogResult userSelection = MessageBox.Show("Do you want to delete files that have already been copied?", "Operation cancelled", MessageBoxButtons.YesNo);
-                            if (userSelection == DialogResult.Yes)
+                            DialogResult choice = MessageBox.Show("Do you want to delete files that have already been copied?", "Operation cancelled", MessageBoxButtons.YesNo);
+                            if (choice == DialogResult.Yes)
                             {
                                 foreach (FileInfo copiedFile in filesAlreadyCopied)
                                     copiedFile.Delete();
@@ -117,7 +128,7 @@ namespace CemuUpdateTool
                 }
             }
 
-            // If the program arrives here, it means that the copy process has been completed
+            // If the program arrives here, it means that the copy task has been completed
             if (!errorsEncountered)
                 WorkCompleted(WorkOutcome.Success);
             else

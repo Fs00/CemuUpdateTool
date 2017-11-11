@@ -93,9 +93,9 @@ namespace CemuUpdateTool
         public void SetDefaultOptions()
         {
             folderOptions = new Dictionary<string, bool> {      // necessary to avoid dirty data if ReadOptionsFromFile() fails
-                { @"controllerProfiles", true },
-                { @"gameProfiles", false },
-                { @"graphicPacks", true },
+                { "controllerProfiles", true },
+                { "gameProfiles", false },
+                { "graphicPacks", true },
                 { @"mlc01\emulatorSave", true },       // savegame directory before 1.11
                 { @"mlc01\usr\save", true },           // savegame directory since 1.11
                 { @"mlc01\usr\title", true },
