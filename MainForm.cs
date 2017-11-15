@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CemuUpdateTool
@@ -13,8 +13,8 @@ namespace CemuUpdateTool
         OptionsManager opts;
         bool overallProgressBarMaxDivided = false;
         bool singleProgressBarMaxDivided = false;
-        bool oldFolderValidated = false;
-        bool newFolderValidated = false;
+        bool srcFolderTxtBoxValidated = false;
+        bool destFolderTxtBoxValidated = false;
         FileVersionInfo oldCemuExe, newCemuExe;
 
         public MainForm()
@@ -111,7 +111,7 @@ namespace CemuUpdateTool
                 return true; 
         }
 
-        private void StartOperations(object sender, EventArgs e)
+        private async void DoOperationsAsync(object sender, EventArgs e)
         {
             // Check if Cemu versions are ok, if not warn the user
             if (OldVersionCheck() == false)
@@ -148,15 +148,16 @@ namespace CemuUpdateTool
                 overallProgressBarMaxDivided = true;
             }
             progressBarOverall.Maximum = Convert.ToInt32(overallSize);
-            
-            // Start operations in a secondary thread
-            Thread operationsThread = new Thread(() => worker.PerformOperations(foldersToCopy, opts.additionalOptions, ResetSingleProgressBar,
-                                      UpdateCurrentFileText, UpdateProgressBars, ResetEverything));
-            operationsThread.Start();
 
-            // Enable/disable buttons
+            // Start operations in a secondary thread and enable/disable buttons after operations have started
+            var operationsTask = Task.Run(() => worker.PerformOperations(foldersToCopy, opts.additionalOptions, ResetSingleProgressBar,
+                                      UpdateCurrentFileText, UpdateProgressBars));
             btnCancel.Enabled = true;
             btnStart.Enabled = false;
+
+            // Yield control to the form and, once the work is completed, reset form controls to their original state
+            WorkOutcome result = await operationsTask;
+            ResetEverything(result);
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -171,7 +172,7 @@ namespace CemuUpdateTool
             {
                 // Check if input directory exists
                 errProviderOldFolder.SetError(txtBoxOldFolder, "Directory does not exist");
-                oldFolderValidated = false;
+                srcFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
 
                 lblOldCemuVersion.Visible = false;
@@ -181,7 +182,7 @@ namespace CemuUpdateTool
             {
                 // Check if it's a valid Cemu installation
                 errProviderOldFolder.SetError(txtBoxOldFolder, "Not a valid Cemu installation (Cemu.exe is missing)");
-                oldFolderValidated = false;
+                srcFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
 
                 lblOldCemuVersion.Visible = false;
@@ -191,13 +192,13 @@ namespace CemuUpdateTool
             {
                 // Display Cemu version label and verify if all user inputs are OK
                 errProviderOldFolder.SetError(txtBoxOldFolder, "");
-                oldFolderValidated = true;
+                srcFolderTxtBoxValidated = true;
 
                 oldCemuExe = FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe"));
                 lblOldCemuVersion.Visible = true;
-                lblOldVersionNr.Text = oldCemuExe.FileMajorPart + "." + oldCemuExe.FileMinorPart + "." + oldCemuExe.FileBuildPart;
+                lblOldVersionNr.Text = $"{oldCemuExe.FileMajorPart}.{oldCemuExe.FileMinorPart}.{oldCemuExe.FileBuildPart}";
 
-                if ((oldFolderValidated && newFolderValidated) && (txtBoxOldFolder.Text != txtBoxNewFolder.Text))
+                if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxOldFolder.Text != txtBoxNewFolder.Text))
                     btnStart.Enabled = true;
                 else
                     btnStart.Enabled = false;
@@ -210,7 +211,7 @@ namespace CemuUpdateTool
             {
                 // Check if input directory exists
                 errProviderNewFolder.SetError(txtBoxNewFolder, "Directory does not exist");
-                newFolderValidated = false;
+                destFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
 
                 lblNewCemuVersion.Visible = false;
@@ -220,7 +221,7 @@ namespace CemuUpdateTool
             {
                 // Check if it's a valid Cemu installation
                 errProviderNewFolder.SetError(txtBoxNewFolder, "Not a valid Cemu installation (Cemu.exe is missing)");
-                newFolderValidated = false;
+                destFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
 
                 lblNewCemuVersion.Visible = false;
@@ -230,13 +231,13 @@ namespace CemuUpdateTool
             {
                 // Display Cemu version label and verify if all user inputs are OK
                 errProviderNewFolder.SetError(txtBoxNewFolder, "");
-                newFolderValidated = true;
+                destFolderTxtBoxValidated = true;
 
                 newCemuExe = FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe"));
                 lblNewCemuVersion.Visible = true;
-                lblNewVersionNr.Text = newCemuExe.FileMajorPart + "." + newCemuExe.FileMinorPart + "." + newCemuExe.FileBuildPart;
+                lblNewVersionNr.Text = $"{newCemuExe.FileMajorPart}.{newCemuExe.FileMinorPart}.{newCemuExe.FileBuildPart}";
 
-                if ((oldFolderValidated && newFolderValidated) && (txtBoxOldFolder.Text != txtBoxNewFolder.Text))
+                if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxOldFolder.Text != txtBoxNewFolder.Text))
                     btnStart.Enabled = true;
                 else
                     btnStart.Enabled = false;
@@ -273,7 +274,7 @@ namespace CemuUpdateTool
             progressBarSingle.Value = 0;
             lblPercentSingle.Text = "0%";
 
-            lblSingleProgress.Text = newLabelText + "...";
+            lblSingleProgress.Text = $"{newLabelText}...";
 
             if (newProgressBarSize > Int32.MaxValue)
             {
@@ -305,10 +306,24 @@ namespace CemuUpdateTool
             lblPercentOverall.Text = "0%";
             lblSingleProgress.Text = "Waiting for operations to start...";
 
-            // Reset textboxes and Cancel button (Start button's enabled state is handled by TextChanged methods above)
+            // Reset Cemu version label
+            lblOldCemuVersion.Visible = false;
+            lblNewCemuVersion.Visible = false;
+            lblOldVersionNr.Text = "";
+            lblNewVersionNr.Text = "";
+
+            // Reset textboxes (I need to detach & reattach event handlers otherwise errorProviders will be triggered) and Cancel button
+            txtBoxOldFolder.TextChanged -= txtBoxOldFolder_TextChanged;
             txtBoxOldFolder.Text = "";
-            txtBoxNewFolder.Text = "";
+            txtBoxOldFolder.TextChanged += txtBoxOldFolder_TextChanged;
+            txtBoxNewFolder.TextChanged -= txtBoxNewFolder_TextChanged;            
+            txtBoxNewFolder.Text = "";            
+            txtBoxNewFolder.TextChanged += txtBoxNewFolder_TextChanged;
             btnCancel.Enabled = false;
+
+            // Reset textboxes' validated state
+            srcFolderTxtBoxValidated = false;
+            destFolderTxtBoxValidated = false;
 
             worker = null;
         }
@@ -320,7 +335,7 @@ namespace CemuUpdateTool
         {
             if (name.Length > 50)
                 name = name.Substring(0,49) + "...";
-            progressBarSingle.SetCustomText("Current file: " + name);
+            progressBarSingle.SetCustomText($"Current file: {name}");
         }
     }
 }

@@ -11,7 +11,6 @@ namespace CemuUpdateTool
     public delegate void FileCopiedCallback(long dim);
     public delegate void FolderInfoCallback(string name, long dim);
     public delegate void ActualFileCallback(string name);
-    public delegate void CompletionCallback(WorkOutcome outcome);
 
     public class FileOperations
     {
@@ -126,6 +125,9 @@ namespace CemuUpdateTool
             }
         }
 
+        /*
+         *  Method that deletes the contents of the passed folder without deleting the folder itself
+         */
         public static void RemoveDirContents(string folderPath, FileWorker worker)
         {
             // Retrieve informations for files and subdirectories

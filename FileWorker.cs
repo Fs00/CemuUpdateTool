@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
+using System.Diagnostics;
 
 namespace CemuUpdateTool
 {
@@ -39,11 +40,14 @@ namespace CemuUpdateTool
 
         /*
          *  Method that performs all the operations requested by user.
-         *  To be run in a separate thread.
+         *  To be run in a separate thread using await keyword.
          */
-        public void PerformOperations(List<string> foldersToCopy, Dictionary<string, bool> additionalOptions, FolderInfoCallback PerformingWork, 
-                                      ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, CompletionCallback WorkCompleted)
+        public WorkOutcome PerformOperations(List<string> foldersToCopy, Dictionary<string, bool> additionalOptions, FolderInfoCallback PerformingWork, 
+                                      ActualFileCallback CopyingFile, FileCopiedCallback FileCopied)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(baseSourcePath) && !string.IsNullOrWhiteSpace(baseDestinationPath),
+                "Source and/or destination Cemu folder are set incorrectly!");
+
             // COPY CEMU SETTINGS FILE
             if (additionalOptions.ContainsKey("copyCemuSettingsFile") && additionalOptions["copyCemuSettingsFile"] == true)
             {
@@ -62,7 +66,7 @@ namespace CemuUpdateTool
                         catch (Exception exc)
                         {
                             // If an error is encountered, ask the user if he wants to retry, otherwise skip the task
-                            DialogResult choice = MessageBox.Show("Unexpected error when copying Cemu settings file: " + exc.Message + " Do you want to retry? (if you click No, the file will be skipped)",
+                            DialogResult choice = MessageBox.Show($"Unexpected error when copying Cemu settings file: {exc.Message} Do you want to retry? (if you click No, the file will be skipped)",
                                     "Error during settings.bin copy", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                             if (choice == DialogResult.No)
                             {
@@ -83,7 +87,7 @@ namespace CemuUpdateTool
                     string destFolderPath = Path.Combine(baseDestinationPath, folder);
                     if (FileOperations.DirectoryExists(destFolderPath))
                     {
-                        PerformingWork("Removing destination " + folder + " folder previous contents", 1);
+                        PerformingWork($"Removing destination {folder} folder previous contents", 1);
                         FileOperations.RemoveDirContents(destFolderPath, this);
                     }
                 }
@@ -91,7 +95,7 @@ namespace CemuUpdateTool
                 // Folder copy
                 if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
                 {
-                    PerformingWork("Copying " + folder, foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
+                    PerformingWork($"Copying {folder}", foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
                     FileOperations.CopyDir(folder, CopyingFile, FileCopied, this);
                 }
                 currentFolderIndex++;
@@ -115,24 +119,21 @@ namespace CemuUpdateTool
                     }
                     catch (Exception exc)
                     {
-                        MessageBox.Show("An error occurred when deleting already copied files: " + exc.Message, "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"An error occurred when deleting already copied files: {exc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
-                    finally
-                    {
-                        if (workIsCancelled)
-                            WorkCompleted(WorkOutcome.CancelledByUser);
-                        else
-                            WorkCompleted(WorkOutcome.Aborted);
-                    }
-                    return;
+
+                    if (workIsCancelled)
+                        return WorkOutcome.CancelledByUser;
+                    else
+                        return WorkOutcome.Aborted;
                 }
             }
 
             // If the program arrives here, it means that the copy task has been completed
             if (!errorsEncountered)
-                WorkCompleted(WorkOutcome.Success);
+                return WorkOutcome.Success;
             else
-                WorkCompleted(WorkOutcome.CompletedWithErrors);
+                return WorkOutcome.CompletedWithErrors;
         }
 
         public void CancelWork()

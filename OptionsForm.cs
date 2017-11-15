@@ -25,6 +25,7 @@ namespace CemuUpdateTool
                 chkBoxGameProfiles.Checked = handler.folderOptions["gameProfiles"];
             if (handler.folderOptions.ContainsKey("graphicPacks"))
                 chkBoxGfxPacks.Checked = handler.folderOptions["graphicPacks"];
+
             // The program sets the saves' checkbox as indeterminate if there's only one of the two save folders (and it's set to true)
             if (handler.folderOptions.ContainsKey(@"mlc01\emulatorSave") && handler.folderOptions[@"mlc01\emulatorSave"] == true)
                 chkBoxSavegames.CheckState = CheckState.Indeterminate;

@@ -143,7 +143,7 @@
             this.btnStart.TabIndex = 7;
             this.btnStart.Text = "Start";
             this.btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += new System.EventHandler(this.StartOperations);
+            this.btnStart.Click += new System.EventHandler(this.DoOperationsAsync);
             // 
             // btnOptions
             // 
