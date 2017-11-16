@@ -11,10 +11,10 @@ namespace CemuUpdateTool
     {
         FileWorker worker;
         OptionsManager opts;
-        bool overallProgressBarMaxDivided = false;
-        bool singleProgressBarMaxDivided = false;
-        bool srcFolderTxtBoxValidated = false;
-        bool destFolderTxtBoxValidated = false;
+        bool overallProgressBarMaxDivided = false,
+             singleProgressBarMaxDivided = false;
+        bool srcFolderTxtBoxValidated = false,
+             destFolderTxtBoxValidated = false;
         FileVersionInfo oldCemuExe, newCemuExe;
 
         public MainForm()
@@ -130,7 +130,7 @@ namespace CemuUpdateTool
             worker = new FileWorker(txtBoxOldFolder.Text, txtBoxNewFolder.Text);
 
             // Get the list of folders to copy telling the method if source Cemu version is >= 1.10
-            List<string> foldersToCopy = opts.GetFoldersToCopy((oldCemuExe.FileMajorPart > 1 || oldCemuExe.FileMinorPart >= 10));
+            List<string> foldersToCopy = opts.GetFoldersToCopy(oldCemuExe.FileMajorPart > 1 || oldCemuExe.FileMinorPart >= 10);
 
             // Check if the list is empty (no folders to copy)
             if (foldersToCopy.Count == 0)
@@ -155,8 +155,20 @@ namespace CemuUpdateTool
             btnCancel.Enabled = true;
             btnStart.Enabled = false;
 
-            // Yield control to the form and, once the work is completed, reset form controls to their original state
+            // Yield control to the form
             WorkOutcome result = await operationsTask;
+            
+            // Once work has completed, ask if user wants to create Cemu desktop shortcut...
+            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.additionalOptions["askForDesktopShortcut"] == true)
+            {
+                DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                bool isNewCemuVersionAtLeast110 = newCemuExe.FileMajorPart > 1 || newCemuExe.FileMinorPart >= 10;
+                if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
+                    worker.CreateDesktopShortcut($"{newCemuExe.FileMajorPart}.{newCemuExe.FileMinorPart}.{newCemuExe.FileBuildPart}",
+                      (isNewCemuVersionAtLeast110 && opts.additionalOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.mlcFolderExternalPath : null);
+            }
+
+            // ... and reset form controls to their original state
             ResetEverything(result);
         }
 

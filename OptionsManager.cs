@@ -16,10 +16,16 @@ namespace CemuUpdateTool
         public readonly string LOCAL_FILEPATH = @".\settings.dat";
         public readonly string APPDATA_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Fs00\CemuUpdateTool\settings.dat");
 
+        /*
+         *  Executed at application startup.
+         *  If the program reads options from file successfully, it checks for additionalOptions missing entries. Otherwise, default options are set.
+         */
         public OptionsManager()
         {
             if (ReadOptionsFromFile() == false)
                 SetDefaultOptions();
+            else
+                CheckForMissingEntries();
         }
 
         /*
@@ -84,6 +90,23 @@ namespace CemuUpdateTool
             }
             else       // if there's no option file, optionsFilePath remains at its default value ("")
                 return false;
+        }
+
+        /*
+         *  Method that checks if additionalOptions has all the needed entries.
+         *  If an entry is not found, it is created with false option (except for askForDesktopShortcut).
+         *  Called only if ReadOptionsFromFile() terminates successfully.
+         */
+        public void CheckForMissingEntries()
+        {
+            if (!additionalOptions.ContainsKey("copyCemuSettingsFile"))
+                additionalOptions.Add("copyCemuSettingsFile", false);
+            if (!additionalOptions.ContainsKey("deleteDestFolderContents"))
+                additionalOptions.Add("deleteDestFolderContents", false);
+            if (!additionalOptions.ContainsKey("dontCopyMlcFolderFor1.10+"))
+                additionalOptions.Add("dontCopyMlcFolderFor1.10+", false);
+            if (!additionalOptions.ContainsKey("askForDesktopShortcut"))
+                additionalOptions.Add("askForDesktopShortcut", true);
         }
 
         /*
@@ -173,7 +196,7 @@ namespace CemuUpdateTool
             List<string> foldersToCopy = new List<string>();
 
             // Ignore mlc01 subfolders if source Cemu version is at least 1.10 and custom mlc folder option is selected
-            if (cemuVersionIsAtLeast110 && additionalOptions.ContainsKey("dontCopyMlcFolderFor1.10+") && additionalOptions["dontCopyMlcFolderFor1.10+"] == true)
+            if (cemuVersionIsAtLeast110 && additionalOptions["dontCopyMlcFolderFor1.10+"] == true)
             {
                 foreach (string folder in SelectedFolders())
                 {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
+using IWshRuntimeLibrary;
 
 namespace CemuUpdateTool
 {
@@ -49,7 +50,7 @@ namespace CemuUpdateTool
                 "Source and/or destination Cemu folder are set incorrectly!");
 
             // COPY CEMU SETTINGS FILE
-            if (additionalOptions.ContainsKey("copyCemuSettingsFile") && additionalOptions["copyCemuSettingsFile"] == true)
+            if (additionalOptions["copyCemuSettingsFile"] == true)
             {
                 if (FileOperations.FileExists(Path.Combine(baseSourcePath, "settings.bin")))
                 {
@@ -82,7 +83,7 @@ namespace CemuUpdateTool
             foreach (string folder in foldersToCopy)
             {
                 // Destination folder contents removal
-                if (additionalOptions.ContainsKey("deleteDestFolderContents") && additionalOptions["deleteDestFolderContents"] == true)
+                if (additionalOptions["deleteDestFolderContents"] == true)
                 {
                     string destFolderPath = Path.Combine(baseDestinationPath, folder);
                     if (FileOperations.DirectoryExists(destFolderPath))
@@ -134,6 +135,23 @@ namespace CemuUpdateTool
                 return WorkOutcome.Success;
             else
                 return WorkOutcome.CompletedWithErrors;
+        }
+
+        public void CreateDesktopShortcut(string cemuVersion, string mlcExternalPath)
+        {
+            // Initialize WshShell and create shortcut object
+            WshShell shell = new WshShell();
+            IWshShortcut shortcut = shell.CreateShortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"Cemu {cemuVersion}.lnk"));
+
+            // Set shortcut attributes
+            shortcut.TargetPath = Path.Combine(baseDestinationPath, "Cemu.exe");
+            shortcut.WorkingDirectory = baseDestinationPath;
+            if (mlcExternalPath != null)
+                shortcut.Arguments = $"-mlc \"{mlcExternalPath}\"";
+            shortcut.Description = "The Wii U emulator";
+
+            // Save shortcut on disk
+            shortcut.Save();
         }
 
         public void CancelWork()

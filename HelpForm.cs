@@ -18,16 +18,18 @@ namespace CemuUpdateTool
                 @"{\b HOW DOES IT WORK?}\par" +
                 @"\fs8\par\fs19" +
                 @" The functioning of this program is very simple: just select your old Cemu folder, choose the destination folder which contains the newer Cemu version and click Start! The program will do all the work for you, copying only the folders selected in Options and overwriting automatically any existing file with the same name. You can cancel the operation at any time, and in that case the program will ask you if you want to revert back to the original situation, deleting all the file that had been copied before you clicked on the Cancel button.\par" +
+                @" Since version 1.1, once migration process has completed the program will ask you if you want to create a shortcut to the newer Cemu version on desktop. You can prevent this behaviour by adding {\i askForDesktopShortcut,false} to settings.dat file (see below) under the line containing '##'. If the entry is already present, you just have to replace {\i true} with {\i false}.\par" +
                 @"\par" +
                 @"{\b OPTIONS SECTION}\par" +
                 @"\fs8\par\fs19" +
-                @" In the options form you can choose which folders must be copied to the new Cemu installation. There's one option that can't be checked - don't worry, it'll be implemented in a next update.\par" +  // TODO: DA MODIFICARE!
-                @" You can also decide whether to save the program options file (which is not mandatory) in the same folder as the executable (default setting), or in %AppData% folder. If both files exist, the program will give priority to the file in the executable folder.\par" +
+                @" In the options form you can choose which folders must be copied to the new Cemu installation. But not only that: you can also make use of other handy functions, such as copying Cemu settings file, deleting destination folders content before copying (useful if you want to keep only the files you really need), and ignoring mlc01 folder when source Cemu version is higher than 1.10.\par" +
+                @" For your convenience, the program comes with the opportunity to store program options in a text file, which can be located in the same folder as the executable, or in %AppData% folder. If both files exist, the program will give priority to the file in the executable folder.\par" +
                 @" That file (called settings.dat) includes the paths of Cemu subfolders and whether they have to be copied or not. You can also add your custom folder options {\ul before the line containing '##'} in order to copy the folders you want in the following format:\par" +
                 @"\fs11\par\fs19" +
                 @"{\i subfolderLocalPath,True}\par" +
                 @"\fs11\par\fs19" +
                 @" whereas {\i subFolderLocalPath} is the subdirectory path relative to the Cemu installation folder (e.g. /mlc01/usr/title).\par" +
+                // Sezione additionalOptions
                 @"\par" +
                 @"{\b FOUND A BUG?}\par" +
                 @"\fs8\par\fs19" +
