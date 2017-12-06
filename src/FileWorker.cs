@@ -97,7 +97,7 @@ namespace CemuUpdateTool
                 if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
                 {
                     PerformingWork($"Copying {folder}", foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
-                    FileOperations.CopyDir(folder, CopyingFile, FileCopied, this);
+                    FileOperations.CopyDir(Path.Combine(baseSourcePath, folder), Path.Combine(baseDestinationPath, folder), CopyingFile, FileCopied, this);
                 }
                 currentFolderIndex++;
 

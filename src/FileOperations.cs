@@ -12,7 +12,7 @@ namespace CemuUpdateTool
     public delegate void FolderInfoCallback(string name, long dim);
     public delegate void ActualFileCallback(string name);
 
-    public class FileOperations
+    public static class FileOperations
     {
         /*
          *  Calculates the sizes of every folder in the list using CalculateDirSize() and puts them in the worker.
@@ -25,7 +25,7 @@ namespace CemuUpdateTool
 
             // Calculate the size of every folder to copy
             foreach(string folder in foldersToCopy)
-                worker.foldersSizes.Add(CalculateDirSize(folder, worker));
+                worker.foldersSizes.Add(CalculateDirSize(Path.Combine(worker.baseSourcePath, folder)));
 
             // Calculate the overall size and return it
             foreach (long folderSize in worker.foldersSizes)
@@ -37,16 +37,16 @@ namespace CemuUpdateTool
         /*
          *  Method that calculates the size of all the files contained in the passed directory and its subdirectories, then returns it
          */
-        public static long CalculateDirSize(string localDirPath, FileWorker worker)
+        public static long CalculateDirSize(string folderPath)
         {
             long dirSize = 0;
 
             // Check if target folder exists, if not exit
-            if (!DirectoryExists(Path.Combine(worker.baseSourcePath, localDirPath)))
+            if (!DirectoryExists(folderPath))
                 return 0;
 
             // Retrieve informations for files and subdirectories
-            DirectoryInfo dirToCompute = new DirectoryInfo(Path.Combine(worker.baseSourcePath, localDirPath));
+            DirectoryInfo dirToCompute = new DirectoryInfo(folderPath);
             DirectoryInfo[] subdirsArray = dirToCompute.GetDirectories();
             FileInfo[] filesArray = dirToCompute.GetFiles();
 
@@ -54,7 +54,7 @@ namespace CemuUpdateTool
                 dirSize += file.Length;
 
             foreach (DirectoryInfo subdir in subdirsArray)      // calculate subdirs sizes recursively
-                dirSize += CalculateDirSize(Path.Combine(worker.baseSourcePath, localDirPath, subdir.Name), worker);
+                dirSize += CalculateDirSize(Path.Combine(folderPath, subdir.Name));
 
             return dirSize;
         }
@@ -63,16 +63,16 @@ namespace CemuUpdateTool
          *  Method that copies a Cemu subdir from old installation to new one.
          *  Sends callbacks to MainForm in order to update progress bars.
          */
-        public static void CopyDir(string localDirPath, ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, FileWorker worker)
+        public static void CopyDir(string srcFolderPath, string destFolderPath, ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, FileWorker worker)
         {
             // Retrieve informations for files and subdirectories
-            DirectoryInfo sourceDir = new DirectoryInfo(Path.Combine(worker.baseSourcePath, localDirPath));
+            DirectoryInfo sourceDir = new DirectoryInfo(srcFolderPath);
             DirectoryInfo[] srcSubdirsArray = sourceDir.GetDirectories();
             FileInfo[] srcFilesArray = sourceDir.GetFiles();
 
             // Check if destination folder exists, if not create it
-            if (!DirectoryExists(Path.Combine(worker.baseDestinationPath, localDirPath)))
-                worker.directoriesAlreadyCopied.Add(Directory.CreateDirectory(Path.Combine(worker.baseDestinationPath, localDirPath)));
+            if (!DirectoryExists(destFolderPath))
+                worker.directoriesAlreadyCopied.Add(Directory.CreateDirectory(destFolderPath));
 
             // Copy files
             foreach (FileInfo file in srcFilesArray)
@@ -82,17 +82,17 @@ namespace CemuUpdateTool
                     bool copySuccessful = false;
                     FileInfo destinationFile = null;
 
-                    CopyingFile(file.Name);         // Tell the MainForm the name of the file I'm about to copy
-                    string destPath = Path.Combine(worker.baseDestinationPath, localDirPath, file.Name);
+                    CopyingFile(file.Name);                 // Tell the MainForm the name of the file I'm about to copy
+                    string destFilePath = Path.Combine(destFolderPath, file.Name);
                     while(!copySuccessful)
                     {
                         try
                         {
-                            destinationFile = file.CopyTo(destPath, true);
+                            destinationFile = file.CopyTo(destFilePath, true);
                         }
                         catch(Exception exc)
                         {
-                            DialogResult choice = MessageBox.Show("Unexpected error when copying file " + file.Name + ": " + exc.Message + " What do you want to do?",
+                            DialogResult choice = MessageBox.Show($"Unexpected error when copying file {file.Name}: {exc.Message} What do you want to do?",
                                 "Error during file copy", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
 
                             if (choice == DialogResult.Retry)
@@ -119,7 +119,7 @@ namespace CemuUpdateTool
             foreach (DirectoryInfo subdir in srcSubdirsArray)
             {
                 if (!worker.workIsCancelled && !worker.workAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
-                    CopyDir(Path.Combine(localDirPath, subdir.Name), CopyingFile, FileCopied, worker);
+                    CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), CopyingFile, FileCopied, worker);
                 else
                     return;
             }
@@ -135,9 +135,9 @@ namespace CemuUpdateTool
             DirectoryInfo[] subdirsArray = directory.GetDirectories();
             FileInfo[] filesArray = directory.GetFiles();
 
-            // Check if destination folder exists, if not exit
+            // Check if destination folder exists, if not throw exception
             if (!DirectoryExists(folderPath))
-                return;
+                throw new DirectoryNotFoundException("Directory doesn't exist!");
 
             // Delete files
             foreach (FileInfo file in filesArray)
@@ -154,7 +154,7 @@ namespace CemuUpdateTool
                         }
                         catch (Exception exc)
                         {
-                            DialogResult choice = MessageBox.Show("Unexpected error when deleting file " + file.Name + ": " + exc.Message +
+                            DialogResult choice = MessageBox.Show($"Unexpected error when deleting file {file.Name}: {exc.Message}" +
                                 " Do you want to retry or skip folder contents removal?",
                                 "Error during file deletion", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
 
@@ -189,9 +189,6 @@ namespace CemuUpdateTool
         public static extern int GetLongPathName(string path, StringBuilder longPath, int longPathLength);
         public static bool FileExists(string filePath)
         {
-            if (!File.Exists(filePath))
-                return false;
-
             StringBuilder longPath = new StringBuilder(255);
             GetLongPathName(filePath, longPath, longPath.Capacity);
 
