@@ -12,6 +12,10 @@ namespace CemuUpdateTool
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            #if DEBUG
+            Application.Run(new MainForm());
+
+            #else
             try
             {
                 Application.Run(new MainForm());
@@ -49,6 +53,7 @@ namespace CemuUpdateTool
                 File.WriteAllText($@".\cvmt-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt", crashlogContent);
                 Application.Exit();
             }
+            # endif
         }
     }
 }

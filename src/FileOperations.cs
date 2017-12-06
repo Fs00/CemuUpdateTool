@@ -190,10 +190,10 @@ namespace CemuUpdateTool
         public static bool FileExists(string filePath)
         {
             StringBuilder longPath = new StringBuilder(255);
-            GetLongPathName(filePath, longPath, longPath.Capacity);
+            if (GetLongPathName(Path.GetDirectoryName(filePath), longPath, longPath.Capacity) == 0) // if file's directory doesn't exist, file doesn't exist!
+                return false;
 
-            string realPath = Path.GetDirectoryName(longPath.ToString());
-            return Array.Exists(Directory.GetFiles(realPath), s => s == filePath);
+            return Array.Exists(Directory.GetFiles(longPath.ToString()), s => s == filePath);
         }
 
         public static bool DirectoryExists(string dirPath)
