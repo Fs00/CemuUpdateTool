@@ -38,12 +38,12 @@ namespace CemuUpdateTool
 
         private void btnAbout_Click(object sender, EventArgs e)
         {
-            new AboutForm().Show();
+            new AboutForm().ShowDialog();
         }
 
         private void btnOptions_Click(object sender, EventArgs e)
         {
-            new OptionsForm(opts).Show();
+            new OptionsForm(opts).ShowDialog();
         }
 
         /*

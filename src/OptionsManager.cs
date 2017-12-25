@@ -176,7 +176,7 @@ namespace CemuUpdateTool
          */
         public bool DeleteOptionsFile()
         {
-            if (FileOperations.FileExists(optionsFilePath))
+            if (!string.IsNullOrEmpty(optionsFilePath) && FileOperations.FileExists(optionsFilePath))
             {
                 File.Delete(optionsFilePath);
                 if (optionsFilePath == APPDATA_FILEPATH)    // clean redundant empty folders

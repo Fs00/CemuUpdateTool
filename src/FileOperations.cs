@@ -189,6 +189,9 @@ namespace CemuUpdateTool
         public static extern int GetLongPathName(string path, StringBuilder longPath, int longPathLength);
         public static bool FileExists(string filePath)
         {
+            if (string.IsNullOrEmpty(filePath))
+                throw new ArgumentException("Empty argument!");
+
             StringBuilder longPath = new StringBuilder(255);
             if (GetLongPathName(Path.GetDirectoryName(filePath), longPath, longPath.Capacity) == 0) // if file's directory doesn't exist, file doesn't exist!
                 return false;
@@ -198,6 +201,9 @@ namespace CemuUpdateTool
 
         public static bool DirectoryExists(string dirPath)
         {
+            if (string.IsNullOrEmpty(dirPath))
+                throw new ArgumentException("Empty argument!");
+
             StringBuilder longPath = new StringBuilder(255);
             if (GetLongPathName(dirPath, longPath, longPath.Capacity) != 0 && dirPath == longPath.ToString())
                 return true;
