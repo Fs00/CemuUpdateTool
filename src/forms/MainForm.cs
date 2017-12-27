@@ -22,8 +22,6 @@ namespace CemuUpdateTool
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;
             opts = new OptionsManager();
-            progressBarSingle.DisplayStyle = ProgressBarDisplayText.CustomText;
-            progressBarOverall.DisplayStyle = ProgressBarDisplayText.CustomText;
         }
 
         private void btnExit_Click(object sender, EventArgs e)
@@ -282,7 +280,6 @@ namespace CemuUpdateTool
         private void ResetSingleProgressBar(string newLabelText, long newProgressBarSize)
         {
             singleProgressBarMaxDivided = false;
-            progressBarSingle.CustomText = "";
             progressBarSingle.Value = 0;
             lblPercentSingle.Text = "0%";
 
@@ -311,7 +308,6 @@ namespace CemuUpdateTool
                 MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             // Reset progress bars
-            progressBarSingle.CustomText = "";
             progressBarSingle.Value = 0;
             progressBarOverall.Value = 0;
             lblPercentSingle.Text = "0%";
@@ -347,7 +343,7 @@ namespace CemuUpdateTool
         {
             if (name.Length > 50)
                 name = name.Substring(0,49) + "...";
-            progressBarSingle.SetCustomText($"Current file: {name}");
+            // TODO: add logging in Details section
         }
     }
 }

@@ -68,9 +68,6 @@
     <Compile Include="src\forms\AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="src\CustomProgressBar.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="src\FileOperations.cs" />
     <Compile Include="src\FileWorker.cs" />
     <Compile Include="src\forms\HelpForm.cs">
@@ -94,6 +91,7 @@
     <Compile Include="src\OptionsManager.cs" />
     <Compile Include="src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\VersionNumber.cs" />
     <EmbeddedResource Include="resources\AboutForm.resx">
       <DependentUpon>..\src\forms\AboutForm.cs</DependentUpon>
     </EmbeddedResource>
