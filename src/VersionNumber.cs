@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace CemuUpdateTool
 {
-    public struct VersionNumber
+    public class VersionNumber
     {
         private List<int> fields;           // list that contains each of the "sub-numbers"
         public int Depth => fields.Count;   // returns the "depth" of the version number (e.g. 1.6.4 has depth 3)
@@ -57,7 +57,7 @@ namespace CemuUpdateTool
             set
             {
                 if (Depth < 4)
-                    throw new InvalidOperationException("Field \"Build\" does not exist: Depth is less than 3.");
+                    throw new InvalidOperationException("Field \"Private\" does not exist: Depth is less than 3.");
                 fields[3] = value;
             }
         }
@@ -67,6 +67,13 @@ namespace CemuUpdateTool
         {
             get => fields[i];
             set => fields[i] = value;
+        }
+
+        // Default constructor
+        public VersionNumber()
+        {
+            fields = new List<int>();
+            fields.Add(0);      // Depth must never be 0
         }
 
         // Constructor that takes in input a string like "1.5.2" (separator is '.')
