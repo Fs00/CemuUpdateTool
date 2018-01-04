@@ -10,11 +10,26 @@ namespace CemuUpdateTool
         public int Depth => fields.Count;   // returns the "depth" of the version number (e.g. 1.6.4 has depth 3)
 
         /*
-         *  "Alias" properties for first, second, third and fourth field, like Microsoft does in FileVersionInfo class
+         *  Indexer for fields list
+         *  Input values are checked only here, so every value assignation to fields MUST BE DONE FROM HERE
+         */
+        public int this[int i]
+        {
+            get => fields[i];
+            set
+            {
+                if (value < 0)
+                    throw new ArgumentException("Field values must not be negative.");
+                fields[i] = value;
+            }
+        }
+
+        /*
+         *  "Alias" properties for first, second, third and fourth field, like Microsoft does in Version and FileVersionInfo class
          */
         public int Major {
             get => fields[0];
-            set => fields[0] = value;
+            set => this[0] = value;
         }
 
         public int Minor {
@@ -28,7 +43,7 @@ namespace CemuUpdateTool
             {
                 if (Depth < 2)
                     throw new InvalidOperationException("Field \"Minor\" does not exist: Depth is less than 2.");
-                fields[1] = value;
+                this[1] = value;
             }
         }
 
@@ -43,7 +58,7 @@ namespace CemuUpdateTool
             {
                 if (Depth < 3)
                     throw new InvalidOperationException("Field \"Build\" does not exist: Depth is less than 3.");
-                fields[2]= value;
+                this[2] = value;
             }
         }
 
@@ -58,15 +73,8 @@ namespace CemuUpdateTool
             {
                 if (Depth < 4)
                     throw new InvalidOperationException("Field \"Private\" does not exist: Depth is less than 3.");
-                fields[3] = value;
+                this[3] = value;
             }
-        }
-
-        // Indexer for fields list
-        public int this[int i]
-        {
-            get => fields[i];
-            set => fields[i] = value;
         }
 
         // Default constructor
@@ -79,13 +87,20 @@ namespace CemuUpdateTool
         // Constructor that takes in input a string like "1.5.2" (only allowed separator is '.')
         public VersionNumber(string version)
         {
+            if (string.IsNullOrWhiteSpace(version))
+                throw new ArgumentException("Invalid string passed as argument.");
+
             string[] splittedVersionNr = version.Split('.');
             fields = new List<int>();
             foreach (string field in splittedVersionNr)
-                fields.Add(Convert.ToInt32(field));
+                AddNumber(Convert.ToInt32(field));
         }
 
-        // Constructor that takes in input a FileVersionInfo object. The optional parameter specifies the depth of the new VersionNumber instance
+        /*
+         *  Constructor that takes in input a FileVersionInfo object
+         *  The optional parameter specifies the depth of the new VersionNumber instance.
+         *  Input checking using indexer/AddNumber is not needed since a FileVersionInfo object can't have negative fields
+         */
         public VersionNumber(FileVersionInfo versionInfo, int depth = 4)
         {
             if (depth < 1 || depth > 4)
@@ -103,6 +118,15 @@ namespace CemuUpdateTool
                         fields.Add(versionInfo.FilePrivatePart);
                 }
             }
+        }
+
+        // Constructor that takes in input an arbitrary number of ints
+        public VersionNumber(params int[] fields)
+        {
+            // Extra checks (length, not null) needed?
+            this.fields = new List<int>();
+            foreach (int number in fields)
+                AddNumber(number);
         }
 
         /*
@@ -129,15 +153,10 @@ namespace CemuUpdateTool
         /*
          *  Methods for increasing/decreasing depth. You can also increase depth by more than 1 at a time.
          */
-        public void IncreaseDepth(int extraDepth)
+        public void AddNumber(int number)
         {
-            for (int i = 0; i < extraDepth; i++)
-                fields.Add(0);
-        }
-
-        public void IncreaseDepth()
-        {
-            IncreaseDepth(1);
+            fields.Add(0);
+            this[Depth-1] = number;
         }
 
         public void DecreaseDepth()
