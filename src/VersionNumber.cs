@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace CemuUpdateTool
 {
-    public class VersionNumber
+    public class VersionNumber : IComparable<VersionNumber>
     {
         private List<int> fields;           // list that contains each of the "sub-numbers"
         public int Depth => fields.Count;   // returns the "depth" of the version number (e.g. 1.6.4 has depth 3)
@@ -104,7 +104,7 @@ namespace CemuUpdateTool
         public VersionNumber(FileVersionInfo versionInfo, int depth = 4)
         {
             if (depth < 1 || depth > 4)
-                throw new ArgumentException("Depth value is not valid.");
+                throw new ArgumentOutOfRangeException("Depth value is not valid.");
 
             fields = new List<int>();
             fields.Add(versionInfo.FileMajorPart);
@@ -123,7 +123,9 @@ namespace CemuUpdateTool
         // Constructor that takes in input an arbitrary number of ints
         public VersionNumber(params int[] fields)
         {
-            // Extra checks (length, not null) needed?
+            if (fields == null)
+                throw new ArgumentNullException("Fields array is null.");
+
             this.fields = new List<int>();
             foreach (int number in fields)
                 AddNumber(number);
@@ -151,19 +153,72 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Methods for increasing/decreasing depth. You can also increase depth by more than 1 at a time.
+         *  Methods for increasing/decreasing depth
          */
         public void AddNumber(int number)
         {
-            fields.Add(0);
-            this[Depth-1] = number;
+            if (number < 0)
+                throw new ArgumentException("Field values must not be negative.");
+            fields.Add(number);
         }
 
-        public void DecreaseDepth()
+        public void RemoveLastNumber()
         {
             if (Depth <= 1)
                 throw new InvalidOperationException("Depth can't be less than 1.");
             fields.RemoveAt(Depth-1);
+        }
+
+        /*
+         *  Methods for bumping up/down version number
+         *  You can also do major version bumps (e.g. 1.1.5 => 1.2.0)
+         */
+        public void BumpNumber(int fieldIndex)
+        {
+            if (fieldIndex < 0 || fieldIndex >= Depth)
+                throw new ArgumentOutOfRangeException($"Field index {fieldIndex} doesn't exist.");
+
+            fields[fieldIndex]++;
+            if (fieldIndex < Depth-1)   // if you're doing a major version bump
+            {
+                for (int i = fieldIndex+1; i < Depth; i++)
+                    fields[i] = 0;
+            }
+        }
+
+        public void BumpNumber()
+        {
+            BumpNumber(Depth-1);
+        }
+
+        public void BumpDownNumber()
+        {
+            this[Depth-1] -= 1;
+        }
+
+        /*
+         *  CompareTo() method.
+         *  Returns -1 if other < this, 0 if other == this, 1 if other > this
+         */
+        public int CompareTo(VersionNumber other)
+        {
+            // TO BE DONE
+            throw new NotImplementedException();
+        }
+
+        /*
+         *  Increment/decrement operators overload
+         */
+        public static VersionNumber operator ++(VersionNumber instance)
+        {
+            instance.BumpNumber();
+            return instance;
+        }
+
+        public static VersionNumber operator --(VersionNumber instance)
+        {
+            instance.BumpDownNumber();
+            return instance;
         }
     }
 }

@@ -67,6 +67,13 @@ namespace CemuUpdateTool.Tests
             Assert.AreEqual(version.Minor, 11);
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void ErraticParamsIntArrayConstructor()
+        {
+            VersionNumber version = new VersionNumber(-1,0,5);  // must throw ArgumentException because of -1
+        }
+
         [TestMethod()]
         public void ToStringTest()
         {
@@ -78,6 +85,29 @@ namespace CemuUpdateTool.Tests
 
             Assert.AreEqual(version1.ToString(), vNumber1, "Failed version1.ToString()");
             Assert.AreEqual(version2.ToString(), vNumber2, "Failed version2.ToString()");
+        }
+
+        [TestMethod()]
+        [ExpectedException(typeof(ArgumentException))]
+        public void IncrementDecrementOperatorsTest()
+        {
+            VersionNumber version1 = new VersionNumber(1,1,2);
+            VersionNumber version2 = new VersionNumber(2,0,0);
+
+            version1++;
+            version2--;     // throws ArgumentException
+
+            Assert.AreEqual(version1.ToString(), "1.1.3");
+        }
+
+        [TestMethod()]
+        public void MajorVersionBump()
+        {
+            VersionNumber version = new VersionNumber(1, 1, 5, 6);
+
+            version.BumpNumber(1);
+
+            Assert.AreEqual(version.ToString(), "1.2.0.0");
         }
     }
 }
