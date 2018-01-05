@@ -28,8 +28,18 @@ namespace CemuUpdateTool
          *  "Alias" properties for first, second, third and fourth field, like Microsoft does in Version and FileVersionInfo class
          */
         public int Major {
-            get => fields[0];
-            set => this[0] = value;
+            get
+            {
+                if (Depth < 1)
+                    throw new InvalidOperationException("Field \"Major\" does not exist: Depth is 0.");
+                return fields[0];
+            }
+            set
+            {
+                if (Depth < 1)
+                    throw new InvalidOperationException("Field \"Major\" does not exist: Depth is 0.");
+                this[0] = value;
+            }
         }
 
         public int Minor {
@@ -81,7 +91,6 @@ namespace CemuUpdateTool
         public VersionNumber()
         {
             fields = new List<int>();
-            fields.Add(0);      // Depth must never be 0
         }
 
         // Constructor that takes in input a string like "1.5.2" (only allowed separator is '.')
@@ -137,6 +146,9 @@ namespace CemuUpdateTool
          */
         public string ToString(char separator)
         {
+            if (Depth == 0)
+                return "x";
+
             string output = "";
             for (int i = 0; i < Depth; i++)
             {
@@ -164,8 +176,8 @@ namespace CemuUpdateTool
 
         public void RemoveLastNumber()
         {
-            if (Depth <= 1)
-                throw new InvalidOperationException("Depth can't be less than 1.");
+            if (Depth == 0)
+                throw new InvalidOperationException("There are no more fields in this instance.");
             fields.RemoveAt(Depth-1);
         }
 
@@ -198,12 +210,49 @@ namespace CemuUpdateTool
 
         /*
          *  CompareTo() method.
-         *  Returns -1 if other < this, 0 if other == this, 1 if other > this
+         *  Returns a negative number if this < other, 0 if other == this, a positive number if this > other
          */
         public int CompareTo(VersionNumber other)
         {
-            // TO BE DONE
-            throw new NotImplementedException();
+            // It's useless to compare the exact same object
+            if (ReferenceEquals(this, other))
+                return 0;
+
+            int commonDepth = Depth;
+            // See if both VersionNumber objects have the same depth, if not set as common depth the lesser between the two
+            bool differentDepths = (this.Depth != other.Depth);
+            if (differentDepths)
+                commonDepth = (this.Depth > other.Depth) ? other.Depth : this.Depth;
+
+            // Compare the common fields. If a pair of fields is different, their difference will be the return value
+            for (int i = 0; i < commonDepth; i++)
+            {
+                if (this[i] != other[i])
+                    return this[i]-other[i];
+            }
+
+            // See if the extra fields in the object with the higher depth are equal to 0, if not it will mean that the object is > than the other
+            if (differentDepths)
+            {
+                if (this.Depth > other.Depth)
+                {
+                    for (int i = commonDepth; i < this.Depth; i++)
+                    {
+                        if (this[i] > 0)
+                            return 1;
+                    }
+                }
+                else
+                {
+                    for (int i = commonDepth; i < other.Depth; i++)
+                    {
+                        if (other[i] > 0)
+                            return -1;
+                    }
+                }
+            }
+            // If both objects have same depth or the extra fields are equal to 0, it means that they're equal
+            return 0;
         }
 
         /*
