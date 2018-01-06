@@ -15,7 +15,7 @@ namespace CemuUpdateTool
              singleProgressBarMaxDivided = false;
         bool srcFolderTxtBoxValidated = false,
              destFolderTxtBoxValidated = false;
-        FileVersionInfo oldCemuExe, newCemuExe;
+        VersionNumber oldCemuExeVer, newCemuExeVer;
 
         public MainForm()
         {
@@ -84,35 +84,10 @@ namespace CemuUpdateTool
             }
         }
 
-        /*
-         *  Method that checks if source Cemu version is actually older than destination one
-         */
-        private bool OldVersionCheck()
-        {
-            if (oldCemuExe.FileMajorPart > newCemuExe.FileMajorPart)
-                return false;
-            else if (oldCemuExe.FileMajorPart == newCemuExe.FileMajorPart)
-            {
-                if (oldCemuExe.FileMinorPart > newCemuExe.FileMinorPart)
-                    return false;
-                else if (oldCemuExe.FileMinorPart == newCemuExe.FileMinorPart)
-                {
-                    if (oldCemuExe.FileBuildPart > newCemuExe.FileBuildPart)
-                        return false;
-                    else
-                        return true;
-                }
-                else
-                    return true;
-            }
-            else
-                return true; 
-        }
-
         private async void DoOperationsAsync(object sender, EventArgs e)
         {
             // Check if Cemu versions are ok, if not warn the user
-            if (OldVersionCheck() == false)
+            if (oldCemuExeVer > newCemuExeVer)
             {
                 DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
                     "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested", 
@@ -128,7 +103,7 @@ namespace CemuUpdateTool
             worker = new FileWorker(txtBoxOldFolder.Text, txtBoxNewFolder.Text);
 
             // Get the list of folders to copy telling the method if source Cemu version is >= 1.10
-            List<string> foldersToCopy = opts.GetFoldersToCopy(oldCemuExe.FileMajorPart > 1 || oldCemuExe.FileMinorPart >= 10);
+            List<string> foldersToCopy = opts.GetFoldersToCopy(oldCemuExeVer.Major > 1 || oldCemuExeVer.Minor >= 10);
 
             // Check if the list is empty (no folders to copy)
             if (foldersToCopy.Count == 0)
@@ -160,9 +135,9 @@ namespace CemuUpdateTool
             if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.additionalOptions["askForDesktopShortcut"] == true)
             {
                 DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                bool isNewCemuVersionAtLeast110 = newCemuExe.FileMajorPart > 1 || newCemuExe.FileMinorPart >= 10;
+                bool isNewCemuVersionAtLeast110 = newCemuExeVer.Major > 1 || newCemuExeVer.Minor >= 10;
                 if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
-                    worker.CreateDesktopShortcut($"{newCemuExe.FileMajorPart}.{newCemuExe.FileMinorPart}.{newCemuExe.FileBuildPart}",
+                    worker.CreateDesktopShortcut(newCemuExeVer.ToString(),
                       (isNewCemuVersionAtLeast110 && opts.additionalOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.mlcFolderExternalPath : null);
             }
 
@@ -204,9 +179,9 @@ namespace CemuUpdateTool
                 errProviderOldFolder.SetError(txtBoxOldFolder, "");
                 srcFolderTxtBoxValidated = true;
 
-                oldCemuExe = FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe"));
+                oldCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe")), 3);
                 lblOldCemuVersion.Visible = true;
-                lblOldVersionNr.Text = $"{oldCemuExe.FileMajorPart}.{oldCemuExe.FileMinorPart}.{oldCemuExe.FileBuildPart}";
+                lblOldVersionNr.Text = oldCemuExeVer.ToString();
 
                 if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxOldFolder.Text != txtBoxNewFolder.Text))
                     btnStart.Enabled = true;
@@ -243,9 +218,9 @@ namespace CemuUpdateTool
                 errProviderNewFolder.SetError(txtBoxNewFolder, "");
                 destFolderTxtBoxValidated = true;
 
-                newCemuExe = FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe"));
+                newCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")), 3);
                 lblNewCemuVersion.Visible = true;
-                lblNewVersionNr.Text = $"{newCemuExe.FileMajorPart}.{newCemuExe.FileMinorPart}.{newCemuExe.FileBuildPart}";
+                lblNewVersionNr.Text = newCemuExeVer.ToString();
 
                 if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxOldFolder.Text != txtBoxNewFolder.Text))
                     btnStart.Enabled = true;

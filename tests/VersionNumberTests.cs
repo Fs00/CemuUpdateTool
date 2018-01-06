@@ -133,5 +133,29 @@ namespace CemuUpdateTool.Tests
             Assert.AreEqual(1, diffDepthDiffValueResult);
             Assert.AreEqual(0, equalsResult);
         }
+
+        [TestMethod()]
+        public void ComparisonOperatorsTest()
+        {
+            // Same depth
+            VersionNumber version1 = new VersionNumber(1, 5, 4);
+            VersionNumber version2 = new VersionNumber(1, 8, 3);
+            // Different depth, same value
+            VersionNumber version3 = new VersionNumber(1, 3);
+            VersionNumber version4 = new VersionNumber(1, 3, 0, 0);
+            // Different depth, same common fields
+            VersionNumber version5 = new VersionNumber(1, 7, 0, 1);
+            VersionNumber version6 = new VersionNumber(1, 7);
+
+            bool gtResult = version1 < version2;
+            bool notEqualsResult = version3 != version4;
+            bool leResult = version6 <= version5;
+            bool geResult = version1 >= version1;
+
+            Assert.IsTrue(gtResult);
+            Assert.IsFalse(notEqualsResult);
+            Assert.IsTrue(leResult);
+            Assert.IsTrue(geResult);
+        }
     }
 }

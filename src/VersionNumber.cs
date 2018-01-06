@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace CemuUpdateTool
 {
-    public class VersionNumber : IComparable<VersionNumber>
+    public class VersionNumber : IEquatable<VersionNumber>, IComparable<VersionNumber>
     {
         private List<int> fields;           // list that contains each of the "sub-numbers"
         public int Depth => fields.Count;   // returns the "depth" of the version number (e.g. 1.6.4 has depth 3)
@@ -209,8 +209,24 @@ namespace CemuUpdateTool
         }
 
         /*
+         *  Increment/decrement operators overload
+         */
+        public static VersionNumber operator ++(VersionNumber instance)
+        {
+            instance.BumpNumber();
+            return instance;
+        }
+
+        public static VersionNumber operator --(VersionNumber instance)
+        {
+            instance.BumpDownNumber();
+            return instance;
+        }
+
+        /*
          *  CompareTo() method.
          *  Returns a negative number if this < other, 0 if other == this, a positive number if this > other
+         *  Please take note that 1.3 is considered equal to 1.3.0.0!
          */
         public int CompareTo(VersionNumber other)
         {
@@ -256,18 +272,62 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Increment/decrement operators overload
+         *  IEquatable<T>.Equals method
+         *  Uses CompareTo to determine if two Version number objects are equal.
+         *  Remember that 1.3 is considered equal to 1.3.0.0!
          */
-        public static VersionNumber operator ++(VersionNumber instance)
+        public bool Equals(VersionNumber other)
         {
-            instance.BumpNumber();
-            return instance;
+            if (this.CompareTo(other) == 0)
+                return true;
+            else
+                return false;
         }
 
-        public static VersionNumber operator --(VersionNumber instance)
+        /*
+         *  Comparison operators overloads
+         *  They use CompareTo and Equals to do their work
+         */
+        public static bool operator >(VersionNumber left, VersionNumber right)
         {
-            instance.BumpDownNumber();
-            return instance;
+            if (left.CompareTo(right) > 0)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator <(VersionNumber left, VersionNumber right)
+        {
+            if (left.CompareTo(right) < 0)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator >=(VersionNumber left, VersionNumber right)
+        {
+            if (left.CompareTo(right) >= 0)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator <=(VersionNumber left, VersionNumber right)
+        {
+            if (left.CompareTo(right) <= 0)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator ==(VersionNumber left, VersionNumber right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(VersionNumber left, VersionNumber right)
+        {
+            return !left.Equals(right);
         }
     }
 }
