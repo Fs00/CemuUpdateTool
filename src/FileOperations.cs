@@ -18,7 +18,7 @@ namespace CemuUpdateTool
          *  Calculates the sizes of every folder in the list using CalculateDirSize() and puts them in the worker.
          *  Returns the overall size
          */
-        public static long CalculateFoldersSizes(List<string> foldersToCopy, FileWorker worker)
+        public static long CalculateFoldersSizes(List<string> foldersToCopy, Worker worker)
         {
             worker.foldersSizes = new List<long>();
             long overallSize = 0;
@@ -63,7 +63,7 @@ namespace CemuUpdateTool
          *  Method that copies a Cemu subdir from old installation to new one.
          *  Sends callbacks to MainForm in order to update progress bars.
          */
-        public static void CopyDir(string srcFolderPath, string destFolderPath, ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, FileWorker worker)
+        public static void CopyDir(string srcFolderPath, string destFolderPath, ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, Worker worker)
         {
             // Retrieve informations for files and subdirectories
             DirectoryInfo sourceDir = new DirectoryInfo(srcFolderPath);
@@ -77,7 +77,7 @@ namespace CemuUpdateTool
             // Copy files
             foreach (FileInfo file in srcFilesArray)
             {
-                if (!worker.workIsCancelled && !worker.workAborted)     // check that work hasn't been cancelled
+                if (!worker.isCancelled && !worker.isAborted)     // check that work hasn't been cancelled
                 {
                     bool copySuccessful = false;
                     FileInfo destinationFile = null;
@@ -99,11 +99,11 @@ namespace CemuUpdateTool
                                 continue;
                             else if (choice == DialogResult.Abort)
                             {
-                                worker.workAborted = true;
+                                worker.StopWork(WorkOutcome.Aborted);
                                 return;
                             }
                             else if (choice == DialogResult.Ignore)
-                                worker.errorsEncountered = true;
+                                worker.ErrorOccurred();
                         }
                         copySuccessful = true;
                     }
@@ -118,7 +118,7 @@ namespace CemuUpdateTool
             // Copy subdirs recursively
             foreach (DirectoryInfo subdir in srcSubdirsArray)
             {
-                if (!worker.workIsCancelled && !worker.workAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
+                if (!worker.isCancelled && !worker.isAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
                     CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), CopyingFile, FileCopied, worker);
                 else
                     return;
@@ -128,7 +128,7 @@ namespace CemuUpdateTool
         /*
          *  Method that deletes the contents of the passed folder without deleting the folder itself
          */
-        public static void RemoveDirContents(string folderPath, FileWorker worker)
+        public static void RemoveDirContents(string folderPath, Worker worker)
         {
             // Retrieve informations for files and subdirectories
             DirectoryInfo directory = new DirectoryInfo(folderPath);
@@ -142,7 +142,7 @@ namespace CemuUpdateTool
             // Delete files
             foreach (FileInfo file in filesArray)
             {
-                if (!worker.workIsCancelled && !worker.workAborted)     // check that work hasn't been cancelled
+                if (!worker.isCancelled && !worker.isAborted)     // check that work hasn't been cancelled
                 {
                     bool deletionSuccessful = false;
                     while (!deletionSuccessful)
@@ -162,7 +162,7 @@ namespace CemuUpdateTool
                                 continue;
                             else if (choice == DialogResult.Cancel)
                             {
-                                worker.errorsEncountered = true;
+                                worker.ErrorOccurred();
                                 return;
                             }
                         }
@@ -175,7 +175,7 @@ namespace CemuUpdateTool
             // Delete subdirs recursively
             foreach (DirectoryInfo subdir in subdirsArray)
             {
-                if (!worker.workIsCancelled && !worker.workAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
+                if (!worker.isCancelled && !worker.isAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
                     RemoveDirContents(Path.Combine(folderPath, subdir.Name), worker);
                 else
                     return;

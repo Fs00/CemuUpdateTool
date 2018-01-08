@@ -9,7 +9,7 @@ namespace CemuUpdateTool
 {
     public partial class MainForm : Form
     {
-        FileWorker worker;
+        Worker worker;
         OptionsManager opts;
         bool overallProgressBarMaxDivided = false,
              singleProgressBarMaxDivided = false;
@@ -100,7 +100,7 @@ namespace CemuUpdateTool
             lblSingleProgress.Text = "Preparing...";
 
             // Set Cemu folders in the class
-            worker = new FileWorker(txtBoxOldFolder.Text, txtBoxNewFolder.Text);
+            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text);
 
             // Get the list of folders to copy telling the method if source Cemu version is >= 1.10
             List<string> foldersToCopy = opts.GetFoldersToCopy(oldCemuExeVer.Major > 1 || oldCemuExeVer.Minor >= 10);
@@ -148,7 +148,7 @@ namespace CemuUpdateTool
         private void btnCancel_Click(object sender, EventArgs e)
         {
             lblSingleProgress.Text = "Cancelling...";
-            worker.CancelWork();
+            worker.StopWork(WorkOutcome.CancelledByUser);
         }
 
         private void txtBoxOldFolder_TextChanged(object sender, EventArgs e)

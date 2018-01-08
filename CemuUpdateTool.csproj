@@ -69,7 +69,8 @@
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
     <Compile Include="src\FileOperations.cs" />
-    <Compile Include="src\FileWorker.cs" />
+    <Compile Include="src\WebOperations.cs" />
+    <Compile Include="src\Worker.cs" />
     <Compile Include="src\forms\HelpForm.cs">
       <SubType>Form</SubType>
     </Compile>

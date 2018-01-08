@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
+using System.Net;
 using IWshRuntimeLibrary;
 
 namespace CemuUpdateTool
@@ -16,21 +17,23 @@ namespace CemuUpdateTool
         CompletedWithErrors
     }
 
-    public class FileWorker
+    public class Worker
     {
         public string baseSourcePath { private set; get; }                  // older Cemu folder
         public string baseDestinationPath { private set; get; }             // new Cemu folder
 
-        public bool workIsCancelled { set; get; } = false;
-        public bool workAborted { set; get; } = false;
-        public bool errorsEncountered { set; get; } = false;
+        public bool isCancelled { private set; get; } = false;
+        public bool isAborted { private set; get; } = false;
+        public bool errorsEncountered { private set; get; } = false;
 
-        public byte currentFolderIndex { set; get; } = 0;                    // index of the currently copying folder
         public List<long> foldersSizes { set; get; }                         // contains the sizes (in bytes) of the folders to copy
         public List<FileInfo> filesAlreadyCopied { set; get; }               // list of files that have already been copied, necessary if you want to restore the original situation when you cancel the operation
         public List<DirectoryInfo> directoriesAlreadyCopied { set; get; }    // list of directories that have already been copied, necessary if you want to restore the original situation when you cancel the operation
 
-        public FileWorker(string usrInputSrcPath, string usrInputDestPath)
+        byte currentFolderIndex = 0;            // index of the currently copying folder
+        WebClient client;
+
+        public Worker(string usrInputSrcPath, string usrInputDestPath)
         {
             baseSourcePath = usrInputSrcPath;
             baseDestinationPath = usrInputDestPath;
@@ -101,7 +104,7 @@ namespace CemuUpdateTool
                 }
                 currentFolderIndex++;
 
-                if (workIsCancelled || workAborted)
+                if (isCancelled || isAborted)
                 {
                     try
                     {
@@ -123,7 +126,7 @@ namespace CemuUpdateTool
                         MessageBox.Show($"An error occurred when deleting already copied files: {exc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
 
-                    if (workIsCancelled)
+                    if (isCancelled)
                         return WorkOutcome.CancelledByUser;
                     else
                         return WorkOutcome.Aborted;
@@ -154,9 +157,22 @@ namespace CemuUpdateTool
             shortcut.Save();
         }
 
-        public void CancelWork()
+        public void StopWork(WorkOutcome reason)
         {
-            workIsCancelled = true;
+            if (client != null && client.IsBusy)    // check if eventually there's a web operation pending and stop it
+                client.CancelAsync();
+
+            if (reason == WorkOutcome.Aborted)
+                isAborted = true;
+            else if (reason == WorkOutcome.CancelledByUser)
+                isCancelled = true;
+            else
+                throw new ArgumentException("Not a valid reason to stop the worker.");
+        }
+
+        public void ErrorOccurred()
+        {
+            errorsEncountered = true;
         }
     }
 }
