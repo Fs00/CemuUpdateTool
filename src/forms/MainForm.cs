@@ -86,6 +86,8 @@ namespace CemuUpdateTool
 
         private async void DoOperationsAsync(object sender, EventArgs e)
         {
+            WorkOutcome result = WorkOutcome.Undetermined;
+            
             // Check if Cemu versions are ok, if not warn the user
             if (oldCemuExeVer > newCemuExeVer)
             {
@@ -113,24 +115,29 @@ namespace CemuUpdateTool
                 return;
             }
 
-            // Set overall progress bar according to overall size
-            long overallSize = FileOperations.CalculateFoldersSizes(foldersToCopy, worker);
-            if (overallSize > Int32.MaxValue)
+            // TODO: perform download operations
+
+            if (!(worker.isAborted || worker.isCancelled))
             {
-                overallSize /= 1000;
-                overallProgressBarMaxDivided = true;
+                // Set overall progress bar according to overall size
+                long overallSize = FileOperations.CalculateFoldersSizes(foldersToCopy, worker);
+                if (overallSize > Int32.MaxValue)
+                {
+                    overallSize /= 1000;
+                    overallProgressBarMaxDivided = true;
+                }
+                progressBarOverall.Maximum = Convert.ToInt32(overallSize);
+
+                // Start operations in a secondary thread and enable/disable buttons after operations have started
+                var operationsTask = Task.Run(() => worker.PerformMigrationOperations(foldersToCopy, opts.additionalOptions, ResetSingleProgressBar,
+                                          UpdateCurrentFileText, UpdateProgressBars));
+                btnCancel.Enabled = true;
+                btnStart.Enabled = false;
+
+                // Yield control to the form
+                result = await operationsTask;
             }
-            progressBarOverall.Maximum = Convert.ToInt32(overallSize);
 
-            // Start operations in a secondary thread and enable/disable buttons after operations have started
-            var operationsTask = Task.Run(() => worker.PerformOperations(foldersToCopy, opts.additionalOptions, ResetSingleProgressBar,
-                                      UpdateCurrentFileText, UpdateProgressBars));
-            btnCancel.Enabled = true;
-            btnStart.Enabled = false;
-
-            // Yield control to the form
-            WorkOutcome result = await operationsTask;
-            
             // Once work has completed, ask if user wants to create Cemu desktop shortcut...
             if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.additionalOptions["askForDesktopShortcut"] == true)
             {

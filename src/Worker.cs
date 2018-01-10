@@ -14,7 +14,8 @@ namespace CemuUpdateTool
         Success,
         Aborted,
         CancelledByUser,
-        CompletedWithErrors
+        CompletedWithErrors,
+        Undetermined = -1       // just a placeholder value before the worker terminates
     }
 
     public class Worker
@@ -31,7 +32,7 @@ namespace CemuUpdateTool
         public List<DirectoryInfo> directoriesAlreadyCopied { set; get; }    // list of directories that have already been copied, necessary if you want to restore the original situation when you cancel the operation
 
         byte currentFolderIndex = 0;            // index of the currently copying folder
-        WebClient client;
+        MyWebClient client;
 
         public Worker(string usrInputSrcPath, string usrInputDestPath)
         {
@@ -42,11 +43,13 @@ namespace CemuUpdateTool
             directoriesAlreadyCopied = new List<DirectoryInfo>();
         }
 
+        // TODO: PerformDownloadOperations()
+
         /*
-         *  Method that performs all the operations requested by user.
+         *  Method that performs all the migration operations requested by user.
          *  To be run in a separate thread using await keyword.
          */
-        public WorkOutcome PerformOperations(List<string> foldersToCopy, Dictionary<string, bool> additionalOptions, FolderInfoCallback PerformingWork, 
+        public WorkOutcome PerformMigrationOperations(List<string> foldersToCopy, Dictionary<string, bool> additionalOptions, WorkInfoCallback PerformingWork, 
                                       ActualFileCallback CopyingFile, FileCopiedCallback FileCopied)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(baseSourcePath) && !string.IsNullOrWhiteSpace(baseDestinationPath),

@@ -9,7 +9,7 @@ namespace CemuUpdateTool
 {
     // SET OF CALLBACKS SIGNATURES FOR THE MAINFORM
     public delegate void FileCopiedCallback(long dim);
-    public delegate void FolderInfoCallback(string name, long dim);
+    public delegate void WorkInfoCallback(string name, long dim);
     public delegate void ActualFileCallback(string name);
 
     public static class FileOperations
