@@ -88,6 +88,16 @@ namespace CemuUpdateTool.Tests
         }
 
         [TestMethod()]
+        public void ToStringCustomDepth()
+        {
+            VersionNumber version = new VersionNumber(1,7,1);
+
+            Assert.AreEqual(version.ToString(2), "1.7", "Failed version.ToString(2)");
+            Assert.AreEqual(version.ToString(5), "1.7.1.0.0", "Failed version.ToString(5)");
+            Assert.AreEqual(version.ToString(0), "", "Failed version.ToString(0)");
+        }
+
+        [TestMethod()]
         [ExpectedException(typeof(ArgumentException))]
         public void IncrementDecrementOperatorsTest()
         {

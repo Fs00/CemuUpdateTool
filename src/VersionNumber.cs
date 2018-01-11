@@ -141,8 +141,11 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  ToString() methods. Custom ToString(char) method permits to supply a custom separator between fields (even '' if you want).
-         *  Overridden ToString() uses custom ToString() with default separator (which is '.')
+         *  ToString() methods
+         *  Custom ToString(char) method permits to supply a custom separator between fields (even '' if you want).
+         *  Custom ToString(int[, char]) permits to supply a custom depth in order to print only a part of the version number (e.g. 1.6 for 1.6.2)
+         *    or an arbitrary number of ".0"s after the version number (e.g. 1.0.0 for 1.0)
+         *  Overridden ToString() uses ToString(char) with default separator (which is '.')
          */
         public string ToString(char separator)
         {
@@ -154,7 +157,36 @@ namespace CemuUpdateTool
             {
                 output += fields[i];
                 if (i < Depth-1)
-                    output += separator.ToString();
+                    output += separator;
+            }
+            return output;
+        }
+
+        public string ToString(int customDepth, char separator = '.')
+        {
+            string output = "";
+            if (customDepth == Depth)
+                return ToString(separator);
+            else if (customDepth > Depth)
+            {
+                // adds an extra number of ".0"s until i reaches customDepth
+                output += ToString(separator) + separator;
+                for (int i = Depth; i < customDepth; i++)
+                {
+                    output += "0";
+                    if (i < customDepth-1)
+                        output += separator;
+                }
+            }
+            else
+            {
+                // like ToString(char), but it stops at customDepth index
+                for (int i = 0; i < customDepth; i++)
+                {
+                    output += fields[i];
+                    if (i < customDepth - 1)
+                        output += separator;
+                }
             }
             return output;
         }

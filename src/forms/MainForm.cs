@@ -129,7 +129,7 @@ namespace CemuUpdateTool
                 progressBarOverall.Maximum = Convert.ToInt32(overallSize);
 
                 // Start operations in a secondary thread and enable/disable buttons after operations have started
-                var operationsTask = Task.Run(() => worker.PerformMigrationOperations(foldersToCopy, opts.additionalOptions, ResetSingleProgressBar,
+                var operationsTask = Task.Run(() => worker.PerformMigrationOperations(foldersToCopy, opts.migrationOptions, ResetSingleProgressBar,
                                           UpdateCurrentFileText, UpdateProgressBars));
                 btnCancel.Enabled = true;
                 btnStart.Enabled = false;
@@ -139,13 +139,13 @@ namespace CemuUpdateTool
             }
 
             // Once work has completed, ask if user wants to create Cemu desktop shortcut...
-            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.additionalOptions["askForDesktopShortcut"] == true)
+            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.migrationOptions["askForDesktopShortcut"] == true)
             {
                 DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 bool isNewCemuVersionAtLeast110 = newCemuExeVer.Major > 1 || newCemuExeVer.Minor >= 10;
                 if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
                     worker.CreateDesktopShortcut(newCemuExeVer.ToString(),
-                      (isNewCemuVersionAtLeast110 && opts.additionalOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.mlcFolderExternalPath : null);
+                      (isNewCemuVersionAtLeast110 && opts.migrationOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.mlcFolderExternalPath : null);
             }
 
             // ... and reset form controls to their original state

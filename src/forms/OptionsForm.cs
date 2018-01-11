@@ -42,9 +42,9 @@ namespace CemuUpdateTool
                 chkBoxShaderCaches.Checked = handler.folderOptions[@"shaderCache\transferable"];
 
             // ADDITIONAL OPTIONS
-            chkBoxCemuSettings.Checked = handler.additionalOptions["copyCemuSettingsFile"];
-            chkBoxDeletePrevContent.Checked = handler.additionalOptions["deleteDestFolderContents"];
-            chkBoxCustomMlc01Path.Checked = handler.additionalOptions["dontCopyMlcFolderFor1.10+"];
+            chkBoxCemuSettings.Checked = handler.migrationOptions["copyCemuSettingsFile"];
+            chkBoxDeletePrevContent.Checked = handler.migrationOptions["deleteDestFolderContents"];
+            chkBoxCustomMlc01Path.Checked = handler.migrationOptions["dontCopyMlcFolderFor1.10+"];
             if (!string.IsNullOrWhiteSpace(handler.mlcFolderExternalPath))
                 txtBoxCustomMlc01Path.Text = handler.mlcFolderExternalPath;
             chkBoxCustomMlc01Path_CheckedChanged(null, null);   // make sure that textbox state is correct in relation to the checkbox
@@ -106,9 +106,9 @@ namespace CemuUpdateTool
                 handler.folderOptions.Add(@"shaderCache\transferable", chkBoxShaderCaches.Checked);
 
             // ADDITIONAL OPTIONS
-            handler.additionalOptions["copyCemuSettingsFile"] = chkBoxCemuSettings.Checked;
-            handler.additionalOptions["deleteDestFolderContents"] = chkBoxDeletePrevContent.Checked;
-            handler.additionalOptions["dontCopyMlcFolderFor1.10+"] = chkBoxCustomMlc01Path.Checked;
+            handler.migrationOptions["copyCemuSettingsFile"] = chkBoxCemuSettings.Checked;
+            handler.migrationOptions["deleteDestFolderContents"] = chkBoxDeletePrevContent.Checked;
+            handler.migrationOptions["dontCopyMlcFolderFor1.10+"] = chkBoxCustomMlc01Path.Checked;
             
             if (!string.IsNullOrWhiteSpace(txtBoxCustomMlc01Path.Text))
                 handler.mlcFolderExternalPath = txtBoxCustomMlc01Path.Text;

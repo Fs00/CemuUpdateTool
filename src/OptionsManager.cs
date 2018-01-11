@@ -8,9 +8,32 @@ namespace CemuUpdateTool
     public class OptionsManager
     {
         public Dictionary<string, bool> folderOptions { set; get; }      // contains a list of Cemu subfolders and whether they have to be copied
-        public Dictionary<string, bool> additionalOptions { set; get; }  // contains a set of options for the program
+        public Dictionary<string, bool> migrationOptions { set; get; }   // contains a set of additional options for the migration
+        public Dictionary<string, string> downloadOptions { set; get; }  // contains a set of options for the download of Cemu versions
         public string mlcFolderExternalPath { get; set; } = "";          // mlc01 folder's external path for Cemu 1.10+
         public string optionsFilePath { set; get; } = "";                // the path of the settings file
+
+        // Default options for every dictionary
+        Dictionary<string, bool> defaultFolderOptions = new Dictionary<string, bool> {
+            { "controllerProfiles", true },
+            { "gameProfiles", false },
+            { "graphicPacks", true },
+            { @"mlc01\emulatorSave", true },       // savegame directory before 1.11
+            { @"mlc01\usr\save", true },           // savegame directory since 1.11
+            { @"mlc01\usr\title", true },
+            { @"shaderCache\transferable", true }
+        };
+        Dictionary<string, bool> defaultMigrationOptions = new Dictionary<string, bool> {
+            { "copyCemuSettingsFile", true },
+            { "deleteDestFolderContents", false },
+            { "dontCopyMlcFolderFor1.10+", false },
+            { "askForDesktopShortcut", true }
+        };
+        Dictionary<string, string> defaultDownloadOptions = new Dictionary<string, string> {
+            { "cemuBaseUrl", "http://cemu.info/releases/cemu_" },
+            { "cemuUrlSuffix", ".zip" },
+            { "lastKnownCemuVersion", "1.0.0" },
+        };
 
         // Useful constants to make code more clean & readable
         public readonly string LOCAL_FILEPATH = @".\settings.dat";
@@ -29,8 +52,8 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Method that populates options dictionaries reading settings file.
-         *  If there's no options file or a fatal error happens when parsing it, SetDefaultOptions() is called instead.
+         *  Method that populates options dictionaries reading settings file
+         *  If there's no options file or an error happens when parsing it, SetDefaultOptions() is called instead.
          *  Priority is given to the file in the local folder.
          */
         public bool ReadOptionsFromFile()
@@ -40,11 +63,12 @@ namespace CemuUpdateTool
             string line;
             string[] parsedLine;
 
-            if((localFileExists = FileOperations.FileExists(LOCAL_FILEPATH)) || FileOperations.FileExists(APPDATA_FILEPATH))
+            if ((localFileExists = FileOperations.FileExists(LOCAL_FILEPATH)) || FileOperations.FileExists(APPDATA_FILEPATH))
             {
                 // Create the dictionaries here so we are sure that OptionsForm won't throw NullReferenceException if there aren't any options in the file
                 folderOptions = new Dictionary<string, bool>();
-                additionalOptions = new Dictionary<string, bool>();
+                migrationOptions = new Dictionary<string, bool>();
+                downloadOptions = new Dictionary<string, string>();
 
                 // Set the file path property according to the current file position
                 if (localFileExists)
@@ -68,7 +92,7 @@ namespace CemuUpdateTool
                         while ((line = optionsFile.ReadLine()) != "###")
                         {
                             parsedLine = line.Split(',');
-                            additionalOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
+                            migrationOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
                         }
 
                         // Retrieve custom mlc01 folder path if present
@@ -93,44 +117,35 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Method that checks if additionalOptions has all the needed entries.
-         *  If an entry is not found, it is created with false option (except for askForDesktopShortcut).
+         *  Method that checks if migrationOptions and downloadOptions have all the needed entries.
+         *  If an entry is not found, it is created with default option.
          *  Called only if ReadOptionsFromFile() terminates successfully.
          */
         public void CheckForMissingEntries()
         {
-            if (!additionalOptions.ContainsKey("copyCemuSettingsFile"))
-                additionalOptions.Add("copyCemuSettingsFile", false);
-            if (!additionalOptions.ContainsKey("deleteDestFolderContents"))
-                additionalOptions.Add("deleteDestFolderContents", false);
-            if (!additionalOptions.ContainsKey("dontCopyMlcFolderFor1.10+"))
-                additionalOptions.Add("dontCopyMlcFolderFor1.10+", false);
-            if (!additionalOptions.ContainsKey("askForDesktopShortcut"))
-                additionalOptions.Add("askForDesktopShortcut", true);
+            foreach (string key in defaultMigrationOptions.Keys)
+            {
+                if (!migrationOptions.ContainsKey(key))
+                    migrationOptions.Add(key, defaultMigrationOptions[key]);
+            }
+
+            foreach (string key in defaultDownloadOptions.Keys)
+            {
+                if (!downloadOptions.ContainsKey(key))
+                    downloadOptions.Add(key, defaultDownloadOptions[key]);
+            }
         }
 
         /*
-         *  Method that sets options dictionaries to their default values for the program.
+         *  Method that sets options dictionaries to their default values
          *  Called if settings.dat is not found or ReadOptionsFromFile() throws an error
          */
         public void SetDefaultOptions()
         {
-            folderOptions = new Dictionary<string, bool> {      // necessary to avoid dirty data if ReadOptionsFromFile() fails
-                { "controllerProfiles", true },
-                { "gameProfiles", false },
-                { "graphicPacks", true },
-                { @"mlc01\emulatorSave", true },       // savegame directory before 1.11
-                { @"mlc01\usr\save", true },           // savegame directory since 1.11
-                { @"mlc01\usr\title", true },
-                { @"shaderCache\transferable", true }
-            };
-
-            additionalOptions = new Dictionary<string, bool> {
-                { "copyCemuSettingsFile", true },
-                { "deleteDestFolderContents", false },
-                { "dontCopyMlcFolderFor1.10+", false },
-                { "askForDesktopShortcut", true }
-            };
+            folderOptions = new Dictionary<string, bool>(defaultFolderOptions);
+            migrationOptions = new Dictionary<string, bool>(defaultMigrationOptions);
+            downloadOptions = new Dictionary<string, string>(defaultDownloadOptions);
+            mlcFolderExternalPath = "";
         }
 
         /*
@@ -147,7 +162,7 @@ namespace CemuUpdateTool
                 dataToWrite += option.Key + "," + option.Value + "\r\n";        // \r\n -> CR-LF
             dataToWrite += "##\r\n";
             // Write additional options
-            foreach (KeyValuePair<string, bool> option in additionalOptions)
+            foreach (KeyValuePair<string, bool> option in migrationOptions)
                 dataToWrite += option.Key + "," + option.Value + "\r\n";
             dataToWrite += "###";
             // Write mlc01 custom folder path
@@ -196,7 +211,7 @@ namespace CemuUpdateTool
             List<string> foldersToCopy = new List<string>();
 
             // Ignore mlc01 subfolders if source Cemu version is at least 1.10 and custom mlc folder option is selected
-            if (cemuVersionIsAtLeast110 && additionalOptions["dontCopyMlcFolderFor1.10+"] == true)
+            if (cemuVersionIsAtLeast110 && migrationOptions["dontCopyMlcFolderFor1.10+"] == true)
             {
                 foreach (string folder in SelectedFolders())
                 {
