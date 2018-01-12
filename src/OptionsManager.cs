@@ -60,8 +60,6 @@ namespace CemuUpdateTool
         {
             bool localFileExists;
             bool readingOutcome = true;
-            string line;
-            string[] parsedLine;
 
             if ((localFileExists = FileOperations.FileExists(LOCAL_FILEPATH)) || FileOperations.FileExists(APPDATA_FILEPATH))
             {
@@ -79,31 +77,33 @@ namespace CemuUpdateTool
                 StreamReader optionsFile = new StreamReader(optionsFilePath);
                 try
                 {
-                    // Retrieve folder options from file
-                    while ((line = optionsFile.ReadLine()) != "##")
-                    {
-                        parsedLine = line.Split(',');
-                        folderOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
-                    }
+                    // Check if the file is empty
+                    if (optionsFile.BaseStream.Length == 0)
+                        throw new Exception("Options file is empty.");      // TODO: scegliere un tipo di exception più adatto
 
-                    if (!optionsFile.EndOfStream)
+                    byte sectionId;
+                    string sectionHeaderLine;
+                    while (!optionsFile.EndOfStream)
                     {
-                        // Retrieve additional options from file
-                        while ((line = optionsFile.ReadLine()) != "###")
+                        if (optionsFile.Peek() == 35)   // if the next char is '#'
                         {
-                            parsedLine = line.Split(',');
-                            migrationOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
+                            sectionHeaderLine = optionsFile.ReadLine();
+                            // Check if the sectionId is a number
+                            if (!byte.TryParse(sectionHeaderLine.TrimStart('#'), out sectionId))
+                                throw new Exception("Section ID is not a number.");     // TODO: scegliere un tipo di exception più adatto
+                            else
+                                ReadFileSection(optionsFile, sectionId);
                         }
-
-                        // Retrieve custom mlc01 folder path if present
-                        if (!optionsFile.EndOfStream)
-                            mlcFolderExternalPath = optionsFile.ReadLine();
+                        else
+                            optionsFile.ReadLine();
                     }
+
+                    // TODO: controllo errori: nessun dato rilevante (assenza totale di delimitatori)
                 }
-                catch(Exception exc)
+                catch (Exception exc)
                 {
-                    MessageBox.Show("An unexpected error occurred when parsing options file: " + exc.Message + " Last character read: " + optionsFile.BaseStream.Position +
-                        ".\r\nDefault settings will be loaded instead.", "Error in settings.dat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("An unexpected error occurred when parsing options file: " + exc.Message +
+                        "\r\nDefault settings will be loaded instead.", "Error in settings.dat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     readingOutcome = false;
                 }
                 finally
@@ -114,6 +114,65 @@ namespace CemuUpdateTool
             }
             else       // if there's no option file, optionsFilePath remains at its default value ("")
                 return false;
+        }
+
+        /*
+         *  Reads an options file section and fills the corresponding dictionary/variable
+         *  It reads until it finds the end of file or another section header. The StreamReader must be positioned in the line under the section header.
+         *  These are the sections ids:
+         *      0: folderOptions
+         *      1: migrationOptions
+         *      2: downloadOptions
+         *      3: mlcFolderExternalPath (only one line is read)
+         */
+        private void ReadFileSection(StreamReader fileStream, byte sectionId)
+        {
+            // Check if the sectionId is valid
+            if (sectionId < 0 || sectionId > 3)
+                throw new ArgumentOutOfRangeException("Section ID is not valid.");
+
+            // Set up the dictionary "pointer" according to the sectionId
+            Dictionary<string, bool> stringBoolDictionary = null;
+            Dictionary<string, string> stringStringDictionary = null;
+            if (sectionId == 0)
+                stringBoolDictionary = folderOptions;
+            else if (sectionId == 1)
+                stringBoolDictionary = migrationOptions;
+            else if (sectionId == 2)
+                stringStringDictionary = downloadOptions;
+
+            int startingChar;       // first char code of the current reading line
+            string[] parsedLine;    // the "splitted" line
+
+            // Continue reading until you find a '#' or the EOF
+            while ((startingChar = fileStream.Peek()) != 35 && startingChar != -1)
+            {
+                // If there's an empty line (13-CR, 10-LF), just skip to the next one
+                if (startingChar == 13 || startingChar == 10)
+                    fileStream.ReadLine();
+                else
+                {
+                    if (sectionId <= 2)         // if I'm handling a dictionary
+                    {
+                        parsedLine = fileStream.ReadLine().Split(',');
+                        if (sectionId <= 1)     // if I'm handling a <string, bool> dictionary (folderOptions, migrationOptions)
+                            stringBoolDictionary.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
+                        else                    // if I'm handling a <string, string> dictionary (downloadOptions)
+                            stringStringDictionary.Add(parsedLine[0], parsedLine[1]);
+                    }
+                    else        // section 3: this contains only the mlcFolderExternalPath option
+                    {
+                        string tmpPath = fileStream.ReadLine();
+                        if (tmpPath.IndexOfAny(Path.GetInvalidPathChars()) == -1)
+                        {
+                            mlcFolderExternalPath = tmpPath;
+                            return;     // for this section there aren't any other things to read
+                        }
+                        else
+                            throw new Exception("Mlc01 external folder path is malformed.");    // TODO: scegliere un tipo di exception più adatto
+                    }
+                }
+            }
         }
 
         /*
@@ -155,6 +214,7 @@ namespace CemuUpdateTool
          */
         public void WriteOptionsToFile()
         {
+            // TODO: da aggiornare al nuovo formato
             string dataToWrite = "";
 
             // Write folder options

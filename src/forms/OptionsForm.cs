@@ -8,11 +8,13 @@ namespace CemuUpdateTool
         OptionsManager handler;
         bool optionsFileLocationChanged;
 
+        // TODO: add validation for external mlc01 textbox
+        // TODO: add "Restore defaults" button
+
         public OptionsForm(OptionsManager classInstance)
         {
             InitializeComponent();
             handler = classInstance;
-            // rilettura opzioni da file?
             SetCheckboxesAccordingToOptions();
         }
 
