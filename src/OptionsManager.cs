@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
@@ -74,15 +75,16 @@ namespace CemuUpdateTool
                 else
                     optionsFilePath = APPDATA_FILEPATH;
 
-                StreamReader optionsFile = new StreamReader(optionsFilePath);
+                MyStreamReader optionsFile = new MyStreamReader(optionsFilePath);
                 try
                 {
                     // Check if the file is empty
                     if (optionsFile.BaseStream.Length == 0)
-                        throw new Exception("Options file is empty.");      // TODO: scegliere un tipo di exception più adatto
+                        throw new InvalidDataException("Options file is empty.");
 
+                    // Start reading
                     byte sectionId;
-                    string sectionHeaderLine;
+                    string sectionHeaderLine = null;
                     while (!optionsFile.EndOfStream)
                     {
                         if (optionsFile.Peek() == 35)   // if the next char is '#'
@@ -90,7 +92,7 @@ namespace CemuUpdateTool
                             sectionHeaderLine = optionsFile.ReadLine();
                             // Check if the sectionId is a number
                             if (!byte.TryParse(sectionHeaderLine.TrimStart('#'), out sectionId))
-                                throw new Exception("Section ID is not a number.");     // TODO: scegliere un tipo di exception più adatto
+                                throw new FormatException("Section ID is not a number");
                             else
                                 ReadFileSection(optionsFile, sectionId);
                         }
@@ -98,12 +100,18 @@ namespace CemuUpdateTool
                             optionsFile.ReadLine();
                     }
 
-                    // TODO: controllo errori: nessun dato rilevante (assenza totale di delimitatori)
+                    if (sectionHeaderLine == null)      // if no lines starting with '#' have been encountered
+                        throw new InvalidDataException("Options file didn't contain any useful information.");
                 }
                 catch (Exception exc)
                 {
-                    MessageBox.Show("An unexpected error occurred when parsing options file: " + exc.Message +
-                        "\r\nDefault settings will be loaded instead.", "Error in settings.dat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    string message;
+                    if (exc is InvalidDataException)
+                        message = exc.Message;
+                    else
+                        message = $"An unexpected error occurred when parsing options file: {exc.Message.TrimEnd('.')} at line {optionsFile.LineCount}.";
+
+                    MessageBox.Show(message + "\r\nDefault settings will be loaded instead.", "Error in settings.dat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     readingOutcome = false;
                 }
                 finally
@@ -129,7 +137,7 @@ namespace CemuUpdateTool
         {
             // Check if the sectionId is valid
             if (sectionId < 0 || sectionId > 3)
-                throw new ArgumentOutOfRangeException("Section ID is not valid.");
+                throw new ArgumentOutOfRangeException("Section ID is not valid");
 
             // Set up the dictionary "pointer" according to the sectionId
             Dictionary<string, bool> stringBoolDictionary = null;
@@ -155,12 +163,15 @@ namespace CemuUpdateTool
                     if (sectionId <= 2)         // if I'm handling a dictionary
                     {
                         parsedLine = fileStream.ReadLine().Split(',');
+                        if (parsedLine.Length != 2)
+                            throw new FormatException("Not a \"key, value\" option");
+
                         if (sectionId <= 1)     // if I'm handling a <string, bool> dictionary (folderOptions, migrationOptions)
                             stringBoolDictionary.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
                         else                    // if I'm handling a <string, string> dictionary (downloadOptions)
                             stringStringDictionary.Add(parsedLine[0], parsedLine[1]);
                     }
-                    else        // section 3: this contains only the mlcFolderExternalPath option
+                    else                        // section 3
                     {
                         string tmpPath = fileStream.ReadLine();
                         if (tmpPath.IndexOfAny(Path.GetInvalidPathChars()) == -1)
@@ -169,7 +180,7 @@ namespace CemuUpdateTool
                             return;     // for this section there aren't any other things to read
                         }
                         else
-                            throw new Exception("Mlc01 external folder path is malformed.");    // TODO: scegliere un tipo di exception più adatto
+                            throw new FormatException("Mlc01 external folder path is malformed");
                     }
                 }
             }
@@ -214,20 +225,23 @@ namespace CemuUpdateTool
          */
         public void WriteOptionsToFile()
         {
-            // TODO: da aggiornare al nuovo formato
-            string dataToWrite = "";
+            StringBuilder dataToWrite = new StringBuilder();
 
             // Write folder options
+            dataToWrite.AppendLine("#0");
             foreach (KeyValuePair<string, bool> option in folderOptions)
-                dataToWrite += option.Key + "," + option.Value + "\r\n";        // \r\n -> CR-LF
-            dataToWrite += "##\r\n";
+                dataToWrite.AppendLine($"{option.Key},{option.Value}");
             // Write additional options
+            dataToWrite.AppendLine("#1");
             foreach (KeyValuePair<string, bool> option in migrationOptions)
-                dataToWrite += option.Key + "," + option.Value + "\r\n";
-            dataToWrite += "###";
+                dataToWrite.AppendLine($"{option.Key},{option.Value}");
+            // Write download options
+            dataToWrite.AppendLine("#2");
+            foreach (KeyValuePair<string, string> option in downloadOptions)
+                dataToWrite.AppendLine($"{option.Key},{option.Value}");
             // Write mlc01 custom folder path
             if (mlcFolderExternalPath != "")
-                dataToWrite += "\r\n" + mlcFolderExternalPath;
+                dataToWrite.Append("#3\r\n" + mlcFolderExternalPath);   // \r\n -> CR-LF
 
             try
             {
@@ -237,7 +251,7 @@ namespace CemuUpdateTool
                     Directory.CreateDirectory(optionsFileDir);
 
                 // Write string on file overwriting any existing content
-                File.WriteAllText(optionsFilePath, dataToWrite);
+                File.WriteAllText(optionsFilePath, dataToWrite.ToString());
             }
             catch(Exception exc)
             {
@@ -298,6 +312,25 @@ namespace CemuUpdateTool
                 if (option.Value == true)
                     yield return option.Key;
             }
+        }
+    }
+
+    /*
+     *  Custom StreamReader derived class that holds the current number of read lines
+     *  LineCount works only with ReadLine(), since it's the only method I use for reading the stream.
+     */
+    class MyStreamReader : StreamReader
+    {
+        public MyStreamReader(string path) : base(path) {}
+
+        public int LineCount { private set; get; }
+
+        public override string ReadLine()
+        {
+            string result = base.ReadLine();
+            if (result != null)
+                LineCount++;
+            return result;
         }
     }
 }

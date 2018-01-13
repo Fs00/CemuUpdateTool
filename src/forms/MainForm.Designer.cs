@@ -54,12 +54,12 @@
             this.btnAbout = new System.Windows.Forms.Button();
             this.btnExit = new System.Windows.Forms.Button();
             this.lblVersion = new System.Windows.Forms.Label();
-            this.errProviderOldFolder = new System.Windows.Forms.ErrorProvider(this.components);
             this.errProviderNewFolder = new System.Windows.Forms.ErrorProvider(this.components);
+            this.errProviderOldFolder = new System.Windows.Forms.ErrorProvider(this.components);
             this.grpBoxFolderSelect.SuspendLayout();
             this.grpBoxProgress.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderNewFolder)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).BeginInit();
             this.SuspendLayout();
             // 
             // grpBoxFolderSelect
@@ -194,7 +194,6 @@
             // 
             // txtBoxOldFolder
             // 
-            this.errProviderOldFolder.SetIconPadding(this.txtBoxOldFolder, -20);
             this.txtBoxOldFolder.Location = new System.Drawing.Point(22, 44);
             this.txtBoxOldFolder.Name = "txtBoxOldFolder";
             this.txtBoxOldFolder.Size = new System.Drawing.Size(333, 20);
@@ -316,15 +315,15 @@
             this.lblVersion.TabIndex = 5;
             this.lblVersion.Text = "Version 2.0-dev";
             // 
-            // errProviderOldFolder
-            // 
-            this.errProviderOldFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
-            this.errProviderOldFolder.ContainerControl = this;
-            // 
             // errProviderNewFolder
             // 
             this.errProviderNewFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
             this.errProviderNewFolder.ContainerControl = this;
+            // 
+            // errProviderOldFolder
+            // 
+            this.errProviderOldFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
+            this.errProviderOldFolder.ContainerControl = this;
             // 
             // MainForm
             // 
@@ -341,13 +340,13 @@
             this.KeyPreview = true;
             this.MaximizeBox = false;
             this.Name = "MainForm";
-            this.Text = "Cemu Version Migration Tool";
+            this.Text = "Cemu Update Tool";
             this.grpBoxFolderSelect.ResumeLayout(false);
             this.grpBoxFolderSelect.PerformLayout();
             this.grpBoxProgress.ResumeLayout(false);
             this.grpBoxProgress.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderNewFolder)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -376,12 +375,12 @@
         private System.Windows.Forms.Button btnExit;
         private System.Windows.Forms.Label lblVersion;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.ErrorProvider errProviderOldFolder;
         private System.Windows.Forms.ErrorProvider errProviderNewFolder;
         private System.Windows.Forms.Label lblNewCemuVersion;
         private System.Windows.Forms.Label lblOldCemuVersion;
         private System.Windows.Forms.Label lblNewVersionNr;
         private System.Windows.Forms.Label lblOldVersionNr;
+        private System.Windows.Forms.ErrorProvider errProviderOldFolder;
     }
 }
 

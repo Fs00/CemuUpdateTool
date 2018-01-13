@@ -53,18 +53,18 @@
             this.lblName.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblName.Location = new System.Drawing.Point(98, 24);
             this.lblName.Name = "lblName";
-            this.lblName.Size = new System.Drawing.Size(169, 13);
+            this.lblName.Size = new System.Drawing.Size(112, 13);
             this.lblName.TabIndex = 1;
-            this.lblName.Text = "Cemu Version Migration Tool";
+            this.lblName.Text = "Cemu Update Tool";
             // 
             // lblVersion
             // 
             this.lblVersion.AutoSize = true;
             this.lblVersion.Location = new System.Drawing.Point(104, 46);
             this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(123, 13);
+            this.lblVersion.Size = new System.Drawing.Size(112, 13);
             this.lblVersion.TabIndex = 2;
-            this.lblVersion.Text = "Version 1.1 (17-11-2017)";
+            this.lblVersion.Text = "Version 2.0 (dev build)";
             // 
             // lblCredit
             // 

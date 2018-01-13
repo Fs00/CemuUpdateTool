@@ -50,8 +50,11 @@
             this.btnSaveOpts = new System.Windows.Forms.Button();
             this.btnDiscard = new System.Windows.Forms.Button();
             this.toolTipInfo = new System.Windows.Forms.ToolTip(this.components);
+            this.btnRestoreDefaultOpts = new System.Windows.Forms.Button();
+            this.errProviderMlcFolder = new System.Windows.Forms.ErrorProvider(this.components);
             this.grpBoxMigrationOpts.SuspendLayout();
             this.grpBoxProgramOpts.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.errProviderMlcFolder)).BeginInit();
             this.SuspendLayout();
             // 
             // chkBoxControllerProfiles
@@ -89,6 +92,7 @@
             this.txtBoxCustomMlc01Path.Name = "txtBoxCustomMlc01Path";
             this.txtBoxCustomMlc01Path.Size = new System.Drawing.Size(242, 20);
             this.txtBoxCustomMlc01Path.TabIndex = 9;
+            this.txtBoxCustomMlc01Path.TextChanged += new System.EventHandler(this.txtBoxCustomMlc01Path_TextChanged);
             // 
             // chkBoxCustomMlc01Path
             // 
@@ -242,9 +246,9 @@
             // 
             // btnSaveOpts
             // 
-            this.btnSaveOpts.Location = new System.Drawing.Point(98, 420);
+            this.btnSaveOpts.Location = new System.Drawing.Point(113, 420);
             this.btnSaveOpts.Name = "btnSaveOpts";
-            this.btnSaveOpts.Size = new System.Drawing.Size(91, 25);
+            this.btnSaveOpts.Size = new System.Drawing.Size(81, 25);
             this.btnSaveOpts.TabIndex = 3;
             this.btnSaveOpts.Text = "Save options";
             this.btnSaveOpts.UseVisualStyleBackColor = true;
@@ -252,9 +256,9 @@
             // 
             // btnDiscard
             // 
-            this.btnDiscard.Location = new System.Drawing.Point(195, 420);
+            this.btnDiscard.Location = new System.Drawing.Point(200, 420);
             this.btnDiscard.Name = "btnDiscard";
-            this.btnDiscard.Size = new System.Drawing.Size(101, 25);
+            this.btnDiscard.Size = new System.Drawing.Size(96, 25);
             this.btnDiscard.TabIndex = 4;
             this.btnDiscard.Text = "Discard changes";
             this.btnDiscard.UseVisualStyleBackColor = true;
@@ -266,11 +270,28 @@
             this.toolTipInfo.InitialDelay = 300;
             this.toolTipInfo.ReshowDelay = 100;
             // 
+            // btnRestoreDefaultOpts
+            // 
+            this.btnRestoreDefaultOpts.Location = new System.Drawing.Point(12, 420);
+            this.btnRestoreDefaultOpts.Name = "btnRestoreDefaultOpts";
+            this.btnRestoreDefaultOpts.Size = new System.Drawing.Size(95, 25);
+            this.btnRestoreDefaultOpts.TabIndex = 5;
+            this.btnRestoreDefaultOpts.Text = "Restore defaults";
+            this.btnRestoreDefaultOpts.UseVisualStyleBackColor = true;
+            this.btnRestoreDefaultOpts.Click += new System.EventHandler(this.btnRestoreDefaultOpts_Click);
+            // 
+            // errProviderMlcFolder
+            // 
+            this.errProviderMlcFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
+            this.errProviderMlcFolder.ContainerControl = this;
+            this.errProviderMlcFolder.SetIconPadding(txtBoxCustomMlc01Path, -20);
+            // 
             // OptionsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(309, 453);
+            this.Controls.Add(this.btnRestoreDefaultOpts);
             this.Controls.Add(this.btnDiscard);
             this.Controls.Add(this.btnSaveOpts);
             this.Controls.Add(this.grpBoxProgramOpts);
@@ -284,6 +305,7 @@
             this.grpBoxMigrationOpts.PerformLayout();
             this.grpBoxProgramOpts.ResumeLayout(false);
             this.grpBoxProgramOpts.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.errProviderMlcFolder)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -310,5 +332,7 @@
         private System.Windows.Forms.CheckBox chkBoxCemuSettings;
         private System.Windows.Forms.TextBox txtBoxCustomMlc01Path;
         private System.Windows.Forms.CheckBox chkBoxCustomMlc01Path;
+        private System.Windows.Forms.Button btnRestoreDefaultOpts;
+        private System.Windows.Forms.ErrorProvider errProviderMlcFolder;
     }
 }

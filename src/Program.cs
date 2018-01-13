@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.IO;
+using System.Globalization;
 
 namespace CemuUpdateTool
 {
@@ -11,6 +12,7 @@ namespace CemuUpdateTool
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en");
 
             #if DEBUG
             Application.Run(new MainForm());

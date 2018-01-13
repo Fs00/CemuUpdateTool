@@ -8,9 +8,6 @@ namespace CemuUpdateTool
         OptionsManager handler;
         bool optionsFileLocationChanged;
 
-        // TODO: add validation for external mlc01 textbox
-        // TODO: add "Restore defaults" button
-
         public OptionsForm(OptionsManager classInstance)
         {
             InitializeComponent();
@@ -43,7 +40,7 @@ namespace CemuUpdateTool
             if (handler.folderOptions.ContainsKey(@"shaderCache\transferable"))
                 chkBoxShaderCaches.Checked = handler.folderOptions[@"shaderCache\transferable"];
 
-            // ADDITIONAL OPTIONS
+            // MIGRATION OPTIONS
             chkBoxCemuSettings.Checked = handler.migrationOptions["copyCemuSettingsFile"];
             chkBoxDeletePrevContent.Checked = handler.migrationOptions["deleteDestFolderContents"];
             chkBoxCustomMlc01Path.Checked = handler.migrationOptions["dontCopyMlcFolderFor1.10+"];
@@ -107,12 +104,12 @@ namespace CemuUpdateTool
             else
                 handler.folderOptions.Add(@"shaderCache\transferable", chkBoxShaderCaches.Checked);
 
-            // ADDITIONAL OPTIONS
+            // MIGRATION OPTIONS
             handler.migrationOptions["copyCemuSettingsFile"] = chkBoxCemuSettings.Checked;
             handler.migrationOptions["deleteDestFolderContents"] = chkBoxDeletePrevContent.Checked;
             handler.migrationOptions["dontCopyMlcFolderFor1.10+"] = chkBoxCustomMlc01Path.Checked;
             
-            if (!string.IsNullOrWhiteSpace(txtBoxCustomMlc01Path.Text))
+            if (!string.IsNullOrWhiteSpace(txtBoxCustomMlc01Path.Text) && errProviderMlcFolder.GetError(txtBoxCustomMlc01Path) == "")
                 handler.mlcFolderExternalPath = txtBoxCustomMlc01Path.Text;
             else
                 handler.mlcFolderExternalPath = "";
@@ -209,6 +206,26 @@ namespace CemuUpdateTool
                 txtBoxCustomMlc01Path.Enabled = true;
             else
                 txtBoxCustomMlc01Path.Enabled = false;
+        }
+
+        private void btnRestoreDefaultOpts_Click(object sender, EventArgs e)
+        {
+            DialogResult choice = MessageBox.Show("Are you sure you want to restore the default settings?\r\nThis cannot be undone.",
+                                                  "Confirmation requested", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (choice == DialogResult.Yes)
+            {
+                handler.SetDefaultOptions();
+                SetCheckboxesAccordingToOptions();
+            }
+        }
+
+        private void txtBoxCustomMlc01Path_TextChanged(object sender, EventArgs e)
+        {
+            // Check if the textbox contains any invalid character for paths
+            if (txtBoxCustomMlc01Path.Text.IndexOfAny(System.IO.Path.GetInvalidPathChars()) != -1)
+                errProviderMlcFolder.SetError(txtBoxCustomMlc01Path, "The path contains some invalid characters, thus won't be saved.");
+            else
+                errProviderMlcFolder.SetError(txtBoxCustomMlc01Path, "");
         }
     }
 }
