@@ -58,7 +58,7 @@ namespace CemuUpdateTool
             // COPY CEMU SETTINGS FILE
             if (additionalOptions["copyCemuSettingsFile"] == true)
             {
-                if (FileOperations.FileExists(Path.Combine(baseSourcePath, "settings.bin")))
+                if (FileUtils.FileExists(Path.Combine(baseSourcePath, "settings.bin")))
                 {
                     bool copySuccessful = false;
                     PerformingWork("Copying settings.bin", 1);      // display in the MainForm the label "Copying settings.bin..." (1 is a placeholder)
@@ -92,10 +92,10 @@ namespace CemuUpdateTool
                 if (additionalOptions["deleteDestFolderContents"] == true)
                 {
                     string destFolderPath = Path.Combine(baseDestinationPath, folder);
-                    if (FileOperations.DirectoryExists(destFolderPath))
+                    if (FileUtils.DirectoryExists(destFolderPath))
                     {
                         PerformingWork($"Removing destination {folder} folder previous contents", 1);
-                        FileOperations.RemoveDirContents(destFolderPath, this);
+                        FileUtils.RemoveDirContents(destFolderPath, this);
                     }
                 }
 
@@ -103,7 +103,7 @@ namespace CemuUpdateTool
                 if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
                 {
                     PerformingWork($"Copying {folder}", foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
-                    FileOperations.CopyDir(Path.Combine(baseSourcePath, folder), Path.Combine(baseDestinationPath, folder), CopyingFile, FileCopied, this);
+                    FileUtils.CopyDir(Path.Combine(baseSourcePath, folder), Path.Combine(baseDestinationPath, folder), CopyingFile, FileCopied, this);
                 }
                 currentFolderIndex++;
 

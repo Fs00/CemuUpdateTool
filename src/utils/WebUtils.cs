@@ -3,6 +3,21 @@ using System.Net;
 
 namespace CemuUpdateTool
 {
+    public static class WebUtils
+    {
+        /*
+         *  Checks if a remote file exists checking the code of the server response
+         */
+        public static bool CheckIfRemoteFileExists(MyWebClient client, string relativeUrl)
+        {
+            var response = (HttpWebResponse)client.GetWebResponseHead(relativeUrl);
+            if (response.StatusCode == HttpStatusCode.OK)
+                return true;
+            else
+                return false;
+        }
+    }
+
     /*
      *  This derived class is needed in order to guarantee the possibility to cancel the current WebRequest when checking latest version
      */
@@ -30,21 +45,6 @@ namespace CemuUpdateTool
                 return exc.Response;
             }
             return response;
-        }
-    }
-
-    public static class WebOperations
-    {
-        /*
-         *  Checks if a remote file exists checking the code of the server response
-         */
-        public static bool CheckIfRemoteFileExists(MyWebClient client, string relativeUrl)
-        {
-            var response = (HttpWebResponse) client.GetWebResponseHead(relativeUrl);
-            if (response.StatusCode == HttpStatusCode.OK)
-                return true;
-            else
-                return false;
         }
     }
 }

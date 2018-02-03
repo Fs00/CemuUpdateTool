@@ -12,7 +12,7 @@ namespace CemuUpdateTool
     public delegate void WorkInfoCallback(string name, long dim);
     public delegate void ActualFileCallback(string name);
 
-    public static class FileOperations
+    public static class FileUtils
     {
         /*
          *  Calculates the sizes of every folder in the list using CalculateDirSize() and puts them in the worker.

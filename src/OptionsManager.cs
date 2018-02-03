@@ -62,7 +62,7 @@ namespace CemuUpdateTool
             bool localFileExists;
             bool readingOutcome = true;
 
-            if ((localFileExists = FileOperations.FileExists(LOCAL_FILEPATH)) || FileOperations.FileExists(APPDATA_FILEPATH))
+            if ((localFileExists = FileUtils.FileExists(LOCAL_FILEPATH)) || FileUtils.FileExists(APPDATA_FILEPATH))
             {
                 // Create the dictionaries here so we are sure that OptionsForm won't throw NullReferenceException if there aren't any options in the file
                 folderOptions = new Dictionary<string, bool>();
@@ -247,7 +247,7 @@ namespace CemuUpdateTool
             {
                 // Create destination directory if it doesn't exist
                 string optionsFileDir = Path.GetDirectoryName(optionsFilePath);
-                if (!FileOperations.DirectoryExists(optionsFileDir))
+                if (!FileUtils.DirectoryExists(optionsFileDir))
                     Directory.CreateDirectory(optionsFileDir);
 
                 // Write string on file overwriting any existing content
@@ -265,7 +265,7 @@ namespace CemuUpdateTool
          */
         public bool DeleteOptionsFile()
         {
-            if (!string.IsNullOrEmpty(optionsFilePath) && FileOperations.FileExists(optionsFilePath))
+            if (!string.IsNullOrEmpty(optionsFilePath) && FileUtils.FileExists(optionsFilePath))
             {
                 File.Delete(optionsFilePath);
                 if (optionsFilePath == APPDATA_FILEPATH)    // clean redundant empty folders

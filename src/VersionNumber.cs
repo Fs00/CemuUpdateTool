@@ -142,8 +142,8 @@ namespace CemuUpdateTool
 
         /*
          *  ToString() methods
-         *  Custom ToString(char) method permits to supply a custom separator between fields (even '' if you want).
-         *  Custom ToString(int[, char]) permits to supply a custom depth in order to print only a part of the version number (e.g. 1.6 for 1.6.2)
+         *  Custom ToString(char) method allows to supply a custom separator between fields (even '' if you want).
+         *  Custom ToString(int[, char]) allows to supply a custom depth in order to print only a part of the version number (e.g. 1.6 for 1.6.2)
          *    or an arbitrary number of ".0"s after the version number (e.g. 1.0.0 for 1.0)
          *  Overridden ToString() uses ToString(char) with default separator (which is '.')
          */

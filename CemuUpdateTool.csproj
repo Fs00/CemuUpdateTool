@@ -70,10 +70,8 @@
     <Compile Include="src\forms\AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="src\FileOperations.cs" />
-    <Compile Include="src\WebOperations.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="src\utils\FileUtils.cs" />
+    <Compile Include="src\utils\WebUtils.cs" />
     <Compile Include="src\Worker.cs" />
     <Compile Include="src\forms\HelpForm.cs">
       <SubType>Form</SubType>

@@ -120,7 +120,7 @@ namespace CemuUpdateTool
             if (!(worker.isAborted || worker.isCancelled))
             {
                 // Set overall progress bar according to overall size
-                long overallSize = FileOperations.CalculateFoldersSizes(foldersToCopy, worker);
+                long overallSize = FileUtils.CalculateFoldersSizes(foldersToCopy, worker);
                 if (overallSize > Int32.MaxValue)
                 {
                     overallSize /= 1000;
@@ -160,7 +160,7 @@ namespace CemuUpdateTool
 
         private void txtBoxOldFolder_TextChanged(object sender, EventArgs e)
         {
-            if (!FileOperations.DirectoryExists(txtBoxOldFolder.Text))
+            if (!FileUtils.DirectoryExists(txtBoxOldFolder.Text))
             {
                 // Check if input directory exists
                 errProviderOldFolder.SetError(txtBoxOldFolder, "Directory does not exist");
@@ -170,7 +170,7 @@ namespace CemuUpdateTool
                 lblOldCemuVersion.Visible = false;
                 lblOldVersionNr.Text = "";
             }
-            else if (!FileOperations.FileExists(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe")))
+            else if (!FileUtils.FileExists(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe")))
             {
                 // Check if it's a valid Cemu installation
                 errProviderOldFolder.SetError(txtBoxOldFolder, "Not a valid Cemu installation (Cemu.exe is missing)");
@@ -199,7 +199,7 @@ namespace CemuUpdateTool
 
         private void txtBoxNewFolder_TextChanged(object sender, EventArgs e)
         {
-            if (!FileOperations.DirectoryExists(txtBoxNewFolder.Text))
+            if (!FileUtils.DirectoryExists(txtBoxNewFolder.Text))
             {
                 // Check if input directory exists
                 errProviderNewFolder.SetError(txtBoxNewFolder, "Directory does not exist");
@@ -209,7 +209,7 @@ namespace CemuUpdateTool
                 lblNewCemuVersion.Visible = false;
                 lblNewVersionNr.Text = "";
             }
-            else if (!FileOperations.FileExists(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")))
+            else if (!FileUtils.FileExists(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")))
             {
                 // Check if it's a valid Cemu installation
                 errProviderNewFolder.SetError(txtBoxNewFolder, "Not a valid Cemu installation (Cemu.exe is missing)");
