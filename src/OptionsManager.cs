@@ -139,15 +139,14 @@ namespace CemuUpdateTool
             if (sectionId < 0 || sectionId > 3)
                 throw new ArgumentOutOfRangeException("Section ID is not valid");
 
-            // Set up the dictionary "pointer" according to the sectionId
-            Dictionary<string, bool> stringBoolDictionary = null;
-            Dictionary<string, string> stringStringDictionary = null;
+            // Set up the dynamic dictionary "pointer" according to the sectionId
+            dynamic dictionary = null;
             if (sectionId == 0)
-                stringBoolDictionary = folderOptions;
+                dictionary = folderOptions;
             else if (sectionId == 1)
-                stringBoolDictionary = migrationOptions;
+                dictionary = migrationOptions;
             else if (sectionId == 2)
-                stringStringDictionary = downloadOptions;
+                dictionary = downloadOptions;
 
             int startingChar;       // first char code of the current reading line
             string[] parsedLine;    // the "splitted" line
@@ -167,9 +166,9 @@ namespace CemuUpdateTool
                             throw new FormatException("Not a \"key, value\" option");
 
                         if (sectionId <= 1)     // if I'm handling a <string, bool> dictionary (folderOptions, migrationOptions)
-                            stringBoolDictionary.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
+                            dictionary.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
                         else                    // if I'm handling a <string, string> dictionary (downloadOptions)
-                            stringStringDictionary.Add(parsedLine[0], parsedLine[1]);
+                            dictionary.Add(parsedLine[0], parsedLine[1]);
                     }
                     else                        // section 3
                     {
