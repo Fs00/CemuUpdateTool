@@ -4,6 +4,7 @@ using System.Diagnostics;
 
 namespace CemuUpdateTool
 {
+    #pragma warning disable CS0661
     public class VersionNumber : IEquatable<VersionNumber>, IComparable<VersionNumber>
     {
         private List<int> fields;           // list that contains each of the "sub-numbers"
@@ -82,7 +83,7 @@ namespace CemuUpdateTool
             set
             {
                 if (Depth < 4)
-                    throw new InvalidOperationException("Field \"Private\" does not exist: Depth is less than 3.");
+                    throw new InvalidOperationException("Field \"Private\" does not exist: Depth is less than 4.");
                 this[3] = value;
             }
         }
@@ -91,6 +92,13 @@ namespace CemuUpdateTool
         public VersionNumber()
         {
             fields = new List<int>();
+        }
+
+        // Copy constructor
+        public VersionNumber(VersionNumber copy) : this()
+        {
+            for (int i = 0; i < copy.Depth; i++)
+                fields.Add(copy[i]);
         }
 
         // Constructor that takes in input a string like "1.5.2" (only allowed separator is '.')
@@ -266,6 +274,9 @@ namespace CemuUpdateTool
             if (ReferenceEquals(this, other))
                 return 0;
 
+            if (other is null)
+                return 1;
+
             int commonDepth = Depth;
             // See if both VersionNumber objects have the same depth, if not set as common depth the lesser between the two
             bool differentDepths = (this.Depth != other.Depth);
@@ -316,6 +327,15 @@ namespace CemuUpdateTool
                 return false;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            if (obj is VersionNumber)
+                return Equals((VersionNumber) obj);
+            return base.Equals(obj);
+        }
+
         /*
          *  Comparison operators overloads
          *  They use CompareTo and Equals to do their work
@@ -354,11 +374,17 @@ namespace CemuUpdateTool
 
         public static bool operator ==(VersionNumber left, VersionNumber right)
         {
+            if (left is null)
+                return ReferenceEquals(left, right);
+
             return left.Equals(right);
         }
 
         public static bool operator !=(VersionNumber left, VersionNumber right)
         {
+            if (left is null)
+                return !ReferenceEquals(left, right);
+
             return !left.Equals(right);
         }
     }
