@@ -382,10 +382,7 @@ namespace CemuUpdateTool
 
         public static bool operator !=(VersionNumber left, VersionNumber right)
         {
-            if (left is null)
-                return !ReferenceEquals(left, right);
-
-            return !left.Equals(right);
+            return !(left == right);
         }
     }
 }

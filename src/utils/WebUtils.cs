@@ -83,11 +83,11 @@ namespace CemuUpdateTool
             }
 
             // Decide what to return
-            if (lastCheckedVersion == null)     // no versions have been found in this branch (probable wrong parameter/s)
+            if (lastCheckedVersion == null)                 // no versions have been found in this branch (probable wrong parameter/s)
                 return null;
-            if (branch.Depth < maxDepth)        // maximum depth has not been reached yet
+            if (lastCheckedVersion.Depth < maxDepth)        // maximum depth has not been reached yet
                 return GetLatestRemoteVersionInBranch(lastCheckedVersion, client, urlSuffix, maxDepth, startingVersion, worker, currentRecursiveCall + 1);
-            else                                // finished scanning: return the latest version you found
+            else                                            // finished scanning: return the latest version you found
                 return lastCheckedVersion;
         }
     }
@@ -108,6 +108,9 @@ namespace CemuUpdateTool
             request = (HttpWebRequest) GetWebRequest(new Uri(BaseAddress + address));
             request.Method = "HEAD";
             request.Timeout = 30000;
+            request.KeepAlive = false;
+            request.ServicePoint.ConnectionLeaseTimeout = 0;
+            request.ServicePoint.MaxIdleTime = 0;
 
             // This will avoid that the method throws an exception when an error response arrives
             try
