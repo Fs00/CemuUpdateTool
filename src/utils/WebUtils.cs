@@ -11,7 +11,9 @@ namespace CemuUpdateTool
         public static bool RemoteFileExists(string relativeUrl, MyWebClient client)
         {
             var response = (HttpWebResponse) client.GetWebResponseHead(relativeUrl);
-            if (response.StatusCode == HttpStatusCode.OK)
+            HttpStatusCode responseCode = response.StatusCode;
+            response.Close();
+            if (responseCode == HttpStatusCode.OK)
                 return true;
             else
                 return false;
@@ -108,9 +110,7 @@ namespace CemuUpdateTool
             request = (HttpWebRequest) GetWebRequest(new Uri(BaseAddress + address));
             request.Method = "HEAD";
             request.Timeout = 30000;
-            request.KeepAlive = false;
-            request.ServicePoint.ConnectionLeaseTimeout = 0;
-            request.ServicePoint.MaxIdleTime = 0;
+            request.ServicePoint.MaxIdleTime = 30000;
 
             // This will avoid that the method throws an exception when an error response arrives
             try
