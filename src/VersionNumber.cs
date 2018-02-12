@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace CemuUpdateTool
 {
-    #pragma warning disable CS0661
+    #pragma warning disable CS0659
     public class VersionNumber : IEquatable<VersionNumber>, IComparable<VersionNumber>
     {
         private List<int> fields;           // list that contains each of the "sub-numbers"
@@ -249,6 +249,27 @@ namespace CemuUpdateTool
         }
 
         /*
+         *  Method used to check if a version is a sub-version of another (e.g. 1.5.3 is a subversion of 1 and 1.5)
+         *  Take note that a version is not a sub-version of itself and that every version is a sub-version of x (Depth == 0)
+         */
+        public bool IsSubVersionOf(VersionNumber other)
+        {
+            if (other == null)
+                return false;
+            if (this.Depth <= other.Depth)
+                return false;
+
+            // Check if the common fields of both instances contain the same values
+            for (int i = 0; i < other.Depth; i++)
+            {
+                if (this[i] != other[i])
+                    return false;
+            }
+
+            return true;
+        }
+
+        /*
          *  Increment/decrement operators overload
          */
         public static VersionNumber operator ++(VersionNumber instance)
@@ -287,7 +308,7 @@ namespace CemuUpdateTool
             for (int i = 0; i < commonDepth; i++)
             {
                 if (this[i] != other[i])
-                    return this[i]-other[i];
+                    return this[i] - other[i];
             }
 
             // See if the extra fields in the object with the higher depth are equal to 0, if not it will mean that the object is > than the other
@@ -327,12 +348,15 @@ namespace CemuUpdateTool
                 return false;
         }
 
+        /*
+         *  Overridden Object.Equals method
+         */
         public override bool Equals(object obj)
         {
             if (obj == null)
                 return false;
-            if (obj is VersionNumber)
-                return Equals((VersionNumber) obj);
+            if (obj is VersionNumber o)
+                return Equals(o);
             return base.Equals(obj);
         }
 

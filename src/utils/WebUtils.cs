@@ -36,20 +36,19 @@ namespace CemuUpdateTool
                                                                    VersionNumber startingVersion, Worker worker, int currentRecursiveCall = 0)
         {
             // Check startingVersion validity
-            // TODO: da perfezionare con controlli più stringenti nel primo if (startingVersion dev'essere nello stesso branch di branch?)
             if (startingVersion != null)
             {
                 // If this is the first recursive call, make sure that the starting version exists (since it's user-editable)
                 if (currentRecursiveCall == 0)
                 {
-                    if (!RemoteFileExists(startingVersion.ToString(maxDepth) + urlSuffix, client))
+                    if (!startingVersion.IsSubVersionOf(branch) || !RemoteFileExists(startingVersion.ToString(maxDepth) + urlSuffix, client))
                         startingVersion = null;
                 }
                 // Otherwise, make sure that startingVersion is still useful (e.g. if startingVersion is 1.10.3 and at the third recursive call branch is 1.11,
                 // the number '3' must not be used given that we are in an other branch (1.11.x vs 1.10.x))
                 else
                 {
-                    if (startingVersion[(branch.Depth-1)-1] != branch[(branch.Depth-1)-1])
+                    if (startingVersion[branch.Depth-1] != branch[branch.Depth-1])
                         startingVersion = null;
                 }
             }
@@ -57,7 +56,7 @@ namespace CemuUpdateTool
             // Set the index from which start the loop
             int startingVersionIndex;
             if (startingVersion != null)
-                startingVersionIndex = startingVersion[(branch.Depth-1)-1];
+                startingVersionIndex = startingVersion[branch.Depth];
             else if (branch.Depth == 0)     // here we assume that the program doesn't have a 0.x branch (in our case Cemu)
                 startingVersionIndex = 1;
             else
@@ -65,23 +64,24 @@ namespace CemuUpdateTool
 
             // Start version scanning
             bool lastCheckedVersionExists = true;
+            int iterationsCompleted = 0;
             VersionNumber lastCheckedVersion = new VersionNumber(branch);
             lastCheckedVersion.AddNumber(startingVersionIndex);
 
             while (lastCheckedVersionExists)
             {
                 if (RemoteFileExists(lastCheckedVersion.ToString(maxDepth) + urlSuffix, client))
-                    lastCheckedVersion.BumpNumber();
+                    lastCheckedVersion++;
                 else
                 {
                     lastCheckedVersionExists = false;
-                    // Now, if the last version you checked ends with .1 or upper it means that you found at least one version,
-                    // otherwise it means that no versions have been found
-                    if (lastCheckedVersion[lastCheckedVersion.Depth-1] > 0)
-                        lastCheckedVersion.BumpDownNumber();
+                    // If no iterations have been completed up to now, it means that no versions have been found
+                    if (iterationsCompleted > 0)
+                        lastCheckedVersion--;
                     else
                         lastCheckedVersion = null;
                 }
+                iterationsCompleted++;
             }
 
             // Decide what to return
