@@ -101,9 +101,6 @@ namespace CemuUpdateTool
 
             lblSingleProgress.Text = "Preparing...";
 
-            // Set Cemu folders in the class
-            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text);
-
             // Get the list of folders to copy telling the method if source Cemu version is >= 1.10
             List<string> foldersToCopy = opts.GetFoldersToCopy(oldCemuExeVer.Major > 1 || oldCemuExeVer.Minor >= 10);
 
@@ -115,12 +112,15 @@ namespace CemuUpdateTool
                 return;
             }
 
+            // Set Cemu folders in the class
+            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy);
+
             // TODO: perform download operations
 
-            if (!(worker.isAborted || worker.isCancelled))
+            if (!(worker.IsAborted || worker.IsCancelled))
             {
                 // Set overall progress bar according to overall size
-                long overallSize = FileUtils.CalculateFoldersSizes(foldersToCopy, worker);
+                long overallSize = worker.CalculateFoldersSizes();
                 if (overallSize > Int32.MaxValue)
                 {
                     overallSize /= 1000;
@@ -129,7 +129,7 @@ namespace CemuUpdateTool
                 progressBarOverall.Maximum = Convert.ToInt32(overallSize);
 
                 // Start operations in a secondary thread and enable/disable buttons after operations have started
-                var operationsTask = Task.Run(() => worker.PerformMigrationOperations(foldersToCopy, opts.migrationOptions, ResetSingleProgressBar,
+                var operationsTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ResetSingleProgressBar,
                                           UpdateCurrentFileText, UpdateProgressBars));
                 btnCancel.Enabled = true;
                 btnStart.Enabled = false;
@@ -160,7 +160,7 @@ namespace CemuUpdateTool
 
         private void txtBoxOldFolder_TextChanged(object sender, EventArgs e)
         {
-            if (!FileUtils.DirectoryExists(txtBoxOldFolder.Text))
+            if (txtBoxOldFolder.Text == "" || !FileUtils.DirectoryExists(txtBoxOldFolder.Text))
             {
                 // Check if input directory exists
                 errProviderOldFolder.SetError(txtBoxOldFolder, "Directory does not exist");
@@ -199,7 +199,7 @@ namespace CemuUpdateTool
 
         private void txtBoxNewFolder_TextChanged(object sender, EventArgs e)
         {
-            if (!FileUtils.DirectoryExists(txtBoxNewFolder.Text))
+            if (txtBoxNewFolder.Text == "" || !FileUtils.DirectoryExists(txtBoxNewFolder.Text))
             {
                 // Check if input directory exists
                 errProviderNewFolder.SetError(txtBoxNewFolder, "Directory does not exist");

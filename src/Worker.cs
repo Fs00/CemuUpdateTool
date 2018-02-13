@@ -9,6 +9,8 @@ using IWshRuntimeLibrary;
 
 namespace CemuUpdateTool
 {
+    public delegate void WorkInfoCallback(string name, long dim);
+
     public enum WorkOutcome
     {
         Success,
@@ -20,27 +22,31 @@ namespace CemuUpdateTool
 
     public class Worker
     {
-        public string baseSourcePath { private set; get; }                  // older Cemu folder
-        public string baseDestinationPath { private set; get; }             // new Cemu folder
+        public string BaseSourcePath { private set; get; }              // older Cemu folder
+        public string BaseDestinationPath { private set; get; }         // new Cemu folder
 
-        public bool isCancelled { private set; get; } = false;
-        public bool isAborted { private set; get; } = false;
-        public bool errorsEncountered { private set; get; } = false;
+        public bool IsCancelled { private set; get; } = false;
+        public bool IsAborted { private set; get; } = false;
+        public bool ErrorsEncountered { private set; get; } = false;
+              
+        public List<FileInfo> CreatedFiles { set; get; }               // list of files that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
+        public List<DirectoryInfo> CreatedDirectories { set; get; }    // list of directories that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
 
-        public List<long> foldersSizes { set; get; }                         // contains the sizes (in bytes) of the folders to copy
-        public List<FileInfo> filesAlreadyCopied { set; get; }               // list of files that have already been copied, necessary if you want to restore the original situation when you cancel the operation
-        public List<DirectoryInfo> directoriesAlreadyCopied { set; get; }    // list of directories that have already been copied, necessary if you want to restore the original situation when you cancel the operation
-
-        byte currentFolderIndex = 0;            // index of the currently copying folder
+        List<string> foldersToCopy;     // list of folders to be copied
+        List<long> foldersSizes;        // contains the sizes (in bytes) of the folders to copy
+        byte currentFolderIndex = 0;    // index of the folder which is currently being copied
         MyWebClient client;
 
-        public Worker(string usrInputSrcPath, string usrInputDestPath)
-        {
-            baseSourcePath = usrInputSrcPath;
-            baseDestinationPath = usrInputDestPath;
+        public Worker() {}              // constructor to be used only for tasks that don't require writing on disk
 
-            filesAlreadyCopied = new List<FileInfo>();
-            directoriesAlreadyCopied = new List<DirectoryInfo>();
+        public Worker(string usrInputSrcPath, string usrInputDestPath, List<string> foldersToCopy)
+        {
+            BaseSourcePath = usrInputSrcPath;
+            BaseDestinationPath = usrInputDestPath;
+            this.foldersToCopy = foldersToCopy;
+
+            CreatedFiles = new List<FileInfo>();
+            CreatedDirectories = new List<DirectoryInfo>();
         }
 
         // TODO: PerformDownloadOperations()
@@ -49,25 +55,25 @@ namespace CemuUpdateTool
          *  Method that performs all the migration operations requested by user.
          *  To be run in a separate thread using await keyword.
          */
-        public WorkOutcome PerformMigrationOperations(List<string> foldersToCopy, Dictionary<string, bool> additionalOptions, WorkInfoCallback PerformingWork, 
-                                      ActualFileCallback CopyingFile, FileCopiedCallback FileCopied)
+        public WorkOutcome PerformMigrationOperations(Dictionary<string, bool> migrationOptions, WorkInfoCallback PerformingWork, 
+                                                      ActualFileCallback CopyingFile, FileCopiedCallback FileCopied)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(baseSourcePath) && !string.IsNullOrWhiteSpace(baseDestinationPath),
+            Debug.Assert(!string.IsNullOrWhiteSpace(BaseSourcePath) && !string.IsNullOrWhiteSpace(BaseDestinationPath),
                 "Source and/or destination Cemu folder are set incorrectly!");
 
             // COPY CEMU SETTINGS FILE
-            if (additionalOptions["copyCemuSettingsFile"] == true)
+            if (migrationOptions["copyCemuSettingsFile"] == true)
             {
-                if (FileUtils.FileExists(Path.Combine(baseSourcePath, "settings.bin")))
+                if (FileUtils.FileExists(Path.Combine(BaseSourcePath, "settings.bin")))
                 {
                     bool copySuccessful = false;
                     PerformingWork("Copying settings.bin", 1);      // display in the MainForm the label "Copying settings.bin..." (1 is a placeholder)
-                    FileInfo settingsFile = new FileInfo(Path.Combine(baseSourcePath, "settings.bin"));
+                    FileInfo settingsFile = new FileInfo(Path.Combine(BaseSourcePath, "settings.bin"));
                     while (!copySuccessful)
                     {
                         try
                         {
-                            settingsFile.CopyTo(Path.Combine(baseDestinationPath, "settings.bin"), true);
+                            settingsFile.CopyTo(Path.Combine(BaseDestinationPath, "settings.bin"), true);
                             copySuccessful = true;
                         }
                         catch (Exception exc)
@@ -77,7 +83,7 @@ namespace CemuUpdateTool
                                     "Error during settings.bin copy", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                             if (choice == DialogResult.No)
                             {
-                                errorsEncountered = true;
+                                ErrorsEncountered = true;
                                 break;
                             }
                         }
@@ -89,9 +95,9 @@ namespace CemuUpdateTool
             foreach (string folder in foldersToCopy)
             {
                 // Destination folder contents removal
-                if (additionalOptions["deleteDestFolderContents"] == true)
+                if (migrationOptions["deleteDestFolderContents"] == true)
                 {
-                    string destFolderPath = Path.Combine(baseDestinationPath, folder);
+                    string destFolderPath = Path.Combine(BaseDestinationPath, folder);
                     if (FileUtils.DirectoryExists(destFolderPath))
                     {
                         PerformingWork($"Removing destination {folder} folder previous contents", 1);
@@ -103,23 +109,23 @@ namespace CemuUpdateTool
                 if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
                 {
                     PerformingWork($"Copying {folder}", foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
-                    FileUtils.CopyDir(Path.Combine(baseSourcePath, folder), Path.Combine(baseDestinationPath, folder), CopyingFile, FileCopied, this);
+                    FileUtils.CopyDir(Path.Combine(BaseSourcePath, folder), Path.Combine(BaseDestinationPath, folder), CopyingFile, FileCopied, this);
                 }
                 currentFolderIndex++;
 
-                if (isCancelled || isAborted)
+                if (IsCancelled || IsAborted)
                 {
                     try
                     {
-                        if (filesAlreadyCopied.Count > 0 || directoriesAlreadyCopied.Count > 0)
+                        if (CreatedFiles.Count > 0 || CreatedDirectories.Count > 0)
                         {
                             // Ask if the user wants to remove files that have already been copied and, if the user accepts, performs the task. Then exit from the function.
                             DialogResult choice = MessageBox.Show("Do you want to delete files that have already been copied?", "Operation cancelled", MessageBoxButtons.YesNo);
                             if (choice == DialogResult.Yes)
                             {
-                                foreach (FileInfo copiedFile in filesAlreadyCopied)
+                                foreach (FileInfo copiedFile in CreatedFiles)
                                     copiedFile.Delete();
-                                foreach (DirectoryInfo copiedDir in Enumerable.Reverse(directoriesAlreadyCopied))
+                                foreach (DirectoryInfo copiedDir in Enumerable.Reverse(CreatedDirectories))
                                     copiedDir.Delete();
                             }
                         }
@@ -129,7 +135,7 @@ namespace CemuUpdateTool
                         MessageBox.Show($"An error occurred when deleting already copied files: {exc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
 
-                    if (isCancelled)
+                    if (IsCancelled)
                         return WorkOutcome.CancelledByUser;
                     else
                         return WorkOutcome.Aborted;
@@ -137,10 +143,30 @@ namespace CemuUpdateTool
             }
 
             // If the program arrives here, it means that the copy task has been completed
-            if (!errorsEncountered)
+            if (!ErrorsEncountered)
                 return WorkOutcome.Success;
             else
                 return WorkOutcome.CompletedWithErrors;
+        }
+
+        /*
+         *  Calculates the size of every folder to copy using CalculateDirSize()
+         *  Returns the overall size (useful for the MainForm)
+         */
+        public long CalculateFoldersSizes()
+        {
+            foldersSizes = new List<long>(foldersToCopy.Capacity);
+            long overallSize = 0;
+
+            // Calculate the size of every folder to copy
+            foreach (string folder in foldersToCopy)
+                foldersSizes.Add(FileUtils.CalculateDirSize(Path.Combine(BaseSourcePath, folder)));
+
+            // Calculate the overall size and return it
+            foreach (long folderSize in foldersSizes)
+                overallSize += folderSize;
+
+            return overallSize;
         }
 
         public void CreateDesktopShortcut(string cemuVersion, string mlcExternalPath)
@@ -150,8 +176,8 @@ namespace CemuUpdateTool
             IWshShortcut shortcut = shell.CreateShortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"Cemu {cemuVersion}.lnk"));
 
             // Set shortcut attributes
-            shortcut.TargetPath = Path.Combine(baseDestinationPath, "Cemu.exe");
-            shortcut.WorkingDirectory = baseDestinationPath;
+            shortcut.TargetPath = Path.Combine(BaseDestinationPath, "Cemu.exe");
+            shortcut.WorkingDirectory = BaseDestinationPath;
             if (mlcExternalPath != null)
                 shortcut.Arguments = $"-mlc \"{mlcExternalPath}\"";
             shortcut.Description = "The Wii U emulator";
@@ -166,16 +192,16 @@ namespace CemuUpdateTool
                 client.CancelAsync();
 
             if (reason == WorkOutcome.Aborted)
-                isAborted = true;
+                IsAborted = true;
             else if (reason == WorkOutcome.CancelledByUser)
-                isCancelled = true;
+                IsCancelled = true;
             else
                 throw new ArgumentException("Not a valid reason to stop the worker.");
         }
 
         public void ErrorOccurred()
         {
-            errorsEncountered = true;
+            ErrorsEncountered = true;
         }
     }
 }

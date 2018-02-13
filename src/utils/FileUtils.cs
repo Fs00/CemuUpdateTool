@@ -9,31 +9,10 @@ namespace CemuUpdateTool
 {
     // SET OF CALLBACKS SIGNATURES FOR THE MAINFORM
     public delegate void FileCopiedCallback(long dim);
-    public delegate void WorkInfoCallback(string name, long dim);
     public delegate void ActualFileCallback(string name);
 
     public static class FileUtils
     {
-        /*
-         *  Calculates the sizes of every folder in the list using CalculateDirSize() and puts them in the worker.
-         *  Returns the overall size
-         */
-        public static long CalculateFoldersSizes(List<string> foldersToCopy, Worker worker)
-        {
-            worker.foldersSizes = new List<long>();
-            long overallSize = 0;
-
-            // Calculate the size of every folder to copy
-            foreach(string folder in foldersToCopy)
-                worker.foldersSizes.Add(CalculateDirSize(Path.Combine(worker.baseSourcePath, folder)));
-
-            // Calculate the overall size and return it
-            foreach (long folderSize in worker.foldersSizes)
-                overallSize += folderSize;
-
-            return overallSize;
-        }
-
         /*
          *  Method that calculates the size of all the files contained in the passed directory and its subdirectories, then returns it
          */
@@ -72,12 +51,12 @@ namespace CemuUpdateTool
 
             // Check if destination folder exists, if not create it
             if (!DirectoryExists(destFolderPath))
-                worker.directoriesAlreadyCopied.Add(Directory.CreateDirectory(destFolderPath));
+                worker.CreatedDirectories.Add(Directory.CreateDirectory(destFolderPath));
 
             // Copy files
             foreach (FileInfo file in srcFilesArray)
             {
-                if (!worker.isCancelled && !worker.isAborted)     // check that work hasn't been cancelled
+                if (!worker.IsCancelled && !worker.IsAborted)     // check that work hasn't been cancelled
                 {
                     bool copySuccessful = false;
                     FileInfo destinationFile = null;
@@ -108,7 +87,7 @@ namespace CemuUpdateTool
                         copySuccessful = true;
                     }
                     if (destinationFile != null)
-                        worker.filesAlreadyCopied.Add(destinationFile);     // Add to the list of copied files the destination file
+                        worker.CreatedFiles.Add(destinationFile);           // Add to the list of copied files the destination file
                     FileCopied(file.Length);                                // Notify to the form that the current file has been copied
                 }
                 else
@@ -118,7 +97,7 @@ namespace CemuUpdateTool
             // Copy subdirs recursively
             foreach (DirectoryInfo subdir in srcSubdirsArray)
             {
-                if (!worker.isCancelled && !worker.isAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
+                if (!worker.IsCancelled && !worker.IsAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
                     CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), CopyingFile, FileCopied, worker);
                 else
                     return;
@@ -142,7 +121,7 @@ namespace CemuUpdateTool
             // Delete files
             foreach (FileInfo file in filesArray)
             {
-                if (!worker.isCancelled && !worker.isAborted)     // check that work hasn't been cancelled
+                if (!worker.IsCancelled && !worker.IsAborted)     // check that work hasn't been cancelled
                 {
                     bool deletionSuccessful = false;
                     while (!deletionSuccessful)
@@ -175,7 +154,7 @@ namespace CemuUpdateTool
             // Delete subdirs recursively
             foreach (DirectoryInfo subdir in subdirsArray)
             {
-                if (!worker.isCancelled && !worker.isAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
+                if (!worker.IsCancelled && !worker.IsAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
                     RemoveDirContents(Path.Combine(folderPath, subdir.Name), worker);
                 else
                     return;

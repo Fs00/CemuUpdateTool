@@ -194,6 +194,7 @@
             // 
             // txtBoxOldFolder
             // 
+            this.errProviderOldFolder.SetIconPadding(this.txtBoxOldFolder, -20);
             this.txtBoxOldFolder.Location = new System.Drawing.Point(22, 44);
             this.txtBoxOldFolder.Name = "txtBoxOldFolder";
             this.txtBoxOldFolder.Size = new System.Drawing.Size(333, 20);

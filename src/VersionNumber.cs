@@ -5,6 +5,7 @@ using System.Diagnostics;
 namespace CemuUpdateTool
 {
     #pragma warning disable CS0659
+    #pragma warning disable CS0661
     public class VersionNumber : IEquatable<VersionNumber>, IComparable<VersionNumber>
     {
         private List<int> fields;           // list that contains each of the "sub-numbers"
