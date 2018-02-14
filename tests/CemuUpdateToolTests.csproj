@@ -50,6 +50,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileUtilsTests.cs" />
     <Compile Include="WebUtilsTests.cs" />
     <Compile Include="VersionNumberTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

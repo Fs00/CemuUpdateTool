@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
@@ -56,18 +57,20 @@ namespace CemuUpdateTool
             // Copy files
             foreach (FileInfo file in srcFilesArray)
             {
-                if (!worker.IsCancelled && !worker.IsAborted)     // check that work hasn't been cancelled
+                if (!worker.IsCancelled && !worker.IsAborted)   // check that work hasn't been cancelled
                 {
                     bool copySuccessful = false;
-                    FileInfo destinationFile = null;
+                    FileInfo destinationFile;
 
-                    CopyingFile(file.Name);                 // Tell the MainForm the name of the file I'm about to copy
+                    CopyingFile(file.Name);                     // Tell the MainForm the name of the file I'm about to copy
                     string destFilePath = Path.Combine(destFolderPath, file.Name);
-                    while(!copySuccessful)
+                    while (!copySuccessful)
                     {
                         try
                         {
                             destinationFile = file.CopyTo(destFilePath, true);
+                            copySuccessful = true;
+                            worker.CreatedFiles.Add(destinationFile);           // Add to the list of copied files the destination file
                         }
                         catch(Exception exc)
                         {
@@ -84,11 +87,9 @@ namespace CemuUpdateTool
                             else if (choice == DialogResult.Ignore)
                                 worker.ErrorOccurred();
                         }
-                        copySuccessful = true;
+
                     }
-                    if (destinationFile != null)
-                        worker.CreatedFiles.Add(destinationFile);           // Add to the list of copied files the destination file
-                    FileCopied(file.Length);                                // Notify to the form that the current file has been copied
+                    FileCopied(file.Length);                    // Notify to the form that the current file has been copied
                 }
                 else
                     return;
@@ -158,6 +159,88 @@ namespace CemuUpdateTool
                     RemoveDirContents(Path.Combine(folderPath, subdir.Name), worker);
                 else
                     return;
+            }
+        }
+
+        /*
+         *  Extracts all the contents of a given Zip file in the same directory as the archive, keeping its internal folder structure
+         *  This method uses a different pattern for cancellation compared to the methods above:
+         *      - when the task is aborted due to an error, the method rethrows the error exception to the caller
+         *      - when the task is cancelled by the user (clicking Cancel in the MainForm), the method throws an OperationCanceledException
+         *  This because it's the only "clean" method to terminate the execution of Worker.PerformDownloadOperations() 
+         *      
+         *  TODO: callback per MainForm?
+         */
+        public static void ExtractZipFileContents(string zipPath, Worker worker)
+        {
+            string extractionPath = Path.GetDirectoryName(zipPath);
+            ZipArchive archive = null;
+
+            // Open the archive file with read permission
+            bool archiveOpeningSuccessful = false;
+            while (!archiveOpeningSuccessful)
+            {
+                try
+                {
+                    archive = ZipFile.OpenRead(zipPath);
+                    archiveOpeningSuccessful = true;
+                }
+                catch (Exception exc)
+                {
+                    DialogResult choice = MessageBox.Show($"Unexpected error when trying to open Zip file {Path.GetFileName(zipPath)}: {exc.Message} " +
+                                    "Do you want to retry or cancel the operation?", "Error during Zip archive opening", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+
+                    if (choice == DialogResult.Retry)
+                        continue;
+                    else if (choice == DialogResult.Cancel)
+                        throw;
+                }
+            }
+
+            // Extract all archive files
+            bool entryWrittenSuccessfully = false;
+            foreach (ZipArchiveEntry entry in archive.Entries)
+            {
+                entryWrittenSuccessfully = false;
+                while (!entryWrittenSuccessfully)
+                {
+                    if (!worker.IsCancelled)    // don't check if the work is aborted because once it is, it exits the function
+                    {
+                        try
+                        {
+                            string entryRelativePath = entry.FullName.Replace('/', Path.DirectorySeparatorChar);    // replace all occurrencies of '/' with '\'
+                            string extractedFilePath = Path.Combine(extractionPath, entryRelativePath);
+
+                            // If the entry is a folder, create it
+                            if (entryRelativePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                            {
+                                Directory.CreateDirectory(extractedFilePath);
+                                worker.CreatedDirectories.Add(new DirectoryInfo(extractedFilePath));
+                            }
+                            // Otherwise, if it's a file, extract it
+                            else
+                            {
+                                entry.ExtractToFile(extractedFilePath, true);
+                                worker.CreatedFiles.Add(new FileInfo(extractedFilePath));
+                            }
+                            entryWrittenSuccessfully = true;
+                        }
+                        catch (Exception exc)
+                        {
+                            DialogResult choice = MessageBox.Show($"Unexpected error when extracting file {entry.Name} from {Path.GetFileName(zipPath)}: {exc.Message}" +
+                                                  "What do you want to do?", "Error during file extraction", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
+
+                            if (choice == DialogResult.Retry)
+                                continue;
+                            else if (choice == DialogResult.Abort)
+                                throw;
+                            else if (choice == DialogResult.Ignore)
+                                worker.ErrorOccurred();
+                        }
+                    }
+                    else
+                        throw new OperationCanceledException();
+                }
             }
         }
 
