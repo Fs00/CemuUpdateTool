@@ -29,8 +29,8 @@ namespace CemuUpdateTool
         public bool IsAborted { private set; get; } = false;
         public bool ErrorsEncountered { private set; get; } = false;
               
-        public List<FileInfo> CreatedFiles { set; get; }               // list of files that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
-        public List<DirectoryInfo> CreatedDirectories { set; get; }    // list of directories that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
+        public List<FileInfo> CreatedFiles { private set; get; }               // list of files that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
+        public List<DirectoryInfo> CreatedDirectories { private set; get; }    // list of directories that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
 
         List<string> foldersToCopy;     // list of folders to be copied
         List<long> foldersSizes;        // contains the sizes (in bytes) of the folders to copy

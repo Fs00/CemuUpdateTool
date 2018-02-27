@@ -7,6 +7,8 @@ namespace CemuUpdateTool
 {
     static class Program
     {
+        public static string Version { get; } = "2.0-dev";
+
         [STAThread]
         static void Main()
         {
@@ -33,10 +35,10 @@ namespace CemuUpdateTool
 
                 // Show fatal error dialog
                 MessageBox.Show($"Unhandled {exceptionName.Substring(exceptionName.LastIndexOf(".")+1)} thrown in method {exc.TargetSite.Name}: {exc.Message}" + 
-                    "\nFor detailed information check the latest cvmt-crashlog in executable folder.", "Fatal error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    "\nFor detailed information check the latest cemut-crashlog in executable folder.", "Fatal error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                 // Build crashlog file content
-                crashlogContent += $"Cemu Version Migration Tool crashlog - {thisMoment.ToString(@"yyyy/MM/dd HH:mm:ss")}" +
+                crashlogContent += $"Cemu Update Tool v{Version} crashlog - {thisMoment.ToString(@"yyyy/MM/dd HH:mm:ss")}" +
                                    "\r\n------------------------------------------------------------\r\n\r\n" +
                                    $"Method \"{exc.TargetSite}\" threw a {exceptionName} due to the following reason:\r\n{exc.Message}" +
                                    "\r\n\r\nAdditional error information\r\n" +
@@ -52,7 +54,7 @@ namespace CemuUpdateTool
                                    $"Stack trace:\r\n{exc.StackTrace}";
 
                 // Write crashlog content on file
-                File.WriteAllText($@".\cvmt-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt", crashlogContent);
+                File.WriteAllText($@".\cemut-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt", crashlogContent);
                 Application.Exit();
             }
             # endif

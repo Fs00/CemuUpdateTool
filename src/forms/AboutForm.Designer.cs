@@ -64,7 +64,7 @@
             this.lblVersion.Name = "lblVersion";
             this.lblVersion.Size = new System.Drawing.Size(112, 13);
             this.lblVersion.TabIndex = 2;
-            this.lblVersion.Text = "Version 2.0 (dev build)";
+            this.lblVersion.Text = $"Version {Program.Version}";
             // 
             // lblCredit
             // 
