@@ -41,7 +41,7 @@ namespace CemuUpdateTool
 
         /*
          *  Method that copies a Cemu subdir from old installation to new one.
-         *  Sends callbacks to MainForm in order to update progress bars.
+         *  Sends callbacks to MigrationForm in order to update progress bars.
          */
         public static void CopyDir(string srcFolderPath, string destFolderPath, ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, Worker worker)
         {
@@ -62,7 +62,7 @@ namespace CemuUpdateTool
                     bool copySuccessful = false;
                     FileInfo destinationFile;
 
-                    CopyingFile(file.Name);                     // Tell the MainForm the name of the file I'm about to copy
+                    CopyingFile(file.Name);                     // Tell the MigrationForm the name of the file I'm about to copy
                     string destFilePath = Path.Combine(destFolderPath, file.Name);
                     while (!copySuccessful)
                     {
@@ -166,10 +166,10 @@ namespace CemuUpdateTool
          *  Extracts all the contents of a given Zip file in the same directory as the archive, keeping its internal folder structure
          *  This method uses a different pattern for cancellation compared to the methods above:
          *      - when the task is aborted due to an error, the method rethrows the error exception to the caller
-         *      - when the task is cancelled by the user (clicking Cancel in the MainForm), the method throws an OperationCanceledException
+         *      - when the task is cancelled by the user (clicking Cancel in the MigrationForm), the method throws an OperationCanceledException
          *  This because it's the only "clean" method to terminate the execution of Worker.PerformDownloadOperations() 
          *      
-         *  TODO: callback per MainForm?
+         *  TODO: callback per MigrationForm?
          */
         public static void ExtractZipFileContents(string zipPath, Worker worker)
         {

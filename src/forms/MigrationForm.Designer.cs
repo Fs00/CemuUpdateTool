@@ -1,6 +1,6 @@
 ﻿namespace CemuUpdateTool
 {
-    partial class MainForm
+    partial class MigrationForm
     {
         /// <summary>
         /// Variabile di progettazione necessaria.
@@ -131,7 +131,7 @@
             this.btnCancel.TabIndex = 8;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            this.btnCancel.Click += new System.EventHandler(this.CancelOperations);
             // 
             // btnStart
             // 
@@ -152,7 +152,7 @@
             this.btnOptions.TabIndex = 6;
             this.btnOptions.Text = "Options...";
             this.btnOptions.UseVisualStyleBackColor = true;
-            this.btnOptions.Click += new System.EventHandler(this.btnOptions_Click);
+            this.btnOptions.Click += new System.EventHandler(this.OpenOptionsForm);
             // 
             // btnSelectNewFolder
             // 
@@ -162,7 +162,7 @@
             this.btnSelectNewFolder.TabIndex = 5;
             this.btnSelectNewFolder.Text = "Select";
             this.btnSelectNewFolder.UseVisualStyleBackColor = true;
-            this.btnSelectNewFolder.Click += new System.EventHandler(this.btnSelectNewFolder_Click);
+            this.btnSelectNewFolder.Click += new System.EventHandler(this.SelectNewCemuFolder);
             // 
             // txtBoxNewFolder
             // 
@@ -171,7 +171,7 @@
             this.txtBoxNewFolder.Name = "txtBoxNewFolder";
             this.txtBoxNewFolder.Size = new System.Drawing.Size(333, 20);
             this.txtBoxNewFolder.TabIndex = 4;
-            this.txtBoxNewFolder.TextChanged += new System.EventHandler(this.txtBoxNewFolder_TextChanged);
+            this.txtBoxNewFolder.TextChanged += new System.EventHandler(this.CheckNewFolderTextboxContent);
             // 
             // lblNewFolder
             // 
@@ -190,7 +190,7 @@
             this.btnSelectOldFolder.TabIndex = 2;
             this.btnSelectOldFolder.Text = "Select";
             this.btnSelectOldFolder.UseVisualStyleBackColor = true;
-            this.btnSelectOldFolder.Click += new System.EventHandler(this.btnSelectOldFolder_Click);
+            this.btnSelectOldFolder.Click += new System.EventHandler(this.SelectOldCemuFolder);
             // 
             // txtBoxOldFolder
             // 
@@ -199,7 +199,7 @@
             this.txtBoxOldFolder.Name = "txtBoxOldFolder";
             this.txtBoxOldFolder.Size = new System.Drawing.Size(333, 20);
             this.txtBoxOldFolder.TabIndex = 1;
-            this.txtBoxOldFolder.TextChanged += new System.EventHandler(this.txtBoxOldFolder_TextChanged);
+            this.txtBoxOldFolder.TextChanged += new System.EventHandler(this.CheckOldFolderTextboxContent);
             // 
             // lblOldFolder
             // 
@@ -285,7 +285,7 @@
             this.btnHelp.TabIndex = 2;
             this.btnHelp.Text = "Help!";
             this.btnHelp.UseVisualStyleBackColor = true;
-            this.btnHelp.Click += new System.EventHandler(this.btnHelp_Click);
+            this.btnHelp.Click += new System.EventHandler(this.OpenHelpForm);
             // 
             // btnAbout
             // 
@@ -295,7 +295,7 @@
             this.btnAbout.TabIndex = 3;
             this.btnAbout.Text = "About...";
             this.btnAbout.UseVisualStyleBackColor = true;
-            this.btnAbout.Click += new System.EventHandler(this.btnAbout_Click);
+            this.btnAbout.Click += new System.EventHandler(this.OpenAboutForm);
             // 
             // btnExit
             // 
@@ -305,7 +305,7 @@
             this.btnExit.TabIndex = 4;
             this.btnExit.Text = "Exit";
             this.btnExit.UseVisualStyleBackColor = true;
-            this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
+            this.btnExit.Click += new System.EventHandler(this.Exit);
             // 
             // lblVersion
             // 
@@ -326,7 +326,7 @@
             this.errProviderOldFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
             this.errProviderOldFolder.ContainerControl = this;
             // 
-            // MainForm
+            // MigrationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -340,7 +340,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
             this.MaximizeBox = false;
-            this.Name = "MainForm";
+            this.Name = "MigrationForm";
             this.Text = "Cemu Update Tool";
             this.grpBoxFolderSelect.ResumeLayout(false);
             this.grpBoxFolderSelect.PerformLayout();

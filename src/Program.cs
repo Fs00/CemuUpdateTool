@@ -17,12 +17,12 @@ namespace CemuUpdateTool
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en");
 
             #if DEBUG
-            Application.Run(new MainForm());
+            Application.Run(new MigrationForm(false));
 
             #else
             try
             {
-                Application.Run(new MainForm());
+                Application.Run(new MigrationForm(false));
             }
             catch(Exception exc)
             {
@@ -57,7 +57,7 @@ namespace CemuUpdateTool
                 File.WriteAllText($@".\cemut-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt", crashlogContent);
                 Application.Exit();
             }
-            # endif
+        #endif
         }
     }
 }

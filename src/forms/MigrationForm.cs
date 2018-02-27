@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
-    public partial class MainForm : Form
+    public partial class MigrationForm : Form
     {
         Worker worker;
         OptionsManager opts;
@@ -17,29 +17,32 @@ namespace CemuUpdateTool
              destFolderTxtBoxValidated = false;
         VersionNumber oldCemuExeVer, newCemuExeVer;
 
-        public MainForm()
+        public bool DownloadMode { get; }   // value that determinates if newer version of Cemu must be downloaded before migrating
+
+        public MigrationForm(bool downloadMode)
         {
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;
+            DownloadMode = downloadMode;
             opts = new OptionsManager();
         }
 
-        private void btnExit_Click(object sender, EventArgs e)
+        private void Exit(object sender, EventArgs e)
         {
             Close();
         }
 
-        private void btnHelp_Click(object sender, EventArgs e)
+        private void OpenHelpForm(object sender, EventArgs e)
         {
             new HelpForm().Show();
         }
 
-        private void btnAbout_Click(object sender, EventArgs e)
+        private void OpenAboutForm(object sender, EventArgs e)
         {
             new AboutForm().ShowDialog();
         }
 
-        private void btnOptions_Click(object sender, EventArgs e)
+        private void OpenOptionsForm(object sender, EventArgs e)
         {
             new OptionsForm(opts).ShowDialog();
         }
@@ -47,7 +50,7 @@ namespace CemuUpdateTool
         /*
          *  Folder selection using FolderBrowserDialog for old Cemu folder
          */
-        private void btnSelectOldFolder_Click(object sender, EventArgs e)
+        private void SelectOldCemuFolder(object sender, EventArgs e)
         {
             // Open folder picker in %UserProfile% folder and save the selected path
             var folderPicker = new FolderBrowserDialog();
@@ -67,7 +70,7 @@ namespace CemuUpdateTool
         /*
          *  Folder selection using FolderBrowserDialog for new Cemu folder
          */
-        private void btnSelectNewFolder_Click(object sender, EventArgs e)
+        private void SelectNewCemuFolder(object sender, EventArgs e)
         {
             // Open folder picker in %UserProfile% folder and save the selected path
             var folderPicker = new FolderBrowserDialog();
@@ -152,17 +155,17 @@ namespace CemuUpdateTool
             ResetEverything(result);
         }
 
-        private void btnCancel_Click(object sender, EventArgs e)
+        private void CancelOperations(object sender, EventArgs e)
         {
             lblSingleProgress.Text = "Cancelling...";
             worker.StopWork(WorkOutcome.CancelledByUser);
         }
 
-        private void txtBoxOldFolder_TextChanged(object sender, EventArgs e)
+        private void CheckOldFolderTextboxContent(object sender, EventArgs e)
         {
+            // Check if input directory exists
             if (txtBoxOldFolder.Text == "" || !FileUtils.DirectoryExists(txtBoxOldFolder.Text))
             {
-                // Check if input directory exists
                 errProviderOldFolder.SetError(txtBoxOldFolder, "Directory does not exist");
                 srcFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
@@ -170,9 +173,9 @@ namespace CemuUpdateTool
                 lblOldCemuVersion.Visible = false;
                 lblOldVersionNr.Text = "";
             }
-            else if (!FileUtils.FileExists(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe")))
+            // Check if it's a valid Cemu installation ONLY IF the form is not in download mode
+            else if (!DownloadMode && !FileUtils.FileExists(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe")))
             {
-                // Check if it's a valid Cemu installation
                 errProviderOldFolder.SetError(txtBoxOldFolder, "Not a valid Cemu installation (Cemu.exe is missing)");
                 srcFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
@@ -180,9 +183,9 @@ namespace CemuUpdateTool
                 lblOldCemuVersion.Visible = false;
                 lblOldVersionNr.Text = "";
             }
+            // Display Cemu version label and verify if all user inputs are OK
             else
             {
-                // Display Cemu version label and verify if all user inputs are OK
                 errProviderOldFolder.SetError(txtBoxOldFolder, "");
                 srcFolderTxtBoxValidated = true;
 
@@ -197,11 +200,11 @@ namespace CemuUpdateTool
             }
         }
 
-        private void txtBoxNewFolder_TextChanged(object sender, EventArgs e)
+        private void CheckNewFolderTextboxContent(object sender, EventArgs e)
         {
+            // Check if input directory exists
             if (txtBoxNewFolder.Text == "" || !FileUtils.DirectoryExists(txtBoxNewFolder.Text))
             {
-                // Check if input directory exists
                 errProviderNewFolder.SetError(txtBoxNewFolder, "Directory does not exist");
                 destFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
@@ -209,9 +212,9 @@ namespace CemuUpdateTool
                 lblNewCemuVersion.Visible = false;
                 lblNewVersionNr.Text = "";
             }
-            else if (!FileUtils.FileExists(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")))
+            // Check if it's a valid Cemu installation ONLY IF the form is not in download mode
+            else if (!DownloadMode && !FileUtils.FileExists(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")))
             {
-                // Check if it's a valid Cemu installation
                 errProviderNewFolder.SetError(txtBoxNewFolder, "Not a valid Cemu installation (Cemu.exe is missing)");
                 destFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
@@ -219,15 +222,18 @@ namespace CemuUpdateTool
                 lblNewCemuVersion.Visible = false;
                 lblNewVersionNr.Text = "";
             }
+            // Display Cemu version label (only if the form is not in download mode) and verify if all user inputs are OK
             else
             {
-                // Display Cemu version label and verify if all user inputs are OK
                 errProviderNewFolder.SetError(txtBoxNewFolder, "");
                 destFolderTxtBoxValidated = true;
 
-                newCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")), 3);
-                lblNewCemuVersion.Visible = true;
-                lblNewVersionNr.Text = newCemuExeVer.ToString();
+                if (!DownloadMode)
+                {
+                    newCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")), 3);
+                    lblNewCemuVersion.Visible = true;
+                    lblNewVersionNr.Text = newCemuExeVer.ToString();
+                }
 
                 if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxOldFolder.Text != txtBoxNewFolder.Text))
                     btnStart.Enabled = true;
@@ -303,12 +309,12 @@ namespace CemuUpdateTool
             lblNewVersionNr.Text = "";
 
             // Reset textboxes (I need to detach & reattach event handlers otherwise errorProviders will be triggered) and Cancel button
-            txtBoxOldFolder.TextChanged -= txtBoxOldFolder_TextChanged;
+            txtBoxOldFolder.TextChanged -= CheckOldFolderTextboxContent;
             txtBoxOldFolder.Text = "";
-            txtBoxOldFolder.TextChanged += txtBoxOldFolder_TextChanged;
-            txtBoxNewFolder.TextChanged -= txtBoxNewFolder_TextChanged;            
+            txtBoxOldFolder.TextChanged += CheckOldFolderTextboxContent;
+            txtBoxNewFolder.TextChanged -= CheckNewFolderTextboxContent;            
             txtBoxNewFolder.Text = "";            
-            txtBoxNewFolder.TextChanged += txtBoxNewFolder_TextChanged;
+            txtBoxNewFolder.TextChanged += CheckNewFolderTextboxContent;
             btnCancel.Enabled = false;
 
             // Reset textboxes' validated state

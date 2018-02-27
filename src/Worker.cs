@@ -67,7 +67,7 @@ namespace CemuUpdateTool
                 if (FileUtils.FileExists(Path.Combine(BaseSourcePath, "settings.bin")))
                 {
                     bool copySuccessful = false;
-                    PerformingWork("Copying settings.bin", 1);      // display in the MainForm the label "Copying settings.bin..." (1 is a placeholder)
+                    PerformingWork("Copying settings.bin", 1);      // display in the MigrationForm the label "Copying settings.bin..." (1 is a placeholder)
                     FileInfo settingsFile = new FileInfo(Path.Combine(BaseSourcePath, "settings.bin"));
                     while (!copySuccessful)
                     {
@@ -151,7 +151,7 @@ namespace CemuUpdateTool
 
         /*
          *  Calculates the size of every folder to copy using CalculateDirSize()
-         *  Returns the overall size (useful for the MainForm)
+         *  Returns the overall size (useful for the MigrationForm)
          */
         public long CalculateFoldersSizes()
         {
