@@ -92,7 +92,7 @@
             this.txtBoxCustomMlc01Path.Name = "txtBoxCustomMlc01Path";
             this.txtBoxCustomMlc01Path.Size = new System.Drawing.Size(242, 20);
             this.txtBoxCustomMlc01Path.TabIndex = 9;
-            this.txtBoxCustomMlc01Path.TextChanged += new System.EventHandler(this.txtBoxCustomMlc01Path_TextChanged);
+            this.txtBoxCustomMlc01Path.TextChanged += new System.EventHandler(this.CheckCustomMlc01PathForInvalidChars);
             // 
             // chkBoxCustomMlc01Path
             // 
@@ -104,7 +104,7 @@
             this.chkBoxCustomMlc01Path.Text = "Use custom mlc01 folder path (v1.10+):";
             this.toolTipInfo.SetToolTip(this.chkBoxCustomMlc01Path, resources.GetString("chkBoxCustomMlc01Path.ToolTip"));
             this.chkBoxCustomMlc01Path.UseVisualStyleBackColor = true;
-            this.chkBoxCustomMlc01Path.CheckedChanged += new System.EventHandler(this.chkBoxCustomMlc01Path_CheckedChanged);
+            this.chkBoxCustomMlc01Path.CheckedChanged += new System.EventHandler(this.UpdateCustomMlc01PathTextboxState);
             // 
             // chkBoxCemuSettings
             // 
@@ -199,7 +199,7 @@
             this.chkBoxSettingsOnFile.TabIndex = 1;
             this.chkBoxSettingsOnFile.Text = "Store settings in a file";
             this.chkBoxSettingsOnFile.UseVisualStyleBackColor = true;
-            this.chkBoxSettingsOnFile.CheckedChanged += new System.EventHandler(this.chkBoxSettingsOnFile_CheckedChanged);
+            this.chkBoxSettingsOnFile.CheckedChanged += new System.EventHandler(this.UpdateOptionsFileLocationRadioButtons);
             // 
             // btnDeleteSettingsFile
             // 
@@ -209,7 +209,7 @@
             this.btnDeleteSettingsFile.TabIndex = 4;
             this.btnDeleteSettingsFile.Text = "Delete current settings file";
             this.btnDeleteSettingsFile.UseVisualStyleBackColor = true;
-            this.btnDeleteSettingsFile.Click += new System.EventHandler(this.btnDeleteSettingsFile_Click);
+            this.btnDeleteSettingsFile.Click += new System.EventHandler(this.DeleteSettingsFile);
             // 
             // radioBtnAppDataFolder
             // 
@@ -233,7 +233,7 @@
             this.radioBtnExecFolder.TabStop = true;
             this.radioBtnExecFolder.Text = "Executable folder";
             this.radioBtnExecFolder.UseVisualStyleBackColor = true;
-            this.radioBtnExecFolder.CheckedChanged += new System.EventHandler(this.radioBtnExecFolder_CheckedChanged);
+            this.radioBtnExecFolder.CheckedChanged += new System.EventHandler(this.CheckIfOptionsFileLocationHasChanged);
             // 
             // lblFileLocation
             // 
@@ -252,7 +252,7 @@
             this.btnSaveOpts.TabIndex = 3;
             this.btnSaveOpts.Text = "Save options";
             this.btnSaveOpts.UseVisualStyleBackColor = true;
-            this.btnSaveOpts.Click += new System.EventHandler(this.btnSaveOpts_Click);
+            this.btnSaveOpts.Click += new System.EventHandler(this.SaveOptionsAndClose);
             // 
             // btnDiscard
             // 
@@ -262,7 +262,7 @@
             this.btnDiscard.TabIndex = 4;
             this.btnDiscard.Text = "Discard changes";
             this.btnDiscard.UseVisualStyleBackColor = true;
-            this.btnDiscard.Click += new System.EventHandler(this.btnDiscard_Click);
+            this.btnDiscard.Click += new System.EventHandler(this.DiscardAndClose);
             // 
             // toolTipInfo
             // 
@@ -278,7 +278,7 @@
             this.btnRestoreDefaultOpts.TabIndex = 5;
             this.btnRestoreDefaultOpts.Text = "Restore defaults";
             this.btnRestoreDefaultOpts.UseVisualStyleBackColor = true;
-            this.btnRestoreDefaultOpts.Click += new System.EventHandler(this.btnRestoreDefaultOpts_Click);
+            this.btnRestoreDefaultOpts.Click += new System.EventHandler(this.RestoreDefaultOptions);
             // 
             // errProviderMlcFolder
             // 

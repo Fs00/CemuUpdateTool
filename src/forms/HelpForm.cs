@@ -13,6 +13,7 @@ namespace CemuUpdateTool
             linkLblForum.Links.Add(0, 17, "http://forum.cemu.info/forumdisplay.php/15-Guides-amp-modifications");
             linkLblDiscord.Links.Add(0, 7, "http://discordapp.com");
 
+            // TODO: da aggiornare prima della release
             richTxtBoxHelp.Rtf = @"{\rtf1\ansi\ansicpg1252\deff0\deflang1040{\fonttbl{\f0\fnil\fcharset0 Microsoft Sans Serif;}}" +
                 @"\viewkind4\uc1\pard\f0\fs19" +
                 @"{\b HOW DOES IT WORK?}\par" +
@@ -37,7 +38,7 @@ namespace CemuUpdateTool
                 @" If the application printed out a fatal error and then exited, send me the cvmt-crashlog file you find in executable folder. Otherwise you can report any unexpected behavior (there shouldn't be any, hopefully) in the official thread in Cemu forum, or sending me a PM on Discord \fs18 (my username: Fs00#9393).}";   
         }
 
-        private void btnBack_Click(object sender, EventArgs e)
+        private void Exit(object sender, EventArgs e)
         {
             Close();
         }

@@ -84,7 +84,7 @@
             this.btnClose.TabIndex = 5;
             this.btnClose.Text = "Close";
             this.btnClose.UseVisualStyleBackColor = true;
-            this.btnClose.Click += new System.EventHandler(this.btnBack_Click);
+            this.btnClose.Click += new System.EventHandler(this.Exit);
             // 
             // richTxtBoxHelp
             // 

@@ -96,8 +96,9 @@ namespace CemuUpdateTool
         }
 
         // Copy constructor
-        public VersionNumber(VersionNumber copy) : this()
+        public VersionNumber(VersionNumber copy)
         {
+            fields = new List<int>(copy.Depth);
             for (int i = 0; i < copy.Depth; i++)
                 fields.Add(copy[i]);
         }
@@ -109,7 +110,7 @@ namespace CemuUpdateTool
                 throw new ArgumentException("Invalid string passed as argument.");
 
             string[] splittedVersionNr = version.Split('.');
-            fields = new List<int>();
+            fields = new List<int>(splittedVersionNr.Length);
             foreach (string field in splittedVersionNr)
                 AddNumber(Convert.ToInt32(field));
         }
@@ -124,7 +125,7 @@ namespace CemuUpdateTool
             if (depth < 1 || depth > 4)
                 throw new ArgumentOutOfRangeException("Depth value is not valid.");
 
-            fields = new List<int>();
+            fields = new List<int>(depth);
             fields.Add(versionInfo.FileMajorPart);
             if (depth > 1)
             {
@@ -144,7 +145,7 @@ namespace CemuUpdateTool
             if (fields == null)
                 throw new ArgumentNullException("Fields array is null.");
 
-            this.fields = new List<int>();
+            this.fields = new List<int>(fields.Length);
             foreach (int number in fields)
                 AddNumber(number);
         }

@@ -46,13 +46,13 @@ namespace CemuUpdateTool
             chkBoxCustomMlc01Path.Checked = handler.migrationOptions["dontCopyMlcFolderFor1.10+"];
             if (!string.IsNullOrWhiteSpace(handler.mlcFolderExternalPath))
                 txtBoxCustomMlc01Path.Text = handler.mlcFolderExternalPath;
-            chkBoxCustomMlc01Path_CheckedChanged(null, null);   // make sure that textbox state is correct in relation to the checkbox
+            UpdateCustomMlc01PathTextboxState();   // make sure that textbox state is correct in relation to the checkbox
 
             // SETTINGS FILE LOCATION
             if (handler.optionsFilePath == "")
             {
                 chkBoxSettingsOnFile.Checked = false;
-                chkBoxSettingsOnFile_CheckedChanged(null, null);    // disables file location radio buttons
+                UpdateOptionsFileLocationRadioButtons();    // disables file location radio buttons
             }
             else
             {
@@ -64,7 +64,7 @@ namespace CemuUpdateTool
             }
         }
 
-        private void SetOptionsAccordingToCheckboxes()  // Same as above
+        private void SetOptionsAccordingToCheckboxes()
         {
             // FOLDER OPTIONS
             if (handler.folderOptions.ContainsKey("controllerProfiles"))
@@ -133,21 +133,32 @@ namespace CemuUpdateTool
             }
         }
 
-        private void btnDiscard_Click(object sender, EventArgs e)
+        private void DeleteSettingsFile(object sender, EventArgs e)
         {
-            Close();
-        }
-
-        private void btnDeleteSettingsFile_Click(object sender, EventArgs e)
-        {
-            handler.DeleteOptionsFile();            // To be improved, telling the user if options file existed before clicking the button(?)
+            handler.DeleteOptionsFile();
             btnDeleteSettingsFile.Enabled = false;
 
             MessageBox.Show("Please take note that unless you uncheck \"Save options in a file\", options file will be recreated when you click on \"Save options\".",
                             "", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void radioBtnExecFolder_CheckedChanged(object sender, EventArgs e)
+        private void RestoreDefaultOptions(object sender, EventArgs e)
+        {
+            DialogResult choice = MessageBox.Show("Are you sure you want to restore the default settings?\r\nThis cannot be undone.",
+                                                  "Confirmation requested", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (choice == DialogResult.Yes)
+            {
+                handler.SetDefaultOptions();
+                SetCheckboxesAccordingToOptions();
+            }
+        }
+
+        /*
+         *  Triggered when the user changes one of the options file location radio buttons.
+         *  Checks if the selected path is different than the one set in OptionsManager and if so,
+         *  set the corresponding flag.
+         */
+        private void CheckIfOptionsFileLocationHasChanged(object sender, EventArgs e)
         {
             // Evaluate whether settings file location has been changed looking at its current value
             if (handler.optionsFilePath == handler.LOCAL_FILEPATH)
@@ -166,21 +177,13 @@ namespace CemuUpdateTool
             }
         }
 
-        private void btnSaveOpts_Click(object sender, EventArgs e)
+        /*
+         *  Triggered when the user selects/deselects the "Save settings on file" checkbox.
+         *  Enables/disables options file location radio buttons and "Delete settings file" button.
+         */
+        private void UpdateOptionsFileLocationRadioButtons(object sender = null, EventArgs e = null)
         {
-            SetOptionsAccordingToCheckboxes();
-
-            if (chkBoxSettingsOnFile.Checked)
-                handler.WriteOptionsToFile();
-            else
-                MessageBox.Show("Please take note that if you don't store options in a file, they'll be lost as soon as you exit the application.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-            Close();
-        }
-
-        private void chkBoxSettingsOnFile_CheckedChanged(object sender, EventArgs e)
-        {
-            if(!chkBoxSettingsOnFile.Checked)
+            if (!chkBoxSettingsOnFile.Checked)
             {
                 lblFileLocation.Enabled = false;
                 radioBtnExecFolder.Enabled = false;
@@ -194,13 +197,13 @@ namespace CemuUpdateTool
                 radioBtnAppDataFolder.Enabled = true;
                 btnDeleteSettingsFile.Enabled = true;
 
-                // Obviously, if current path is not set, tell the program to change it before writing the file on disk
+                // Obviously, if current options file path is not set, tell the program to change it before writing the file on disk
                 if (handler.optionsFilePath == "")
                     optionsFileLocationChanged = true;
             }
         }
 
-        private void chkBoxCustomMlc01Path_CheckedChanged(object sender, EventArgs e)
+        private void UpdateCustomMlc01PathTextboxState(object sender = null, EventArgs e = null)
         {
             if (chkBoxCustomMlc01Path.Checked)
                 txtBoxCustomMlc01Path.Enabled = true;
@@ -208,24 +211,30 @@ namespace CemuUpdateTool
                 txtBoxCustomMlc01Path.Enabled = false;
         }
 
-        private void btnRestoreDefaultOpts_Click(object sender, EventArgs e)
-        {
-            DialogResult choice = MessageBox.Show("Are you sure you want to restore the default settings?\r\nThis cannot be undone.",
-                                                  "Confirmation requested", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-            if (choice == DialogResult.Yes)
-            {
-                handler.SetDefaultOptions();
-                SetCheckboxesAccordingToOptions();
-            }
-        }
-
-        private void txtBoxCustomMlc01Path_TextChanged(object sender, EventArgs e)
+        private void CheckCustomMlc01PathForInvalidChars(object sender, EventArgs e)
         {
             // Check if the textbox contains any invalid character for paths
             if (txtBoxCustomMlc01Path.Text.IndexOfAny(System.IO.Path.GetInvalidPathChars()) != -1)
                 errProviderMlcFolder.SetError(txtBoxCustomMlc01Path, "The path contains some invalid characters, thus won't be saved.");
             else
                 errProviderMlcFolder.SetError(txtBoxCustomMlc01Path, "");
+        }
+
+        private void SaveOptionsAndClose(object sender, EventArgs e)
+        {
+            SetOptionsAccordingToCheckboxes();
+
+            if (chkBoxSettingsOnFile.Checked)
+                handler.WriteOptionsToFile();
+            else
+                MessageBox.Show("Please take note that if you don't store options in a file, they'll be lost as soon as you exit the application.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            Close();
+        }
+
+        private void DiscardAndClose(object sender, EventArgs e)
+        {
+            Close();
         }
     }
 }
