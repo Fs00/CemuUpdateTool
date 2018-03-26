@@ -37,8 +37,6 @@ namespace CemuUpdateTool
         byte currentFolderIndex = 0;    // index of the folder which is currently being copied
         MyWebClient client;
 
-        public Worker() {}              // constructor to be used only for tasks that don't require writing on disk
-
         public Worker(string usrInputSrcPath, string usrInputDestPath, List<string> foldersToCopy)
         {
             BaseSourcePath = usrInputSrcPath;
@@ -122,12 +120,7 @@ namespace CemuUpdateTool
                             // Ask if the user wants to remove files that have already been copied and, if the user accepts, performs the task. Then exit from the function.
                             DialogResult choice = MessageBox.Show("Do you want to delete files that have already been copied?", "Operation cancelled", MessageBoxButtons.YesNo);
                             if (choice == DialogResult.Yes)
-                            {
-                                foreach (FileInfo copiedFile in CreatedFiles)
-                                    copiedFile.Delete();
-                                foreach (DirectoryInfo copiedDir in Enumerable.Reverse(CreatedDirectories))
-                                    copiedDir.Delete();
-                            }
+                                PerformCleanup();
                         }
                     }
                     catch (Exception exc)
@@ -184,6 +177,17 @@ namespace CemuUpdateTool
 
             // Save shortcut on disk
             shortcut.Save();
+        }
+
+        /*
+         *  Deletes folders and directories created by the Worker (only used when the user cancels the task)
+         */
+        public void PerformCleanup()
+        {
+            foreach (FileInfo copiedFile in CreatedFiles)
+                copiedFile.Delete();
+            foreach (DirectoryInfo copiedDir in Enumerable.Reverse(CreatedDirectories))
+                copiedDir.Delete();
         }
 
         public void StopWork(WorkOutcome reason)

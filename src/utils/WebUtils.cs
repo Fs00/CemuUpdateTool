@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 
 namespace CemuUpdateTool
 {
@@ -33,7 +34,7 @@ namespace CemuUpdateTool
          *   - currentRecursiveCall: name is self-explanatory
          */
         public static VersionNumber GetLatestRemoteVersionInBranch(VersionNumber branch, MyWebClient client, string urlSuffix, int maxDepth,
-                                                                   VersionNumber startingVersion, Worker worker, int currentRecursiveCall = 0)
+                                                                   VersionNumber startingVersion, CancellationToken? cToken, int currentRecursiveCall = 0)
         {
             // Check startingVersion validity
             if (startingVersion != null)
@@ -70,6 +71,7 @@ namespace CemuUpdateTool
 
             while (lastCheckedVersionExists)
             {
+                cToken?.ThrowIfCancellationRequested();
                 if (RemoteFileExists(lastCheckedVersion.ToString(maxDepth) + urlSuffix, client))
                     lastCheckedVersion++;
                 else
@@ -88,7 +90,7 @@ namespace CemuUpdateTool
             if (lastCheckedVersion == null)                 // no versions have been found in this branch (probable wrong parameter/s)
                 return null;
             if (lastCheckedVersion.Depth < maxDepth)        // maximum depth has not been reached yet
-                return GetLatestRemoteVersionInBranch(lastCheckedVersion, client, urlSuffix, maxDepth, startingVersion, worker, currentRecursiveCall + 1);
+                return GetLatestRemoteVersionInBranch(lastCheckedVersion, client, urlSuffix, maxDepth, startingVersion, cToken, currentRecursiveCall + 1);
             else                                            // finished scanning: return the latest version you found
                 return lastCheckedVersion;
         }
@@ -112,14 +114,19 @@ namespace CemuUpdateTool
             request.Timeout = 30000;
             request.ServicePoint.MaxIdleTime = 30000;
 
-            // This will avoid that the method throws an exception when an error response arrives
             try
             {
                 response = (HttpWebResponse) GetWebResponse(request);
             }
+            // Avoid that the method throws an exception when an error response arrives
             catch (WebException exc) when (exc.Response != null)
             {
                 return exc.Response;
+            }
+            // Avoids unwanted exceptions if the task is canceled during a WebRequest
+            catch (WebException exc) when (exc.Status == WebExceptionStatus.RequestCanceled)
+            {
+                throw new OperationCanceledException();
             }
             return response;
         }
