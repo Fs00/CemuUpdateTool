@@ -81,7 +81,10 @@ namespace CemuUpdateTool
                         if (choice == DialogResult.Abort)
                             throw;
                         else if (choice == DialogResult.Ignore)
+                        {
                             ReportError();
+                            break;
+                        }
                     }
                 }
                 FileCopied(file.Length);    // notify to the form that the current file has been copied
@@ -145,7 +148,8 @@ namespace CemuUpdateTool
          *      
          *  TODO: callback per MigrationForm?
          */
-        public static void ExtractZipFileContents(string zipPath, CancellationToken? cToken, Action ReportError, List<FileInfo> createdFiles, List<DirectoryInfo> createdDirectories)
+        public static void ExtractZipFileContents(string zipPath, CancellationToken? cToken, Action ReportError,
+                                                  List<FileInfo> createdFiles, List<DirectoryInfo> createdDirectories)
         {
             string extractionPath = Path.GetDirectoryName(zipPath);
             ZipArchive archive = null;
@@ -203,7 +207,10 @@ namespace CemuUpdateTool
                         if (choice == DialogResult.Abort)
                             throw;
                         else if (choice == DialogResult.Ignore)
+                        {
                             ReportError();
+                            break;
+                        }
                     }
                 }
             }

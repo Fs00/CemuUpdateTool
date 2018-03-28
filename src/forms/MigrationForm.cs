@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -11,6 +12,7 @@ namespace CemuUpdateTool
     {
         Worker worker;
         OptionsManager opts;
+        CancellationTokenSource ctSource;
         bool overallProgressBarMaxDivided = false,
              singleProgressBarMaxDivided = false;
         bool srcFolderTxtBoxValidated = false,
@@ -25,6 +27,7 @@ namespace CemuUpdateTool
             CheckForIllegalCrossThreadCalls = false;
             DownloadMode = downloadMode;
             opts = new OptionsManager();
+            ctSource = new CancellationTokenSource();
         }
 
         private void Exit(object sender, EventArgs e)
@@ -89,7 +92,7 @@ namespace CemuUpdateTool
 
         private async void DoOperationsAsync(object sender, EventArgs e)
         {
-            WorkOutcome result = WorkOutcome.Undetermined;
+            WorkOutcome result = WorkOutcome.Success;
             
             // Check if Cemu versions are ok, if not warn the user
             if (oldCemuExeVer > newCemuExeVer)
@@ -116,29 +119,52 @@ namespace CemuUpdateTool
             }
 
             // Set Cemu folders in the class
-            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy);
+            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token);
 
-            // TODO: perform download operations
-
-            if (!(worker.IsAborted || worker.IsCancelled))
+            // Set overall progress bar according to overall size
+            long overallSize = worker.CalculateFoldersSizes();      // TODO: se si è in DownloadMode, va sommata la dimensione del file da scaricare
+            if (overallSize > Int32.MaxValue)
             {
-                // Set overall progress bar according to overall size
-                long overallSize = worker.CalculateFoldersSizes();
-                if (overallSize > Int32.MaxValue)
-                {
-                    overallSize /= 1000;
-                    overallProgressBarMaxDivided = true;
-                }
-                progressBarOverall.Maximum = Convert.ToInt32(overallSize);
+                overallSize /= 1000;
+                overallProgressBarMaxDivided = true;
+            }
+            progressBarOverall.Maximum = Convert.ToInt32(overallSize);
 
+            try         // TODO: fixare eccezioni non catturate
+            {
                 // Start operations in a secondary thread and enable/disable buttons after operations have started
                 var operationsTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ResetSingleProgressBar,
-                                          UpdateCurrentFileText, UpdateProgressBars));
+                                            UpdateCurrentFileText, UpdateProgressBars));
                 btnCancel.Enabled = true;
                 btnStart.Enabled = false;
 
                 // Yield control to the form
-                result = await operationsTask;
+                await operationsTask;
+
+                if (worker.ErrorsEncountered)
+                    result = WorkOutcome.CompletedWithErrors;
+            }
+            catch (Exception taskExc)
+            {
+                try
+                {
+                    if (worker.CreatedFiles.Count > 0 || worker.CreatedDirectories.Count > 0)
+                    {
+                        // Ask if the user wants to remove files that have already been copied and, if the user accepts, performs the task. Then exit from the function.
+                        DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
+                        if (choice == DialogResult.Yes)
+                            worker.PerformCleanup();
+                    }
+                }
+                catch (Exception cleanupExc)
+                {
+                    MessageBox.Show($"An error occurred when deleting already copied files: {cleanupExc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+                if (taskExc is OperationCanceledException)
+                    result = WorkOutcome.CancelledByUser;
+                else
+                    result = WorkOutcome.Aborted;
             }
 
             // Once work has completed, ask if user wants to create Cemu desktop shortcut...
@@ -158,7 +184,7 @@ namespace CemuUpdateTool
         private void CancelOperations(object sender, EventArgs e)
         {
             lblSingleProgress.Text = "Cancelling...";
-            worker.StopWork(WorkOutcome.CancelledByUser);
+            ctSource.Cancel();
         }
 
         private void CheckOldFolderTextboxContent(object sender, EventArgs e)

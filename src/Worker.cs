@@ -18,7 +18,6 @@ namespace CemuUpdateTool
         Aborted,
         CancelledByUser,
         CompletedWithErrors,
-        Undetermined = -1       // just a placeholder value before the worker terminates
     }
 
     public class Worker
@@ -26,8 +25,6 @@ namespace CemuUpdateTool
         public string BaseSourcePath { private set; get; }              // older Cemu folder
         public string BaseDestinationPath { private set; get; }         // new Cemu folder
 
-        public bool IsCancelled { private set; get; } = false;
-        public bool IsAborted { private set; get; } = false;
         public bool ErrorsEncountered { private set; get; } = false;
               
         public List<FileInfo> CreatedFiles { private set; get; }               // list of files that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
@@ -46,6 +43,7 @@ namespace CemuUpdateTool
             this.foldersToCopy = foldersToCopy;
             this.cancToken = cancToken;
 
+            cancToken.Register(StopPendingWebOperation);
             CreatedFiles = new List<FileInfo>();
             CreatedDirectories = new List<DirectoryInfo>();
         }
@@ -56,7 +54,7 @@ namespace CemuUpdateTool
          *  Method that performs all the migration operations requested by user.
          *  To be run in a separate thread using await keyword.
          */
-        public WorkOutcome PerformMigrationOperations(Dictionary<string, bool> migrationOptions, WorkInfoCallback PerformingWork, 
+        public void PerformMigrationOperations(Dictionary<string, bool> migrationOptions, WorkInfoCallback PerformingWork, 
                                                       ActualFileCallback CopyingFile, FileCopiedCallback FileCopied)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(BaseSourcePath) && !string.IsNullOrWhiteSpace(BaseDestinationPath),
@@ -114,36 +112,7 @@ namespace CemuUpdateTool
                                       CreatedFiles, CreatedDirectories, CopyingFile, FileCopied, ErrorOccurred);
                 }
                 currentFolderIndex++;
-
-                if (IsCancelled || IsAborted)
-                {
-                    try
-                    {
-                        if (CreatedFiles.Count > 0 || CreatedDirectories.Count > 0)
-                        {
-                            // Ask if the user wants to remove files that have already been copied and, if the user accepts, performs the task. Then exit from the function.
-                            DialogResult choice = MessageBox.Show("Do you want to delete files that have already been copied?", "Operation cancelled", MessageBoxButtons.YesNo);
-                            if (choice == DialogResult.Yes)
-                                PerformCleanup();
-                        }
-                    }
-                    catch (Exception exc)
-                    {
-                        MessageBox.Show($"An error occurred when deleting already copied files: {exc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    if (IsCancelled)
-                        return WorkOutcome.CancelledByUser;
-                    else
-                        return WorkOutcome.Aborted;
-                }
             }
-
-            // If the program arrives here, it means that the copy task has been completed
-            if (!ErrorsEncountered)
-                return WorkOutcome.Success;
-            else
-                return WorkOutcome.CompletedWithErrors;
         }
 
         /*
