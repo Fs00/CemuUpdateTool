@@ -30,11 +30,11 @@ namespace CemuUpdateTool
          *   - urlSuffix: the part of the URL which comes after the version number (see above)
          *   - maxDepth: the maximum branch' Depth that must be reached at the latest recursive call (in a few words, where the function must stop)
          *   - startingVersion: the VersionNumber you can use to start the version scanning from a version you know that exists
-         *   - worker: the Worker instance used to check if work has been cancelled
+         *   - cToken: the CancellationToken used to check if work has been cancelled (can be null)
          *   - currentRecursiveCall: name is self-explanatory
          */
         public static VersionNumber GetLatestRemoteVersionInBranch(VersionNumber branch, MyWebClient client, string urlSuffix, int maxDepth,
-                                                                   VersionNumber startingVersion, CancellationToken? cToken, int currentRecursiveCall = 0)
+                                                                   VersionNumber startingVersion, CancellationToken? cToken = null, int currentRecursiveCall = 0)
         {
             // Check startingVersion validity
             if (startingVersion != null)

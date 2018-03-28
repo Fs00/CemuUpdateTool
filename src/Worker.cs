@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
+using System.Threading;
 using System.Net;
 using IWshRuntimeLibrary;
 
@@ -35,13 +36,15 @@ namespace CemuUpdateTool
         List<string> foldersToCopy;     // list of folders to be copied
         List<long> foldersSizes;        // contains the sizes (in bytes) of the folders to copy
         byte currentFolderIndex = 0;    // index of the folder which is currently being copied
+        CancellationToken cancToken;
         MyWebClient client;
 
-        public Worker(string usrInputSrcPath, string usrInputDestPath, List<string> foldersToCopy)
+        public Worker(string usrInputSrcPath, string usrInputDestPath, List<string> foldersToCopy, CancellationToken cancToken)
         {
             BaseSourcePath = usrInputSrcPath;
             BaseDestinationPath = usrInputDestPath;
             this.foldersToCopy = foldersToCopy;
+            this.cancToken = cancToken;
 
             CreatedFiles = new List<FileInfo>();
             CreatedDirectories = new List<DirectoryInfo>();
@@ -99,7 +102,7 @@ namespace CemuUpdateTool
                     if (FileUtils.DirectoryExists(destFolderPath))
                     {
                         PerformingWork($"Removing destination {folder} folder previous contents", 1);
-                        FileUtils.RemoveDirContents(destFolderPath, this);
+                        FileUtils.RemoveDirContents(destFolderPath, cancToken, ErrorOccurred);
                     }
                 }
 
@@ -107,7 +110,8 @@ namespace CemuUpdateTool
                 if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
                 {
                     PerformingWork($"Copying {folder}", foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
-                    FileUtils.CopyDir(Path.Combine(BaseSourcePath, folder), Path.Combine(BaseDestinationPath, folder), CopyingFile, FileCopied, this);
+                    FileUtils.CopyDir(Path.Combine(BaseSourcePath, folder), Path.Combine(BaseDestinationPath, folder), cancToken,
+                                      CreatedFiles, CreatedDirectories, CopyingFile, FileCopied, ErrorOccurred);
                 }
                 currentFolderIndex++;
 
@@ -190,17 +194,10 @@ namespace CemuUpdateTool
                 copiedDir.Delete();
         }
 
-        public void StopWork(WorkOutcome reason)
+        private void StopPendingWebOperation()
         {
             if (client != null && client.IsBusy)    // check if eventually there's a web operation pending and stop it
                 client.CancelAsync();
-
-            if (reason == WorkOutcome.Aborted)
-                IsAborted = true;
-            else if (reason == WorkOutcome.CancelledByUser)
-                IsCancelled = true;
-            else
-                throw new ArgumentException("Not a valid reason to stop the worker.");
         }
 
         public void ErrorOccurred()

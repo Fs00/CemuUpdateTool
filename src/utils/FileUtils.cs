@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Compression;
 using System.Collections.Generic;
+using System.Threading;
 using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
@@ -43,7 +44,8 @@ namespace CemuUpdateTool
          *  Method that copies a Cemu subdir from old installation to new one.
          *  Sends callbacks to MigrationForm in order to update progress bars.
          */
-        public static void CopyDir(string srcFolderPath, string destFolderPath, ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, Worker worker)
+        public static void CopyDir(string srcFolderPath, string destFolderPath, CancellationToken? cToken, List<FileInfo> createdFiles, List<DirectoryInfo> createdDirectories,
+                                   ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, Action ReportError)
         {
             // Retrieve informations for files and subdirectories
             DirectoryInfo sourceDir = new DirectoryInfo(srcFolderPath);
@@ -52,63 +54,49 @@ namespace CemuUpdateTool
 
             // Check if destination folder exists, if not create it
             if (!DirectoryExists(destFolderPath))
-                worker.CreatedDirectories.Add(Directory.CreateDirectory(destFolderPath));
+                createdDirectories.Add(Directory.CreateDirectory(destFolderPath));
 
             // Copy files
             foreach (FileInfo file in srcFilesArray)
             {
-                if (!worker.IsCancelled && !worker.IsAborted)   // check that work hasn't been cancelled
+                cToken?.ThrowIfCancellationRequested();
+                bool copySuccessful = false;
+                FileInfo destinationFile;
+
+                CopyingFile(file.Name);      // tell the MigrationForm the name of the file I'm about to copy
+                string destFilePath = Path.Combine(destFolderPath, file.Name);
+                while (!copySuccessful)
                 {
-                    bool copySuccessful = false;
-                    FileInfo destinationFile;
-
-                    CopyingFile(file.Name);                     // Tell the MigrationForm the name of the file I'm about to copy
-                    string destFilePath = Path.Combine(destFolderPath, file.Name);
-                    while (!copySuccessful)
+                    try
                     {
-                        try
-                        {
-                            destinationFile = file.CopyTo(destFilePath, true);
-                            copySuccessful = true;
-                            worker.CreatedFiles.Add(destinationFile);           // Add to the list of copied files the destination file
-                        }
-                        catch(Exception exc)
-                        {
-                            DialogResult choice = MessageBox.Show($"Unexpected error when copying file {file.Name}: {exc.Message} What do you want to do?",
-                                "Error during file copy", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
-
-                            if (choice == DialogResult.Retry)
-                                continue;
-                            else if (choice == DialogResult.Abort)
-                            {
-                                worker.StopWork(WorkOutcome.Aborted);
-                                return;
-                            }
-                            else if (choice == DialogResult.Ignore)
-                                worker.ErrorOccurred();
-                        }
-
+                        destinationFile = file.CopyTo(destFilePath, true);
+                        copySuccessful = true;
+                        createdFiles.Add(destinationFile);    // add to the list of copied files the destination file
                     }
-                    FileCopied(file.Length);                    // Notify to the form that the current file has been copied
+                    catch(Exception exc)
+                    {
+                        DialogResult choice = MessageBox.Show($"Unexpected error when copying file {file.Name}: {exc.Message} What do you want to do?",
+                            "Error during file copy", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
+
+                        if (choice == DialogResult.Abort)
+                            throw;
+                        else if (choice == DialogResult.Ignore)
+                            ReportError();
+                    }
                 }
-                else
-                    return;
+                FileCopied(file.Length);    // notify to the form that the current file has been copied
             }
 
             // Copy subdirs recursively
             foreach (DirectoryInfo subdir in srcSubdirsArray)
-            {
-                if (!worker.IsCancelled && !worker.IsAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
-                    CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), CopyingFile, FileCopied, worker);
-                else
-                    return;
-            }
+                CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), cToken, createdFiles, createdDirectories, CopyingFile, FileCopied, ReportError);
         }
 
         /*
          *  Method that deletes the contents of the passed folder without deleting the folder itself
+         *  If this method fails, it doesn't throw any exception but simply quits reporting the error to the Worker
          */
-        public static void RemoveDirContents(string folderPath, Worker worker)
+        public static void RemoveDirContents(string folderPath, CancellationToken? cToken, Action ReportError)
         {
             // Retrieve informations for files and subdirectories
             DirectoryInfo directory = new DirectoryInfo(folderPath);
@@ -122,56 +110,42 @@ namespace CemuUpdateTool
             // Delete files
             foreach (FileInfo file in filesArray)
             {
-                if (!worker.IsCancelled && !worker.IsAborted)     // check that work hasn't been cancelled
-                {
-                    bool deletionSuccessful = false;
-                    while (!deletionSuccessful)
-                    {
-                        try
-                        {
-                            file.Delete();
-                            deletionSuccessful = true;
-                        }
-                        catch (Exception exc)
-                        {
-                            DialogResult choice = MessageBox.Show($"Unexpected error when deleting file {file.Name}: {exc.Message}" +
-                                " Do you want to retry or skip folder contents removal?",
-                                "Error during file deletion", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                cToken?.ThrowIfCancellationRequested();     // check for cancellation
 
-                            if (choice == DialogResult.Retry)
-                                continue;
-                            else if (choice == DialogResult.Cancel)
-                            {
-                                worker.ErrorOccurred();
-                                return;
-                            }
+                bool deletionSuccessful = false;
+                while (!deletionSuccessful)
+                {
+                    try
+                    {
+                        file.Delete();
+                        deletionSuccessful = true;
+                    }
+                    catch (Exception exc)
+                    {
+                        DialogResult choice = MessageBox.Show($"Unexpected error when deleting file {file.Name}: {exc.Message}" +
+                            " Do you want to retry or skip folder contents removal?",
+                            "Error during file deletion", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+
+                        if (choice == DialogResult.Cancel)
+                        {
+                            ReportError();
+                            return;
                         }
                     }
                 }
-                else
-                    return;
             }
 
             // Delete subdirs recursively
-            foreach (DirectoryInfo subdir in subdirsArray)
-            {
-                if (!worker.IsCancelled && !worker.IsAborted)       // I need to check that here as well, otherwise the program would show the MessageBox above for every subdirectory
-                    RemoveDirContents(Path.Combine(folderPath, subdir.Name), worker);
-                else
-                    return;
-            }
+            foreach (DirectoryInfo subdir in subdirsArray)  // TODO: in questo modo le sottocartelle non vengono cancellate?
+                RemoveDirContents(Path.Combine(folderPath, subdir.Name), cToken, ReportError);
         }
 
         /*
          *  Extracts all the contents of a given Zip file in the same directory as the archive, keeping its internal folder structure
-         *  This method uses a different pattern for cancellation compared to the methods above:
-         *      - when the task is aborted due to an error, the method rethrows the error exception to the caller
-         *      - when the task is cancelled by the user (clicking Cancel in the MigrationForm), the method throws an OperationCanceledException
-         *  This because it's the only "clean" method to terminate the execution of Worker.PerformDownloadOperations() 
          *      
          *  TODO: callback per MigrationForm?
          */
-        public static void ExtractZipFileContents(string zipPath, Worker worker)
+        public static void ExtractZipFileContents(string zipPath, CancellationToken? cToken, Action ReportError, List<FileInfo> createdFiles, List<DirectoryInfo> createdDirectories)
         {
             string extractionPath = Path.GetDirectoryName(zipPath);
             ZipArchive archive = null;
@@ -201,45 +175,36 @@ namespace CemuUpdateTool
             bool entryWrittenSuccessfully = false;
             foreach (ZipArchiveEntry entry in archive.Entries)
             {
+                cToken?.ThrowIfCancellationRequested();
                 entryWrittenSuccessfully = false;
                 while (!entryWrittenSuccessfully)
                 {
-                    if (!worker.IsCancelled)    // don't check if the work is aborted because once it is, it exits the function
+                    try
                     {
-                        try
-                        {
-                            string entryRelativePath = entry.FullName.Replace('/', Path.DirectorySeparatorChar);    // replace all occurrencies of '/' with '\'
-                            string extractedFilePath = Path.Combine(extractionPath, entryRelativePath);
+                        string entryRelativePath = entry.FullName.Replace('/', Path.DirectorySeparatorChar);    // replace all occurrencies of '/' with '\'
+                        string extractedFilePath = Path.Combine(extractionPath, entryRelativePath);
 
-                            // If the entry is a folder, create it
-                            if (entryRelativePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                            {
-                                Directory.CreateDirectory(extractedFilePath);
-                                worker.CreatedDirectories.Add(new DirectoryInfo(extractedFilePath));
-                            }
-                            // Otherwise, if it's a file, extract it
-                            else
-                            {
-                                entry.ExtractToFile(extractedFilePath, true);
-                                worker.CreatedFiles.Add(new FileInfo(extractedFilePath));
-                            }
-                            entryWrittenSuccessfully = true;
-                        }
-                        catch (Exception exc)
+                        // If the entry is a folder, create it
+                        if (entryRelativePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                            createdDirectories.Add(Directory.CreateDirectory(extractedFilePath));
+                        // Otherwise, if it's a file, extract it
+                        else
                         {
-                            DialogResult choice = MessageBox.Show($"Unexpected error when extracting file {entry.Name} from {Path.GetFileName(zipPath)}: {exc.Message}" +
-                                                  "What do you want to do?", "Error during file extraction", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
-
-                            if (choice == DialogResult.Retry)
-                                continue;
-                            else if (choice == DialogResult.Abort)
-                                throw;
-                            else if (choice == DialogResult.Ignore)
-                                worker.ErrorOccurred();
+                            entry.ExtractToFile(extractedFilePath, true);
+                            createdFiles.Add(new FileInfo(extractedFilePath));
                         }
+                        entryWrittenSuccessfully = true;
                     }
-                    else
-                        throw new OperationCanceledException();
+                    catch (Exception exc)
+                    {
+                        DialogResult choice = MessageBox.Show($"Unexpected error when extracting file {entry.Name} from {Path.GetFileName(zipPath)}: {exc.Message}" +
+                                              "What do you want to do?", "Error during file extraction", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
+
+                        if (choice == DialogResult.Abort)
+                            throw;
+                        else if (choice == DialogResult.Ignore)
+                            ReportError();
+                    }
                 }
             }
         }
