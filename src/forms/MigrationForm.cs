@@ -27,7 +27,6 @@ namespace CemuUpdateTool
             CheckForIllegalCrossThreadCalls = false;
             DownloadMode = downloadMode;
             opts = new OptionsManager();
-            ctSource = new CancellationTokenSource();
         }
 
         private void Exit(object sender, EventArgs e)
@@ -119,6 +118,7 @@ namespace CemuUpdateTool
             }
 
             // Set Cemu folders in the class
+            ctSource = new CancellationTokenSource();
             worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token);
 
             // Set overall progress bar according to overall size
@@ -130,7 +130,7 @@ namespace CemuUpdateTool
             }
             progressBarOverall.Maximum = Convert.ToInt32(overallSize);
 
-            try         // TODO: fixare eccezioni non catturate
+            try
             {
                 // Start operations in a secondary thread and enable/disable buttons after operations have started
                 var operationsTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ResetSingleProgressBar,
@@ -346,8 +346,6 @@ namespace CemuUpdateTool
             // Reset textboxes' validated state
             srcFolderTxtBoxValidated = false;
             destFolderTxtBoxValidated = false;
-
-            worker = null;
         }
 
         /*
