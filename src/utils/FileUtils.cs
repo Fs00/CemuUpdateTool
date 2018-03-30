@@ -9,9 +9,6 @@ using System.Runtime.InteropServices;
 
 namespace CemuUpdateTool
 {
-    // SET OF CALLBACKS SIGNATURES FOR THE MAINFORM
-    public delegate void ActualFileCallback(string name);
-
     public static class FileUtils
     {
         /*
@@ -43,7 +40,7 @@ namespace CemuUpdateTool
          *  Method that copies a Cemu subdir from old installation to new one.
          *  Sends callbacks to MigrationForm in order to update progress bars.
          */
-        public static void CopyDir(string srcFolderPath, string destFolderPath, CancellationToken? cToken, IProgress<long> progressHandler, ActualFileCallback CopyingFile,
+        public static void CopyDir(string srcFolderPath, string destFolderPath, CancellationToken? cToken, IProgress<long> progressHandler, Action<string, bool> LogMessage,
                                    Action ReportError, List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             // Retrieve informations for files and subdirectories
@@ -62,7 +59,7 @@ namespace CemuUpdateTool
                 bool copySuccessful = false;
                 FileInfo destinationFile;
 
-                CopyingFile(file.Name);      // tell the MigrationForm the name of the file I'm about to copy
+                LogMessage($@"Copying {file.Directory.Name}\{file.Name}... ", false);      // TODO: to be improved
                 string destFilePath = Path.Combine(destFolderPath, file.Name);
                 while (!copySuccessful)
                 {
@@ -87,11 +84,12 @@ namespace CemuUpdateTool
                     }
                 }
                 progressHandler.Report(file.Length);    // notify to the form that the current file has been copied
+                LogMessage("Done!", true);
             }
 
             // Copy subdirs recursively
             foreach (DirectoryInfo subdir in srcSubdirsArray)
-                CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), cToken, progressHandler, CopyingFile, ReportError, createdFiles, createdDirectories);
+                CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), cToken, progressHandler, LogMessage, ReportError, createdFiles, createdDirectories);
         }
 
         /*

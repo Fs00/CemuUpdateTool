@@ -44,18 +44,17 @@
             this.txtBoxOldFolder = new System.Windows.Forms.TextBox();
             this.lblOldFolder = new System.Windows.Forms.Label();
             this.grpBoxProgress = new System.Windows.Forms.GroupBox();
-            this.lblPercentOverall = new System.Windows.Forms.Label();
-            this.lblOverallProgress = new System.Windows.Forms.Label();
-            this.progressBarOverall = new System.Windows.Forms.ProgressBar();
-            this.lblPercentSingle = new System.Windows.Forms.Label();
-            this.lblSingleProgress = new System.Windows.Forms.Label();
-            this.progressBarSingle = new System.Windows.Forms.ProgressBar();
+            this.lblPercent = new System.Windows.Forms.Label();
+            this.overallProgressBar = new System.Windows.Forms.ProgressBar();
+            this.lblCurrentTask = new System.Windows.Forms.Label();
             this.btnHelp = new System.Windows.Forms.Button();
             this.btnAbout = new System.Windows.Forms.Button();
             this.btnExit = new System.Windows.Forms.Button();
             this.lblVersion = new System.Windows.Forms.Label();
             this.errProviderNewFolder = new System.Windows.Forms.ErrorProvider(this.components);
             this.errProviderOldFolder = new System.Windows.Forms.ErrorProvider(this.components);
+            this.lblDetails = new System.Windows.Forms.Label();
+            this.txtBoxLog = new System.Windows.Forms.TextBox();
             this.grpBoxFolderSelect.SuspendLayout();
             this.grpBoxProgress.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderNewFolder)).BeginInit();
@@ -212,74 +211,47 @@
             // 
             // grpBoxProgress
             // 
-            this.grpBoxProgress.Controls.Add(this.lblPercentOverall);
-            this.grpBoxProgress.Controls.Add(this.lblOverallProgress);
-            this.grpBoxProgress.Controls.Add(this.progressBarOverall);
-            this.grpBoxProgress.Controls.Add(this.lblPercentSingle);
-            this.grpBoxProgress.Controls.Add(this.lblSingleProgress);
-            this.grpBoxProgress.Controls.Add(this.progressBarSingle);
+            this.grpBoxProgress.Controls.Add(this.txtBoxLog);
+            this.grpBoxProgress.Controls.Add(this.lblDetails);
+            this.grpBoxProgress.Controls.Add(this.lblPercent);
+            this.grpBoxProgress.Controls.Add(this.overallProgressBar);
+            this.grpBoxProgress.Controls.Add(this.lblCurrentTask);
             this.grpBoxProgress.Location = new System.Drawing.Point(13, 184);
             this.grpBoxProgress.Name = "grpBoxProgress";
-            this.grpBoxProgress.Size = new System.Drawing.Size(456, 152);
+            this.grpBoxProgress.Size = new System.Drawing.Size(456, 198);
             this.grpBoxProgress.TabIndex = 1;
             this.grpBoxProgress.TabStop = false;
             this.grpBoxProgress.Text = "Progress";
             // 
-            // lblPercentOverall
+            // lblPercent
             // 
-            this.lblPercentOverall.AutoSize = true;
-            this.lblPercentOverall.Location = new System.Drawing.Point(414, 83);
-            this.lblPercentOverall.Name = "lblPercentOverall";
-            this.lblPercentOverall.Size = new System.Drawing.Size(21, 13);
-            this.lblPercentOverall.TabIndex = 5;
-            this.lblPercentOverall.Text = "0%";
-            this.lblPercentOverall.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblPercent.AutoSize = true;
+            this.lblPercent.Location = new System.Drawing.Point(414, 24);
+            this.lblPercent.Name = "lblPercent";
+            this.lblPercent.Size = new System.Drawing.Size(21, 13);
+            this.lblPercent.TabIndex = 5;
+            this.lblPercent.Text = "0%";
+            this.lblPercent.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // lblOverallProgress
+            // overallProgressBar
             // 
-            this.lblOverallProgress.AutoSize = true;
-            this.lblOverallProgress.Location = new System.Drawing.Point(18, 83);
-            this.lblOverallProgress.Name = "lblOverallProgress";
-            this.lblOverallProgress.Size = new System.Drawing.Size(83, 13);
-            this.lblOverallProgress.TabIndex = 4;
-            this.lblOverallProgress.Text = "Overall progress";
+            this.overallProgressBar.Location = new System.Drawing.Point(21, 44);
+            this.overallProgressBar.Name = "overallProgressBar";
+            this.overallProgressBar.Size = new System.Drawing.Size(414, 30);
+            this.overallProgressBar.TabIndex = 3;
             // 
-            // progressBarOverall
+            // lblCurrentTask
             // 
-            this.progressBarOverall.Location = new System.Drawing.Point(21, 102);
-            this.progressBarOverall.Name = "progressBarOverall";
-            this.progressBarOverall.Size = new System.Drawing.Size(414, 30);
-            this.progressBarOverall.TabIndex = 3;
-            // 
-            // lblPercentSingle
-            // 
-            this.lblPercentSingle.AutoSize = true;
-            this.lblPercentSingle.Location = new System.Drawing.Point(414, 24);
-            this.lblPercentSingle.Name = "lblPercentSingle";
-            this.lblPercentSingle.Size = new System.Drawing.Size(21, 13);
-            this.lblPercentSingle.TabIndex = 2;
-            this.lblPercentSingle.Text = "0%";
-            this.lblPercentSingle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // lblSingleProgress
-            // 
-            this.lblSingleProgress.AutoSize = true;
-            this.lblSingleProgress.Location = new System.Drawing.Point(18, 24);
-            this.lblSingleProgress.Name = "lblSingleProgress";
-            this.lblSingleProgress.Size = new System.Drawing.Size(154, 13);
-            this.lblSingleProgress.TabIndex = 1;
-            this.lblSingleProgress.Text = "Waiting for operations to start...";
-            // 
-            // progressBarSingle
-            // 
-            this.progressBarSingle.Location = new System.Drawing.Point(21, 43);
-            this.progressBarSingle.Name = "progressBarSingle";
-            this.progressBarSingle.Size = new System.Drawing.Size(414, 30);
-            this.progressBarSingle.TabIndex = 0;
+            this.lblCurrentTask.AutoSize = true;
+            this.lblCurrentTask.Location = new System.Drawing.Point(18, 24);
+            this.lblCurrentTask.Name = "lblCurrentTask";
+            this.lblCurrentTask.Size = new System.Drawing.Size(154, 13);
+            this.lblCurrentTask.TabIndex = 1;
+            this.lblCurrentTask.Text = "Waiting for operations to start...";
             // 
             // btnHelp
             // 
-            this.btnHelp.Location = new System.Drawing.Point(222, 345);
+            this.btnHelp.Location = new System.Drawing.Point(222, 390);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(75, 29);
             this.btnHelp.TabIndex = 2;
@@ -289,7 +261,7 @@
             // 
             // btnAbout
             // 
-            this.btnAbout.Location = new System.Drawing.Point(303, 345);
+            this.btnAbout.Location = new System.Drawing.Point(303, 390);
             this.btnAbout.Name = "btnAbout";
             this.btnAbout.Size = new System.Drawing.Size(75, 29);
             this.btnAbout.TabIndex = 3;
@@ -299,7 +271,7 @@
             // 
             // btnExit
             // 
-            this.btnExit.Location = new System.Drawing.Point(384, 345);
+            this.btnExit.Location = new System.Drawing.Point(384, 390);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(75, 29);
             this.btnExit.TabIndex = 4;
@@ -312,9 +284,9 @@
             this.lblVersion.AutoSize = true;
             this.lblVersion.Location = new System.Drawing.Point(74, 353);
             this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(81, 13);
+            this.lblVersion.Size = new System.Drawing.Size(0, 13);
             this.lblVersion.TabIndex = 5;
-            this.lblVersion.Text = $"Version {Program.Version}";
+            //this.lblVersion.Text = $"Version {Program.Version}";
             // 
             // errProviderNewFolder
             // 
@@ -326,11 +298,31 @@
             this.errProviderOldFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
             this.errProviderOldFolder.ContainerControl = this;
             // 
+            // lblDetails
+            // 
+            this.lblDetails.AutoSize = true;
+            this.lblDetails.Location = new System.Drawing.Point(18, 86);
+            this.lblDetails.Name = "lblDetails";
+            this.lblDetails.Size = new System.Drawing.Size(39, 13);
+            this.lblDetails.TabIndex = 6;
+            this.lblDetails.Text = "Details";
+            // 
+            // txtBoxLog
+            // 
+            this.txtBoxLog.BackColor = System.Drawing.Color.White;
+            this.txtBoxLog.Location = new System.Drawing.Point(21, 104);
+            this.txtBoxLog.Multiline = true;
+            this.txtBoxLog.Name = "txtBoxLog";
+            this.txtBoxLog.ReadOnly = true;
+            this.txtBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.txtBoxLog.Size = new System.Drawing.Size(414, 78);
+            this.txtBoxLog.TabIndex = 7;
+            // 
             // MigrationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(481, 386);
+            this.ClientSize = new System.Drawing.Size(481, 430);
             this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnAbout);
@@ -365,12 +357,9 @@
         private System.Windows.Forms.TextBox txtBoxNewFolder;
         private System.Windows.Forms.Label lblNewFolder;
         private System.Windows.Forms.GroupBox grpBoxProgress;
-        private System.Windows.Forms.Label lblPercentOverall;
-        private System.Windows.Forms.Label lblOverallProgress;
-        private System.Windows.Forms.ProgressBar progressBarOverall;
-        private System.Windows.Forms.Label lblPercentSingle;
-        private System.Windows.Forms.Label lblSingleProgress;
-        private System.Windows.Forms.ProgressBar progressBarSingle;
+        private System.Windows.Forms.Label lblPercent;
+        private System.Windows.Forms.ProgressBar overallProgressBar;
+        private System.Windows.Forms.Label lblCurrentTask;
         private System.Windows.Forms.Button btnHelp;
         private System.Windows.Forms.Button btnAbout;
         private System.Windows.Forms.Button btnExit;
@@ -382,6 +371,8 @@
         private System.Windows.Forms.Label lblNewVersionNr;
         private System.Windows.Forms.Label lblOldVersionNr;
         private System.Windows.Forms.ErrorProvider errProviderOldFolder;
+        private System.Windows.Forms.Label lblDetails;
+        private System.Windows.Forms.TextBox txtBoxLog;
     }
 }
 

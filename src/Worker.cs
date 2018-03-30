@@ -10,8 +10,6 @@ using IWshRuntimeLibrary;
 
 namespace CemuUpdateTool
 {
-    public delegate void WorkInfoCallback(string name, long dim);
-
     public enum WorkOutcome
     {
         Success,
@@ -54,8 +52,8 @@ namespace CemuUpdateTool
          *  Method that performs all the migration operations requested by user.
          *  To be run in a separate thread using await keyword.
          */
-        public void PerformMigrationOperations(Dictionary<string, bool> migrationOptions, WorkInfoCallback PerformingWork, 
-                                               ActualFileCallback CopyingFile, IProgress<long> progressHandler)
+        public void PerformMigrationOperations(Dictionary<string, bool> migrationOptions, Action<string> PerformingWork, 
+                                               Action<string, bool> LogMessage, IProgress<long> progressHandler)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(BaseSourcePath) && !string.IsNullOrWhiteSpace(BaseDestinationPath),
                 "Source and/or destination Cemu folder are set incorrectly!");
@@ -66,7 +64,7 @@ namespace CemuUpdateTool
                 if (FileUtils.FileExists(Path.Combine(BaseSourcePath, "settings.bin")))
                 {
                     bool copySuccessful = false;
-                    PerformingWork("Copying settings.bin", 1);      // display in the MigrationForm the label "Copying settings.bin..." (1 is a placeholder)
+                    PerformingWork("Copying settings.bin");      // display in the MigrationForm the label "Copying settings.bin..."
                     FileInfo settingsFile = new FileInfo(Path.Combine(BaseSourcePath, "settings.bin"));
                     while (!copySuccessful)
                     {
@@ -99,7 +97,7 @@ namespace CemuUpdateTool
                     string destFolderPath = Path.Combine(BaseDestinationPath, folder);
                     if (FileUtils.DirectoryExists(destFolderPath))
                     {
-                        PerformingWork($"Removing destination {folder} folder previous contents", 1);
+                        PerformingWork($"Removing destination {folder} folder previous contents");
                         FileUtils.RemoveDirContents(destFolderPath, cancToken, ErrorOccurred);
                     }
                 }
@@ -107,9 +105,9 @@ namespace CemuUpdateTool
                 // Folder copy
                 if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
                 {
-                    PerformingWork($"Copying {folder}", foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
+                    PerformingWork($"Copying {folder}");      // tell the main form which folder I'm about to copy
                     FileUtils.CopyDir(Path.Combine(BaseSourcePath, folder), Path.Combine(BaseDestinationPath, folder), cancToken,
-                                      progressHandler, CopyingFile, ErrorOccurred, CreatedFiles, CreatedDirectories);
+                                      progressHandler, LogMessage, ErrorOccurred, CreatedFiles, CreatedDirectories);
                 }
                 currentFolderIndex++;
             }

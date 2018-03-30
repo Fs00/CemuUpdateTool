@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,11 +15,12 @@ namespace CemuUpdateTool
         OptionsManager opts;
         Progress<long> progressHandler;
         CancellationTokenSource ctSource;
-        bool overallProgressBarMaxDivided = false,
-             singleProgressBarMaxDivided = false;
+        bool progressBarMaxDivided = false;
         bool srcFolderTxtBoxValidated = false,
              destFolderTxtBoxValidated = false;
         VersionNumber oldCemuExeVer, newCemuExeVer;
+        Stopwatch stopwatch;
+        StringBuilder logBuffer;
 
         public bool DownloadMode { get; }   // value that determinates if newer version of Cemu must be downloaded before migrating
 
@@ -28,7 +30,9 @@ namespace CemuUpdateTool
             CheckForIllegalCrossThreadCalls = false;
             DownloadMode = downloadMode;
             opts = new OptionsManager();
-            progressHandler = new Progress<long>(UpdateProgressBars);
+            stopwatch = new Stopwatch();
+            logBuffer = new StringBuilder(1000);
+            progressHandler = new Progress<long>(UpdateProgressBarsAndLog);
         }
 
         private void Exit(object sender, EventArgs e)
@@ -106,7 +110,7 @@ namespace CemuUpdateTool
                     return;
             }
 
-            lblSingleProgress.Text = "Preparing...";
+            lblCurrentTask.Text = "Preparing...";
 
             // Get the list of folders to copy telling the method if source Cemu version is >= 1.10
             List<string> foldersToCopy = opts.GetFoldersToCopy(oldCemuExeVer.Major > 1 || oldCemuExeVer.Minor >= 10);
@@ -124,25 +128,27 @@ namespace CemuUpdateTool
             // Create a new Worker instance and pass it all needed data
             ctSource = new CancellationTokenSource();
             worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token);
+            stopwatch.Restart();
 
             // Set overall progress bar according to overall size
             long overallSize = worker.CalculateFoldersSizes();      // TODO: se si è in DownloadMode, va sommata la dimensione del file da scaricare
             if (overallSize > Int32.MaxValue)
             {
                 overallSize /= 1000;
-                overallProgressBarMaxDivided = true;
+                progressBarMaxDivided = true;
             }
-            progressBarOverall.Maximum = Convert.ToInt32(overallSize);
+            overallProgressBar.Maximum = Convert.ToInt32(overallSize);
 
             try
             {
                 // Start operations in a secondary thread and enable cancel button once operations have started
-                var operationsTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ResetSingleProgressBar,
-                                                                                      UpdateCurrentFileText, progressHandler));
+                var operationsTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ChangeProgressLabelText,
+                                                                                      AppendLogMessage, progressHandler));
                 btnCancel.Enabled = true;
 
                 // Yield control to the form
                 await operationsTask;
+                stopwatch.Stop();
 
                 // If there have been errors during operations, update result
                 if (worker.ErrorsEncountered)
@@ -150,6 +156,7 @@ namespace CemuUpdateTool
             }
             catch (Exception taskExc)   // task cancelled or aborted due to an error
             {
+                stopwatch.Stop();
                 try
                 {
                     // Ask if the user wants to remove files that have been created
@@ -182,13 +189,15 @@ namespace CemuUpdateTool
                       (isNewCemuVersionAtLeast110 && opts.migrationOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.mlcFolderExternalPath : null);
             }
 
+            txtBoxLog.AppendText($"\r\nOperations terminated after {(float) stopwatch.ElapsedMilliseconds / 1000} seconds.");
+
             // ... and reset form controls to their original state
             ResetEverything(result);
         }
 
         private void CancelOperations(object sender, EventArgs e)
         {
-            lblSingleProgress.Text = "Cancelling...";
+            lblCurrentTask.Text = "Cancelling...";
             ctSource.Cancel();
         }
 
@@ -275,42 +284,33 @@ namespace CemuUpdateTool
 
         /*
          *  Callback method that updates progress bars after a file has been copied
+         *  Since it's the callback used by Progress<T>, it's called only when the message queue is free
          */
-        private void UpdateProgressBars(long dim)
+        private void UpdateProgressBarsAndLog(long dim)
         {
-            if (singleProgressBarMaxDivided)
-                progressBarSingle.Value += Convert.ToInt32(dim/1000);
+            // Update progress bar and percent label
+            if (progressBarMaxDivided)
+                overallProgressBar.Value += Convert.ToInt32(dim/1000);
             else
-                progressBarSingle.Value += Convert.ToInt32(dim);
+                overallProgressBar.Value += Convert.ToInt32(dim);
 
-            if (overallProgressBarMaxDivided)
-                progressBarOverall.Value += Convert.ToInt32(dim/1000);
-            else
-                progressBarOverall.Value += Convert.ToInt32(dim);
+            lblPercent.Text = Math.Floor(overallProgressBar.Value / (double)overallProgressBar.Maximum * 100) + "%";
 
-            lblPercentSingle.Text = Math.Floor(progressBarSingle.Value / (double)progressBarSingle.Maximum * 100) + "%";
-            lblPercentOverall.Text = Math.Floor(progressBarOverall.Value / (double)progressBarOverall.Maximum * 100) + "%";
-            // TODO: da aggiungere testo in Details textbox
+            // Print log buffer content and flush it.
+            // Lock avoids race conditions with AppendLogMessage
+            lock (logBuffer)
+            {
+                txtBoxLog.AppendText(logBuffer.ToString());
+                logBuffer.Clear();
+            }
         }
 
         /*
-         *  Callback method that resets single progress bar after a folder operation has been completed and
-         *  updates labels and progress bars according to the next task
+         *  Callback method that updates current task label according to the next task
          */
-        private void ResetSingleProgressBar(string newLabelText, long newProgressBarSize)
+        private void ChangeProgressLabelText(string newLabelText)
         {
-            singleProgressBarMaxDivided = false;
-            progressBarSingle.Value = 0;
-            lblPercentSingle.Text = "0%";
-
-            lblSingleProgress.Text = $"{newLabelText}...";
-
-            if (newProgressBarSize > Int32.MaxValue)
-            {
-                newProgressBarSize /= 1000;
-                singleProgressBarMaxDivided = true;
-            }
-            progressBarSingle.Maximum = Convert.ToInt32(newProgressBarSize);
+            lblCurrentTask.Text = $"{newLabelText}...";
         }
 
         /*
@@ -335,11 +335,9 @@ namespace CemuUpdateTool
             }
 
             // Reset progress bars
-            progressBarSingle.Value = 0;
-            progressBarOverall.Value = 0;
-            lblPercentSingle.Text = "0%";
-            lblPercentOverall.Text = "0%";
-            lblSingleProgress.Text = "Waiting for operations to start...";
+            overallProgressBar.Value = 0;
+            lblPercent.Text = "0%";
+            lblCurrentTask.Text = "Waiting for operations to start...";
 
             // Reset Cemu version label
             lblOldCemuVersion.Visible = false;
@@ -362,13 +360,16 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Callback method that updates the single progress bar's current file text every time there's a file to copy
+         *  Callback method that appends a message to be written in Details textbox
          */
-        private void UpdateCurrentFileText(string name)
+        private void AppendLogMessage(string message, bool newLine)
         {
-            if (name.Length > 50)
-                name = name.Substring(0,49) + "...";
-            // TODO: add logging in Details section
+            lock (logBuffer)
+            {
+                logBuffer.Append(message);
+                if (newLine)
+                    logBuffer.Append("\r\n");
+            }
         }
     }
 }
