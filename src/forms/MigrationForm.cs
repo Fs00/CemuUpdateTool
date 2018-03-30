@@ -12,6 +12,7 @@ namespace CemuUpdateTool
     {
         Worker worker;
         OptionsManager opts;
+        Progress<long> progressHandler;
         CancellationTokenSource ctSource;
         bool overallProgressBarMaxDivided = false,
              singleProgressBarMaxDivided = false;
@@ -27,6 +28,7 @@ namespace CemuUpdateTool
             CheckForIllegalCrossThreadCalls = false;
             DownloadMode = downloadMode;
             opts = new OptionsManager();
+            progressHandler = new Progress<long>(UpdateProgressBars);
         }
 
         private void Exit(object sender, EventArgs e)
@@ -114,10 +116,12 @@ namespace CemuUpdateTool
             {
                 MessageBox.Show("It seems that there are no folders to copy. Probably you set up options incorrectly.",
                     "Empty folders list", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return;     // TODO: verificare che non rimanga la scritta "Preparing"
             }
 
-            // Set Cemu folders in the class
+            btnStart.Enabled = false;
+
+            // Create a new Worker instance and pass it all needed data
             ctSource = new CancellationTokenSource();
             worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token);
 
@@ -132,25 +136,25 @@ namespace CemuUpdateTool
 
             try
             {
-                // Start operations in a secondary thread and enable/disable buttons after operations have started
+                // Start operations in a secondary thread and enable cancel button once operations have started
                 var operationsTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ResetSingleProgressBar,
-                                            UpdateCurrentFileText, UpdateProgressBars));
+                                                                                      UpdateCurrentFileText, progressHandler));
                 btnCancel.Enabled = true;
-                btnStart.Enabled = false;
 
                 // Yield control to the form
                 await operationsTask;
 
+                // If there have been errors during operations, update result
                 if (worker.ErrorsEncountered)
                     result = WorkOutcome.CompletedWithErrors;
             }
-            catch (Exception taskExc)
+            catch (Exception taskExc)   // task cancelled or aborted due to an error
             {
                 try
                 {
+                    // Ask if the user wants to remove files that have been created
                     if (worker.CreatedFiles.Count > 0 || worker.CreatedDirectories.Count > 0)
                     {
-                        // Ask if the user wants to remove files that have already been copied and, if the user accepts, performs the task. Then exit from the function.
                         DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
                         if (choice == DialogResult.Yes)
                             worker.PerformCleanup();
@@ -158,9 +162,10 @@ namespace CemuUpdateTool
                 }
                 catch (Exception cleanupExc)
                 {
-                    MessageBox.Show($"An error occurred when deleting already copied files: {cleanupExc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"An error occurred when deleting created files: {cleanupExc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
+                // Update result according to caught exception
                 if (taskExc is OperationCanceledException)
                     result = WorkOutcome.CancelledByUser;
                 else
@@ -285,6 +290,7 @@ namespace CemuUpdateTool
 
             lblPercentSingle.Text = Math.Floor(progressBarSingle.Value / (double)progressBarSingle.Maximum * 100) + "%";
             lblPercentOverall.Text = Math.Floor(progressBarOverall.Value / (double)progressBarOverall.Maximum * 100) + "%";
+            // TODO: da aggiungere testo in Details textbox
         }
 
         /*
@@ -312,14 +318,21 @@ namespace CemuUpdateTool
          */
         private void ResetEverything(WorkOutcome outcome)
         {
-            if (outcome == WorkOutcome.Success)
-                MessageBox.Show("Operation successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else if (outcome == WorkOutcome.Aborted)
-                MessageBox.Show("Operation aborted due to an unexpected error.", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-            else if (outcome == WorkOutcome.CancelledByUser)
-                MessageBox.Show("Operation cancelled by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else if (outcome == WorkOutcome.CompletedWithErrors)
-                MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            switch (outcome)
+            {
+                case WorkOutcome.Success:
+                    MessageBox.Show("Operation successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    break;
+                case WorkOutcome.Aborted:
+                    MessageBox.Show("Operation aborted due to an unexpected error.", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    break;
+                case WorkOutcome.CancelledByUser:
+                    MessageBox.Show("Operation cancelled by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    break;
+                case WorkOutcome.CompletedWithErrors:
+                    MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    break;
+            }
 
             // Reset progress bars
             progressBarSingle.Value = 0;

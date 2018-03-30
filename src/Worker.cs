@@ -15,9 +15,9 @@ namespace CemuUpdateTool
     public enum WorkOutcome
     {
         Success,
-        Aborted,
-        CancelledByUser,
         CompletedWithErrors,
+        Aborted,
+        CancelledByUser
     }
 
     public class Worker
@@ -55,7 +55,7 @@ namespace CemuUpdateTool
          *  To be run in a separate thread using await keyword.
          */
         public void PerformMigrationOperations(Dictionary<string, bool> migrationOptions, WorkInfoCallback PerformingWork, 
-                                                      ActualFileCallback CopyingFile, FileCopiedCallback FileCopied)
+                                               ActualFileCallback CopyingFile, IProgress<long> progressHandler)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(BaseSourcePath) && !string.IsNullOrWhiteSpace(BaseDestinationPath),
                 "Source and/or destination Cemu folder are set incorrectly!");
@@ -109,7 +109,7 @@ namespace CemuUpdateTool
                 {
                     PerformingWork($"Copying {folder}", foldersSizes[currentFolderIndex]);      // tell the main form which folder I'm about to copy
                     FileUtils.CopyDir(Path.Combine(BaseSourcePath, folder), Path.Combine(BaseDestinationPath, folder), cancToken,
-                                      CreatedFiles, CreatedDirectories, CopyingFile, FileCopied, ErrorOccurred);
+                                      progressHandler, CopyingFile, ErrorOccurred, CreatedFiles, CreatedDirectories);
                 }
                 currentFolderIndex++;
             }

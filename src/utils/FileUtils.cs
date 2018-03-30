@@ -10,7 +10,6 @@ using System.Runtime.InteropServices;
 namespace CemuUpdateTool
 {
     // SET OF CALLBACKS SIGNATURES FOR THE MAINFORM
-    public delegate void FileCopiedCallback(long dim);
     public delegate void ActualFileCallback(string name);
 
     public static class FileUtils
@@ -44,8 +43,8 @@ namespace CemuUpdateTool
          *  Method that copies a Cemu subdir from old installation to new one.
          *  Sends callbacks to MigrationForm in order to update progress bars.
          */
-        public static void CopyDir(string srcFolderPath, string destFolderPath, CancellationToken? cToken, List<FileInfo> createdFiles, List<DirectoryInfo> createdDirectories,
-                                   ActualFileCallback CopyingFile, FileCopiedCallback FileCopied, Action ReportError)
+        public static void CopyDir(string srcFolderPath, string destFolderPath, CancellationToken? cToken, IProgress<long> progressHandler, ActualFileCallback CopyingFile,
+                                   Action ReportError, List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             // Retrieve informations for files and subdirectories
             DirectoryInfo sourceDir = new DirectoryInfo(srcFolderPath);
@@ -54,7 +53,7 @@ namespace CemuUpdateTool
 
             // Check if destination folder exists, if not create it
             if (!DirectoryExists(destFolderPath))
-                createdDirectories.Add(Directory.CreateDirectory(destFolderPath));
+                createdDirectories?.Add(Directory.CreateDirectory(destFolderPath));     // TODO: verificare se CreateDirectory viene eseguito quando createdDirectories è null
 
             // Copy files
             foreach (FileInfo file in srcFilesArray)
@@ -71,7 +70,7 @@ namespace CemuUpdateTool
                     {
                         destinationFile = file.CopyTo(destFilePath, true);
                         copySuccessful = true;
-                        createdFiles.Add(destinationFile);    // add to the list of copied files the destination file
+                        createdFiles?.Add(destinationFile);    // add to the list of copied files the destination file
                     }
                     catch(Exception exc)
                     {
@@ -87,12 +86,12 @@ namespace CemuUpdateTool
                         }
                     }
                 }
-                FileCopied(file.Length);    // notify to the form that the current file has been copied
+                progressHandler.Report(file.Length);    // notify to the form that the current file has been copied
             }
 
             // Copy subdirs recursively
             foreach (DirectoryInfo subdir in srcSubdirsArray)
-                CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), cToken, createdFiles, createdDirectories, CopyingFile, FileCopied, ReportError);
+                CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), cToken, progressHandler, CopyingFile, ReportError, createdFiles, createdDirectories);
         }
 
         /*
@@ -149,7 +148,7 @@ namespace CemuUpdateTool
          *  TODO: callback per MigrationForm?
          */
         public static void ExtractZipFileContents(string zipPath, CancellationToken? cToken, Action ReportError,
-                                                  List<FileInfo> createdFiles, List<DirectoryInfo> createdDirectories)
+                                                  List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             string extractionPath = Path.GetDirectoryName(zipPath);
             ZipArchive archive = null;
@@ -190,12 +189,12 @@ namespace CemuUpdateTool
 
                         // If the entry is a folder, create it
                         if (entryRelativePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                            createdDirectories.Add(Directory.CreateDirectory(extractedFilePath));
+                            createdDirectories?.Add(Directory.CreateDirectory(extractedFilePath));
                         // Otherwise, if it's a file, extract it
                         else
                         {
                             entry.ExtractToFile(extractedFilePath, true);
-                            createdFiles.Add(new FileInfo(extractedFilePath));
+                            createdFiles?.Add(new FileInfo(extractedFilePath));
                         }
                         entryWrittenSuccessfully = true;
                     }
