@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define LOGGING_DISABLED
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -95,112 +97,6 @@ namespace CemuUpdateTool
             }
         }
 
-        private async void DoOperationsAsync(object sender, EventArgs e)
-        {
-            WorkOutcome result = WorkOutcome.Success;
-            
-            // Check if Cemu versions are ok, if not warn the user
-            if (oldCemuExeVer > newCemuExeVer)
-            {
-                DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
-                    "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested", 
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                if (choice == DialogResult.No)
-                    return;
-            }
-
-            lblCurrentTask.Text = "Preparing...";
-
-            // Get the list of folders to copy telling the method if source Cemu version is >= 1.10
-            List<string> foldersToCopy = opts.GetFoldersToCopy(oldCemuExeVer.Major > 1 || oldCemuExeVer.Minor >= 10);
-
-            // Check if the list is empty (no folders to copy)
-            if (foldersToCopy.Count == 0)
-            {
-                MessageBox.Show("It seems that there are no folders to copy. Probably you set up options incorrectly.",
-                    "Empty folders list", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;     // TODO: verificare che non rimanga la scritta "Preparing"
-            }
-
-            btnStart.Enabled = false;
-
-            // Create a new Worker instance and pass it all needed data
-            ctSource = new CancellationTokenSource();
-            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token);
-            stopwatch.Restart();
-
-            // Set overall progress bar according to overall size
-            long overallSize = worker.CalculateFoldersSizes();      // TODO: se si è in DownloadMode, va sommata la dimensione del file da scaricare
-            if (overallSize > Int32.MaxValue)
-            {
-                overallSize /= 1000;
-                progressBarMaxDivided = true;
-            }
-            overallProgressBar.Maximum = Convert.ToInt32(overallSize);
-
-            try
-            {
-                // Start operations in a secondary thread and enable cancel button once operations have started
-                var operationsTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ChangeProgressLabelText,
-                                                                                      AppendLogMessage, progressHandler));
-                btnCancel.Enabled = true;
-
-                // Yield control to the form
-                await operationsTask;
-                stopwatch.Stop();
-
-                // If there have been errors during operations, update result
-                if (worker.ErrorsEncountered)
-                    result = WorkOutcome.CompletedWithErrors;
-            }
-            catch (Exception taskExc)   // task cancelled or aborted due to an error
-            {
-                stopwatch.Stop();
-                try
-                {
-                    // Ask if the user wants to remove files that have been created
-                    if (worker.CreatedFiles.Count > 0 || worker.CreatedDirectories.Count > 0)
-                    {
-                        DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
-                        if (choice == DialogResult.Yes)
-                            worker.PerformCleanup();
-                    }
-                }
-                catch (Exception cleanupExc)
-                {
-                    MessageBox.Show($"An error occurred when deleting created files: {cleanupExc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-
-                // Update result according to caught exception
-                if (taskExc is OperationCanceledException)
-                    result = WorkOutcome.CancelledByUser;
-                else
-                    result = WorkOutcome.Aborted;
-            }
-
-            // Once work has completed, ask if user wants to create Cemu desktop shortcut...
-            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.migrationOptions["askForDesktopShortcut"] == true)
-            {
-                DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                bool isNewCemuVersionAtLeast110 = newCemuExeVer.Major > 1 || newCemuExeVer.Minor >= 10;
-                if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
-                    worker.CreateDesktopShortcut(newCemuExeVer.ToString(),
-                      (isNewCemuVersionAtLeast110 && opts.migrationOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.mlcFolderExternalPath : null);
-            }
-
-            txtBoxLog.AppendText($"\r\nOperations terminated after {(float) stopwatch.ElapsedMilliseconds / 1000} seconds.");
-
-            // ... and reset form controls to their original state
-            ResetEverything(result);
-        }
-
-        private void CancelOperations(object sender, EventArgs e)
-        {
-            lblCurrentTask.Text = "Cancelling...";
-            ctSource.Cancel();
-        }
-
         private void CheckOldFolderTextboxContent(object sender, EventArgs e)
         {
             // Check if input directory exists
@@ -282,35 +178,106 @@ namespace CemuUpdateTool
             }
         }
 
-        /*
-         *  Callback method that updates progress bars after a file has been copied
-         *  Since it's the callback used by Progress<T>, it's called only when the message queue is free
-         */
-        private void UpdateProgressBarsAndLog(long dim)
-        {
-            // Update progress bar and percent label
-            if (progressBarMaxDivided)
-                overallProgressBar.Value += Convert.ToInt32(dim/1000);
-            else
-                overallProgressBar.Value += Convert.ToInt32(dim);
-
-            lblPercent.Text = Math.Floor(overallProgressBar.Value / (double)overallProgressBar.Maximum * 100) + "%";
-
-            // Print log buffer content and flush it.
-            // Lock avoids race conditions with AppendLogMessage
-            lock (logBuffer)
+        private async void DoOperationsAsync(object sender, EventArgs e)
+        {           
+            // Check if Cemu versions are ok, if not warn the user
+            if (oldCemuExeVer > newCemuExeVer)
             {
-                txtBoxLog.AppendText(logBuffer.ToString());
-                logBuffer.Clear();
-            }
-        }
+                DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
+                    "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested", 
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
-        /*
-         *  Callback method that updates current task label according to the next task
-         */
-        private void ChangeProgressLabelText(string newLabelText)
-        {
-            lblCurrentTask.Text = $"{newLabelText}...";
+                if (choice == DialogResult.No)
+                    return;
+            }
+
+            // Get the list of folders to copy telling the method if source Cemu version is >= 1.10..
+            List<string> foldersToCopy = opts.GetFoldersToCopy(oldCemuExeVer.Major > 1 || oldCemuExeVer.Minor >= 10);
+
+            // ... and check if it's is empty (no folders to copy)
+            if (foldersToCopy.Count == 0)
+            {
+                MessageBox.Show("It seems that there are no folders to copy. Probably you set up options incorrectly.",
+                    "Empty folders list", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Start preparing
+            txtBoxLog.Clear();
+            lblCurrentTask.Text = "Preparing...";
+            AppendLogMessage("Preparing...");
+            btnStart.Enabled = false;
+            WorkOutcome result = WorkOutcome.Success;
+
+            // Create a new Worker instance and pass it all needed data
+            ctSource = new CancellationTokenSource();
+            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token);
+
+            stopwatch.Start();
+
+            // Set overall progress bar according to overall size
+            long overallSize = worker.CalculateFoldersSizes();      // TODO: se si è in DownloadMode, va sommata la dimensione del file da scaricare
+            if (overallSize > Int32.MaxValue)
+            {
+                overallSize /= 1000;
+                progressBarMaxDivided = true;
+            }
+            overallProgressBar.Maximum = Convert.ToInt32(overallSize);
+
+            try
+            {
+                // Start operations in a secondary thread and enable cancel button once operations have started
+                var operationsTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ChangeProgressLabelText,
+                                                                                      AppendLogMessage, progressHandler));
+                btnCancel.Enabled = true;
+
+                // Yield control to the form
+                await operationsTask;
+                stopwatch.Stop();
+
+                // If there have been errors during operations, update result
+                if (worker.ErrorsEncountered)
+                    result = WorkOutcome.CompletedWithErrors;
+            }
+            catch (Exception taskExc)   // task cancelled or aborted due to an error
+            {
+                stopwatch.Stop();
+                try
+                {
+                    // Ask if the user wants to remove files that have been created
+                    if (worker.CreatedFiles.Count > 0 || worker.CreatedDirectories.Count > 0)
+                    {
+                        DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
+                        if (choice == DialogResult.Yes)
+                            worker.PerformCleanup();
+                    }
+                }
+                catch (Exception cleanupExc)
+                {
+                    MessageBox.Show($"An error occurred when deleting created files: {cleanupExc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+                // Update result according to caught exception type
+                if (taskExc is OperationCanceledException)
+                    result = WorkOutcome.CancelledByUser;
+                else
+                    result = WorkOutcome.Aborted;
+            }
+
+            // Once work has completed, ask if user wants to create Cemu desktop shortcut...
+            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.migrationOptions["askForDesktopShortcut"] == true)
+            {
+                DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                bool isNewCemuVersionAtLeast110 = newCemuExeVer.Major > 1 || newCemuExeVer.Minor >= 10;
+                if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
+                    worker.CreateDesktopShortcut(newCemuExeVer.ToString(),
+                      (isNewCemuVersionAtLeast110 && opts.migrationOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.mlcFolderExternalPath : null);
+            }
+
+            AppendLogMessage($"\r\nOperations terminated after {(float) stopwatch.ElapsedMilliseconds / 1000} seconds.");
+
+            // ... and reset form controls to their original state
+            ResetEverything(result);
         }
 
         /*
@@ -334,6 +301,11 @@ namespace CemuUpdateTool
                     break;
             }
 
+            // If log textbox was hidden during the last part of the task, print all buffer content before it gets deleted
+            if (logBuffer.Length > 0)
+                txtBoxLog.AppendText(logBuffer.ToString());
+            logBuffer.Clear();
+
             // Reset progress bars
             overallProgressBar.Value = 0;
             lblPercent.Text = "0%";
@@ -349,26 +321,105 @@ namespace CemuUpdateTool
             txtBoxOldFolder.TextChanged -= CheckOldFolderTextboxContent;
             txtBoxOldFolder.Text = "";
             txtBoxOldFolder.TextChanged += CheckOldFolderTextboxContent;
-            txtBoxNewFolder.TextChanged -= CheckNewFolderTextboxContent;            
-            txtBoxNewFolder.Text = "";            
+            txtBoxNewFolder.TextChanged -= CheckNewFolderTextboxContent;
+            txtBoxNewFolder.Text = "";
             txtBoxNewFolder.TextChanged += CheckNewFolderTextboxContent;
             btnCancel.Enabled = false;
 
             // Reset textboxes' validated state
             srcFolderTxtBoxValidated = false;
             destFolderTxtBoxValidated = false;
+
+            // Reset stopwatch
+            stopwatch.Reset();
+        }
+
+        private void CancelOperations(object sender, EventArgs e)
+        {
+            lblCurrentTask.Text = "Cancelling...";
+            ctSource.Cancel();
+            AppendLogMessage("\r\nUser requested cancellation.");
+        }
+        
+        /*
+         *  Callback method that updates progress bars after a file has been copied
+         *  Since it's the callback used by Progress<T>, it's queued on the main UI thread
+         */
+        private void UpdateProgressBarsAndLog(long dim)
+        {
+            // Update progress bar and percent label
+            if (progressBarMaxDivided)
+                overallProgressBar.Value += Convert.ToInt32(dim/1000);
+            else
+                overallProgressBar.Value += Convert.ToInt32(dim);
+
+            lblPercent.Text = Math.Floor(overallProgressBar.Value / (double)overallProgressBar.Maximum * 100) + "%";
+
+            #if !LOGGING_DISABLED
+            // Print log buffer content asynchronously and flush it.
+            // Lock avoids race conditions with AppendLogMessage
+            if (txtBoxLog.Visible)
+            {
+                lock (logBuffer)
+                {
+                    string log = logBuffer.ToString();
+                    Task.Run(() => {
+                        lock (txtBoxLog)
+                            txtBoxLog.AppendText(log);
+                    });
+                    logBuffer.Clear();
+                }
+            }
+            #endif
+        }
+
+        /*
+         *  Callback method that updates current task label according to the next task
+         */
+        private void ChangeProgressLabelText(string newLabelText)
+        {
+            lblCurrentTask.Text = $"{newLabelText}...";
+            AppendLogMessage($"{newLabelText}...");
         }
 
         /*
          *  Callback method that appends a message to be written in Details textbox
          */
-        private void AppendLogMessage(string message, bool newLine)
+        private void AppendLogMessage(string message, bool newLine = true)
         {
+            // Lock avoids race conditions with UpdateProgressBarsAndLog
             lock (logBuffer)
             {
                 logBuffer.Append(message);
                 if (newLine)
                     logBuffer.Append("\r\n");
+            }
+        }
+
+        /*
+         *  Shows/hides log textbox when clicking on Details label
+         */
+        private void ShowHideDetailsTextbox(object sender, EventArgs e)
+        {
+            if (txtBoxLog.Visible)  // arrow down -> arrow right
+                lblDetails.Text = lblDetails.Text.Replace((char)9661, (char)9655);
+            else                    // arrow right -> arrow down
+                lblDetails.Text = lblDetails.Text.Replace((char)9655, (char)9661);
+
+            txtBoxLog.Visible = !txtBoxLog.Visible;
+        }
+
+        /*
+         *  Resizes the form when txtBoxLog's visible state changes
+         */
+        private void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e)
+        {
+            if (ActiveForm != null)     // avoid triggering the event before the form is active
+            {
+                if (txtBoxLog.Visible)
+                    this.Height += txtBoxLog.Height;
+                else
+                    this.Height -= txtBoxLog.Height;
             }
         }
     }

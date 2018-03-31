@@ -59,7 +59,7 @@ namespace CemuUpdateTool
                 bool copySuccessful = false;
                 FileInfo destinationFile;
 
-                LogMessage($@"Copying {file.Directory.Name}\{file.Name}... ", false);      // TODO: to be improved
+                LogMessage($@"Copying {file.FullName}... ", false);      // TODO: to be improved
                 string destFilePath = Path.Combine(destFolderPath, file.Name);
                 while (!copySuccessful)
                 {
