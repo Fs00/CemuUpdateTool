@@ -173,12 +173,15 @@
             // 
             // txtBoxNewFolder
             // 
+            this.txtBoxNewFolder.AllowDrop = true;
             this.errProviderNewFolder.SetIconPadding(this.txtBoxNewFolder, -20);
             this.txtBoxNewFolder.Location = new System.Drawing.Point(22, 92);
             this.txtBoxNewFolder.Name = "txtBoxNewFolder";
             this.txtBoxNewFolder.Size = new System.Drawing.Size(370, 20);
             this.txtBoxNewFolder.TabIndex = 4;
             this.txtBoxNewFolder.TextChanged += new System.EventHandler(this.CheckNewFolderTextboxContent);
+            this.txtBoxNewFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
+            this.txtBoxNewFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
             // 
             // lblNewFolder
             // 
@@ -202,12 +205,15 @@
             // 
             // txtBoxOldFolder
             // 
+            this.txtBoxOldFolder.AllowDrop = true;
             this.errProviderOldFolder.SetIconPadding(this.txtBoxOldFolder, -20);
             this.txtBoxOldFolder.Location = new System.Drawing.Point(22, 44);
             this.txtBoxOldFolder.Name = "txtBoxOldFolder";
             this.txtBoxOldFolder.Size = new System.Drawing.Size(370, 20);
             this.txtBoxOldFolder.TabIndex = 1;
             this.txtBoxOldFolder.TextChanged += new System.EventHandler(this.CheckOldFolderTextboxContent);
+            this.txtBoxOldFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
+            this.txtBoxOldFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
             // 
             // lblOldFolder
             // 
@@ -250,10 +256,9 @@
             // 
             // lblDetails
             // 
-            this.lblDetails.AutoSize = true;
             this.lblDetails.Location = new System.Drawing.Point(18, 86);
             this.lblDetails.Name = "lblDetails";
-            this.lblDetails.Size = new System.Drawing.Size(51, 13);
+            this.lblDetails.Size = new System.Drawing.Size(439, 13);
             this.lblDetails.TabIndex = 6;
             this.lblDetails.Text = "▽ Details";
             this.lblDetails.Click += new System.EventHandler(this.ShowHideDetailsTextbox);

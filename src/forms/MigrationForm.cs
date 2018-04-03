@@ -397,6 +397,25 @@ namespace CemuUpdateTool
         }
 
         /*
+         *  Methods for handling drag & drop into folder textboxes
+         */
+        private void TextboxDragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.Text) || e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Copy;
+            else
+                e.Effect = DragDropEffects.None;
+        }
+
+        private void TextboxDragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                (sender as TextBox).Text = (e.Data.GetData(DataFormats.FileDrop) as string[])[0];
+            else if (e.Data.GetDataPresent(DataFormats.Text))
+                (sender as TextBox).Text = e.Data.GetData(DataFormats.Text).ToString();
+        }
+
+        /*
          *  Shows/hides log textbox when clicking on Details label
          */
         private void ShowHideDetailsTextbox(object sender, EventArgs e)
