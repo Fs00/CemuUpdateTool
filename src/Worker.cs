@@ -10,6 +10,7 @@ using IWshRuntimeLibrary;
 
 namespace CemuUpdateTool
 {
+    public delegate void LogMessageHandler(string message, EventLogEntryType type, bool newLine = true);
     public enum WorkOutcome
     {
         Success,
@@ -20,20 +21,20 @@ namespace CemuUpdateTool
 
     public class Worker
     {
-        public string BaseSourcePath { private set; get; }              // older Cemu folder
-        public string BaseDestinationPath { private set; get; }         // new Cemu folder
+        public string BaseSourcePath { get; }              // older Cemu folder
+        public string BaseDestinationPath { get; }         // new Cemu folder
 
         public bool ErrorsEncountered { private set; get; } = false;
               
         public List<FileInfo> CreatedFiles { private set; get; }               // list of files that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
         public List<DirectoryInfo> CreatedDirectories { private set; get; }    // list of directories that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
 
-        List<string> foldersToCopy;     // list of folders to be copied
-        List<long> foldersSizes;        // contains the sizes (in bytes) of the folders to copy
-        byte currentFolderIndex = 0;    // index of the folder which is currently being copied
+        List<string> foldersToCopy;             // list of folders to be copied
+        List<long> foldersSizes;                // contains the sizes (in bytes) of the folders to copy
+        byte currentFolderIndex = 0;            // index of the folder which is currently being copied
         CancellationToken cancToken;
         MyWebClient client;
-        Action<string, bool> LoggerDelegate;
+        Action<string, bool> LoggerDelegate;    // callback that writes a message on an external log (in this case MigrationForm textbox)
 
         public Worker(string usrInputSrcPath, string usrInputDestPath, List<string> foldersToCopy, CancellationToken cancToken, Action<string, bool> LoggerDelegate)
         {
@@ -44,7 +45,7 @@ namespace CemuUpdateTool
             this.LoggerDelegate = LoggerDelegate;
 
             CalculateFoldersSizes();
-            cancToken.Register(StopPendingWebOperation);
+            cancToken.Register(StopPendingWebOperation);    // register the action to be performed when cancellation is requested
             CreatedFiles = new List<FileInfo>();
             CreatedDirectories = new List<DirectoryInfo>();
         }
@@ -100,7 +101,7 @@ namespace CemuUpdateTool
                     if (FileUtils.DirectoryExists(destFolderPath))
                     {
                         PerformingWork($"Removing destination {folder} folder previous contents");
-                        FileUtils.RemoveDirContents(destFolderPath, cancToken, ErrorOccurred);
+                        FileUtils.RemoveDirContents(destFolderPath, HandleLogMessage, cancToken);
                     }
                 }
 
@@ -108,8 +109,8 @@ namespace CemuUpdateTool
                 if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
                 {
                     PerformingWork($"Copying {folder}");      // tell the main form which folder I'm about to copy
-                    FileUtils.CopyDir(Path.Combine(BaseSourcePath, folder), Path.Combine(BaseDestinationPath, folder), cancToken,
-                                      progressHandler, LoggerDelegate, ErrorOccurred, CreatedFiles, CreatedDirectories);
+                    FileUtils.CopyDir(Path.Combine(BaseSourcePath, folder), Path.Combine(BaseDestinationPath, folder), HandleLogMessage,
+                                      cancToken, progressHandler, CreatedFiles, CreatedDirectories);
                 }
                 currentFolderIndex++;
             }
@@ -124,7 +125,7 @@ namespace CemuUpdateTool
 
             // Calculate the size of every folder to copy
             foreach (string folder in foldersToCopy)
-                foldersSizes.Add(FileUtils.CalculateDirSize(Path.Combine(BaseSourcePath, folder), ErrorOccurred));
+                foldersSizes.Add(FileUtils.CalculateDirSize(Path.Combine(BaseSourcePath, folder), HandleLogMessage));
         }
 
         /*
@@ -168,16 +169,34 @@ namespace CemuUpdateTool
                 copiedDir.Delete();
         }
 
+        /*
+         *  Checks if eventually there's a web operation pending and stops it
+         *  Executed automatically when cancellation is requested (see constructor)
+         */
         private void StopPendingWebOperation()
         {
-            if (client != null && client.IsBusy)    // check if eventually there's a web operation pending and stop it
+            if (client != null && client.IsBusy)
                 client.CancelAsync();
         }
 
-        public void ErrorOccurred(string errMessage)
+        /*
+         *  Callback that handles a log message given its type (warning, info, error etc.).
+         *  Through this callback, methods called by the Worker can notify errors.
+         */
+        public void HandleLogMessage(string message, EventLogEntryType type, bool newLine = true)
         {
-            LoggerDelegate($"ERROR: {errMessage}", true);
-            ErrorsEncountered = true;
+            string logMessage = "";
+            if (type == EventLogEntryType.Error || type == EventLogEntryType.FailureAudit)
+            {
+                // if it's an error message, update errors encountered flag
+                ErrorsEncountered = true;
+                logMessage += "ERROR: ";
+            }
+            else if (type == EventLogEntryType.Warning)
+                logMessage += "WARNING: ";
+
+            logMessage += message;
+            LoggerDelegate(logMessage, newLine);   // give the message to the MigrationForm
         }
     }
 }

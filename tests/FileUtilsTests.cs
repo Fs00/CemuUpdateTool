@@ -16,7 +16,45 @@ namespace CemuUpdateTool.Tests
             if (!FileUtils.FileExists(testZip))
                 Assert.Inconclusive("Missing test archive");
 
-            FileUtils.ExtractZipFileContents(testZip, null, (err) => { Debug.WriteLine(err); });
+            FileUtils.ExtractZipFileContents(testZip, (msg, type, newLine) =>
+            {
+                switch (type)
+                {
+                    case EventLogEntryType.Error:
+                    case EventLogEntryType.FailureAudit:
+                        Debug.Write("ERR: ");
+                        break;
+                    case EventLogEntryType.Warning:
+                        Debug.Write("WARN: ");
+                        break;
+                }
+                Debug.WriteLine(msg);
+            });
+        }
+
+        [TestMethod()]
+        public void RemoveDirContentsTest()
+        {
+            string testDir = @".\testFiles\testDir\";
+
+            if (!FileUtils.DirectoryExists(testDir))
+                Assert.Inconclusive("Missing test directory");
+
+            FileUtils.RemoveDirContents(testDir, (msg, type, newLine) =>
+            {
+                switch (type)
+                {
+                    case EventLogEntryType.Error:
+                    case EventLogEntryType.FailureAudit:
+                        Debug.Write("ERR: ");
+                        break;
+                    case EventLogEntryType.Warning:
+                        Debug.Write("WARN: ");
+                        break;
+                }
+                Debug.WriteLine(msg);
+            });
+            Assert.AreEqual(new DirectoryInfo(testDir).GetDirectories().Length, 0);
         }
     }
 }

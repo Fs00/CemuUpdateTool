@@ -284,10 +284,11 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Callback method that tells the form the outcome of the task, resets the GUI and FileWorker class
+         *  Resets the GUI and all Worker-related variables in order for the form to be ready for another task
          */
         private void ResetEverything(WorkOutcome outcome)
         {
+            // Show a MessageBox with the final result of the task
             switch (outcome)
             {
                 case WorkOutcome.Success:
@@ -358,9 +359,15 @@ namespace CemuUpdateTool
 
             lblPercent.Text = Math.Floor(overallProgressBar.Value / (double)overallProgressBar.Maximum * 100) + "%";
 
-            #if !LOGGING_DISABLED
-            // Print log buffer content asynchronously and flush it.
-            // Lock avoids race conditions with AppendLogMessage
+            UpdateLogTextbox();
+        }
+
+        /*
+         *  Callback method that prints log buffer content asynchronously and flushes it
+         *  Lock avoids race conditions with AppendLogMessage.
+         */
+        private void UpdateLogTextbox()
+        {
             if (txtBoxLog.Visible)
             {
                 lock (logBuffer)
@@ -373,16 +380,17 @@ namespace CemuUpdateTool
                     logBuffer.Clear();
                 }
             }
-            #endif
         }
 
         /*
          *  Callback method that updates current task label according to the next task
+         *  It also updates log textbox in order to prevent messages not being written if progress bar isn't updated during a task
          */
         private void ChangeProgressLabelText(string newLabelText)
         {
             lblCurrentTask.Text = $"{newLabelText}...";
             AppendLogMessage($"{newLabelText}...");
+            UpdateLogTextbox();
         }
 
         /*

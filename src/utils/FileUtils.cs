@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Collections.Generic;
 using System.Threading;
 using System.Text;
+using System.Diagnostics;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
@@ -14,14 +15,14 @@ namespace CemuUpdateTool
         /*
          *  Method that calculates the size of all the files contained in the passed directory and its subdirectories, then returns it
          */
-        public static long CalculateDirSize(string folderPath, Action<string> ReportError)
+        public static long CalculateDirSize(string folderPath, LogMessageHandler LogMessage)
         {
             long dirSize = 0;
 
             // Check if target folder exists, if not exit
             if (!DirectoryExists(folderPath))
             {
-                ReportError($"Unable to find folder {folderPath}.");
+                LogMessage($"Unable to find folder {folderPath}.", EventLogEntryType.Error);
                 return 0;
             }
 
@@ -34,7 +35,7 @@ namespace CemuUpdateTool
                 dirSize += file.Length;
 
             foreach (DirectoryInfo subdir in subdirsArray)      // calculate subdirs sizes recursively
-                dirSize += CalculateDirSize(Path.Combine(folderPath, subdir.Name), ReportError);
+                dirSize += CalculateDirSize(Path.Combine(folderPath, subdir.Name), LogMessage);
 
             return dirSize;
         }
@@ -43,8 +44,8 @@ namespace CemuUpdateTool
          *  Method that copies a Cemu subdir from old installation to new one.
          *  Sends callbacks to MigrationForm in order to update progress bars.
          */
-        public static void CopyDir(string srcFolderPath, string destFolderPath, CancellationToken? cToken, IProgress<long> progressHandler, Action<string, bool> LogMessage,
-                                   Action<string> ReportError, List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
+        public static void CopyDir(string srcFolderPath, string destFolderPath, LogMessageHandler LogMessage, CancellationToken? cToken = null,
+                                   IProgress<long> progressHandler = null, List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             // Retrieve informations for files and subdirectories
             DirectoryInfo sourceDir = new DirectoryInfo(srcFolderPath);
@@ -62,7 +63,7 @@ namespace CemuUpdateTool
                 bool copySuccessful = false;
                 FileInfo destinationFile;
 
-                LogMessage($"Copying {file.FullName}... ", false);
+                LogMessage($"Copying {file.FullName}... ", EventLogEntryType.Information, false);
                 string destFilePath = Path.Combine(destFolderPath, file.Name);
                 while (!copySuccessful)
                 {
@@ -81,26 +82,26 @@ namespace CemuUpdateTool
                             throw;
                         else if (choice == DialogResult.Ignore)
                         {
-                            ReportError($"{file.Name} not copied: {exc.Message}.");
+                            LogMessage($"\r\n{file.Name} not copied: {exc.Message}.", EventLogEntryType.Error);
                             break;
                         }
                     }
                 }
-                progressHandler.Report(file.Length);    // notify to the form that the current file has been copied
+                progressHandler?.Report(file.Length);    // notify to the form that the current file has been copied
                 if (copySuccessful)
-                    LogMessage("Done!", true);
+                    LogMessage("Done!", EventLogEntryType.Information);
             }
 
             // Copy subdirs recursively
             foreach (DirectoryInfo subdir in srcSubdirsArray)
-                CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), cToken, progressHandler, LogMessage, ReportError, createdFiles, createdDirectories);
+                CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), LogMessage, cToken, progressHandler, createdFiles, createdDirectories);
         }
 
         /*
          *  Method that deletes the contents of the passed folder without deleting the folder itself
          *  If this method fails, it doesn't throw any exception but simply quits reporting the error to the Worker
          */
-        public static void RemoveDirContents(string folderPath, CancellationToken? cToken, Action<string> ReportError)
+        public static DirectoryInfo RemoveDirContents(string folderPath, LogMessageHandler LogMessage, CancellationToken? cToken = null)
         {
             // Retrieve informations for files and subdirectories
             DirectoryInfo directory = new DirectoryInfo(folderPath);
@@ -132,24 +133,25 @@ namespace CemuUpdateTool
 
                         if (choice == DialogResult.Cancel)
                         {
-                            ReportError("Unable to complete folder contents removal.");
-                            return;
+                            LogMessage("Unable to complete folder contents removal.", EventLogEntryType.Error);
+                            return null;
                         }
                     }
                 }
             }
+            LogMessage($"Contents of directory {folderPath} removed successfully.", EventLogEntryType.Information);
 
             // Delete subdirs recursively
-            foreach (DirectoryInfo subdir in subdirsArray)  // TODO: in questo modo le sottocartelle non vengono cancellate?
-                RemoveDirContents(Path.Combine(folderPath, subdir.Name), cToken, ReportError);
+            foreach (DirectoryInfo subdir in subdirsArray)
+                RemoveDirContents(Path.Combine(folderPath, subdir.Name), LogMessage, cToken).Delete();
+
+            return directory;       // return the DirectoryInfo object corresponding to this folder, so that the previous recursive call can delete it
         }
 
         /*
          *  Extracts all the contents of a given Zip file in the same directory as the archive, keeping its internal folder structure
-         *      
-         *  TODO: callback per MigrationForm?
          */
-        public static void ExtractZipFileContents(string zipPath, CancellationToken? cToken, Action<string> ReportError,
+        public static void ExtractZipFileContents(string zipPath, LogMessageHandler LogMessage, CancellationToken? cToken = null,
                                                   List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             string extractionPath = Path.GetDirectoryName(zipPath);
@@ -196,6 +198,7 @@ namespace CemuUpdateTool
                         else
                         {
                             entry.ExtractToFile(extractedFilePath, true);
+                            LogMessage($"Entry {entry.Name} extracted successfully in {Path.GetDirectoryName(extractedFilePath)}.", EventLogEntryType.Information);
                             createdFiles?.Add(new FileInfo(extractedFilePath));
                         }
                         entryWrittenSuccessfully = true;
@@ -209,7 +212,7 @@ namespace CemuUpdateTool
                             throw;
                         else if (choice == DialogResult.Ignore)
                         {
-                            ReportError($"Unable to extract file {entry.Name}: {exc.Message}.");
+                            LogMessage($"Unable to extract file {entry.Name}: {exc.Message}.", EventLogEntryType.Error);
                             break;
                         }
                     }
