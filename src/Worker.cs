@@ -33,14 +33,17 @@ namespace CemuUpdateTool
         byte currentFolderIndex = 0;    // index of the folder which is currently being copied
         CancellationToken cancToken;
         MyWebClient client;
+        Action<string, bool> LoggerDelegate;
 
-        public Worker(string usrInputSrcPath, string usrInputDestPath, List<string> foldersToCopy, CancellationToken cancToken)
+        public Worker(string usrInputSrcPath, string usrInputDestPath, List<string> foldersToCopy, CancellationToken cancToken, Action<string, bool> LoggerDelegate)
         {
             BaseSourcePath = usrInputSrcPath;
             BaseDestinationPath = usrInputDestPath;
             this.foldersToCopy = foldersToCopy;
             this.cancToken = cancToken;
+            this.LoggerDelegate = LoggerDelegate;
 
+            CalculateFoldersSizes();
             cancToken.Register(StopPendingWebOperation);
             CreatedFiles = new List<FileInfo>();
             CreatedDirectories = new List<DirectoryInfo>();
@@ -52,8 +55,7 @@ namespace CemuUpdateTool
          *  Method that performs all the migration operations requested by user.
          *  To be run in a separate thread using await keyword.
          */
-        public void PerformMigrationOperations(Dictionary<string, bool> migrationOptions, Action<string> PerformingWork, 
-                                               Action<string, bool> LogMessage, IProgress<long> progressHandler)
+        public void PerformMigrationOperations(Dictionary<string, bool> migrationOptions, Action<string> PerformingWork, IProgress<long> progressHandler)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(BaseSourcePath) && !string.IsNullOrWhiteSpace(BaseDestinationPath),
                 "Source and/or destination Cemu folder are set incorrectly!");
@@ -77,7 +79,7 @@ namespace CemuUpdateTool
                         {
                             // If an error is encountered, ask the user if he wants to retry, otherwise skip the task
                             DialogResult choice = MessageBox.Show($"Unexpected error when copying Cemu settings file: {exc.Message} Do you want to retry? (if you click No, the file will be skipped)",
-                                    "Error during settings.bin copy", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                                                                   "Error during settings.bin copy", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                             if (choice == DialogResult.No)
                             {
                                 ErrorsEncountered = true;
@@ -107,7 +109,7 @@ namespace CemuUpdateTool
                 {
                     PerformingWork($"Copying {folder}");      // tell the main form which folder I'm about to copy
                     FileUtils.CopyDir(Path.Combine(BaseSourcePath, folder), Path.Combine(BaseDestinationPath, folder), cancToken,
-                                      progressHandler, LogMessage, ErrorOccurred, CreatedFiles, CreatedDirectories);
+                                      progressHandler, LoggerDelegate, ErrorOccurred, CreatedFiles, CreatedDirectories);
                 }
                 currentFolderIndex++;
             }
@@ -115,18 +117,23 @@ namespace CemuUpdateTool
 
         /*
          *  Calculates the size of every folder to copy using CalculateDirSize()
-         *  Returns the overall size (useful for the MigrationForm)
          */
-        public long CalculateFoldersSizes()
+        private void CalculateFoldersSizes()
         {
             foldersSizes = new List<long>(foldersToCopy.Capacity);
-            long overallSize = 0;
 
             // Calculate the size of every folder to copy
             foreach (string folder in foldersToCopy)
-                foldersSizes.Add(FileUtils.CalculateDirSize(Path.Combine(BaseSourcePath, folder)));
+                foldersSizes.Add(FileUtils.CalculateDirSize(Path.Combine(BaseSourcePath, folder), ErrorOccurred));
+        }
 
-            // Calculate the overall size and return it
+        /*
+         *  Sum all the folder sizes and return the result (needed by the MigrationForm)
+         */
+        public long GetOverallSizeToCopy()
+        {
+            long overallSize = 0;
+
             foreach (long folderSize in foldersSizes)
                 overallSize += folderSize;
 
@@ -167,8 +174,9 @@ namespace CemuUpdateTool
                 client.CancelAsync();
         }
 
-        public void ErrorOccurred()
+        public void ErrorOccurred(string errMessage)
         {
+            LoggerDelegate($"ERROR: {errMessage}", true);
             ErrorsEncountered = true;
         }
     }

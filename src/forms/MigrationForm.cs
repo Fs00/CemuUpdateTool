@@ -211,12 +211,12 @@ namespace CemuUpdateTool
 
             // Create a new Worker instance and pass it all needed data
             ctSource = new CancellationTokenSource();
-            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token);
+            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token, AppendLogMessage);
 
             stopwatch.Start();
 
             // Set overall progress bar according to overall size
-            long overallSize = worker.CalculateFoldersSizes();      // TODO: se si è in DownloadMode, va sommata la dimensione del file da scaricare
+            long overallSize = worker.GetOverallSizeToCopy();      // TODO: se si è in DownloadMode, va sommata la dimensione del file da scaricare
             if (overallSize > Int32.MaxValue)
             {
                 overallSize /= 1000;
@@ -228,7 +228,7 @@ namespace CemuUpdateTool
             {
                 // Start operations in a secondary thread and enable cancel button once operations have started
                 var operationsTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ChangeProgressLabelText,
-                                                                                      AppendLogMessage, progressHandler));
+                    progressHandler));
                 btnCancel.Enabled = true;
 
                 // Yield control to the form
@@ -261,7 +261,10 @@ namespace CemuUpdateTool
                 if (taskExc is OperationCanceledException)
                     result = WorkOutcome.CancelledByUser;
                 else
+                {
+                    AppendLogMessage($"\r\nOperation aborted due to unrecoverable error: {taskExc.Message}", false);
                     result = WorkOutcome.Aborted;
+                }
             }
 
             // Once work has completed, ask if user wants to create Cemu desktop shortcut...

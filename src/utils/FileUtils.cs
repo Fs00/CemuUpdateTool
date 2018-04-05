@@ -14,13 +14,16 @@ namespace CemuUpdateTool
         /*
          *  Method that calculates the size of all the files contained in the passed directory and its subdirectories, then returns it
          */
-        public static long CalculateDirSize(string folderPath)
+        public static long CalculateDirSize(string folderPath, Action<string> ReportError)
         {
             long dirSize = 0;
 
             // Check if target folder exists, if not exit
             if (!DirectoryExists(folderPath))
+            {
+                ReportError($"Unable to find folder {folderPath}.");
                 return 0;
+            }
 
             // Retrieve informations for files and subdirectories
             DirectoryInfo dirToCompute = new DirectoryInfo(folderPath);
@@ -31,7 +34,7 @@ namespace CemuUpdateTool
                 dirSize += file.Length;
 
             foreach (DirectoryInfo subdir in subdirsArray)      // calculate subdirs sizes recursively
-                dirSize += CalculateDirSize(Path.Combine(folderPath, subdir.Name));
+                dirSize += CalculateDirSize(Path.Combine(folderPath, subdir.Name), ReportError);
 
             return dirSize;
         }
@@ -41,7 +44,7 @@ namespace CemuUpdateTool
          *  Sends callbacks to MigrationForm in order to update progress bars.
          */
         public static void CopyDir(string srcFolderPath, string destFolderPath, CancellationToken? cToken, IProgress<long> progressHandler, Action<string, bool> LogMessage,
-                                   Action ReportError, List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
+                                   Action<string> ReportError, List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             // Retrieve informations for files and subdirectories
             DirectoryInfo sourceDir = new DirectoryInfo(srcFolderPath);
@@ -59,7 +62,7 @@ namespace CemuUpdateTool
                 bool copySuccessful = false;
                 FileInfo destinationFile;
 
-                LogMessage($@"Copying {file.FullName}... ", false);      // TODO: to be improved
+                LogMessage($"Copying {file.FullName}... ", false);
                 string destFilePath = Path.Combine(destFolderPath, file.Name);
                 while (!copySuccessful)
                 {
@@ -78,13 +81,14 @@ namespace CemuUpdateTool
                             throw;
                         else if (choice == DialogResult.Ignore)
                         {
-                            ReportError();
+                            ReportError($"{file.Name} not copied: {exc.Message}.");
                             break;
                         }
                     }
                 }
                 progressHandler.Report(file.Length);    // notify to the form that the current file has been copied
-                LogMessage("Done!", true);
+                if (copySuccessful)
+                    LogMessage("Done!", true);
             }
 
             // Copy subdirs recursively
@@ -96,7 +100,7 @@ namespace CemuUpdateTool
          *  Method that deletes the contents of the passed folder without deleting the folder itself
          *  If this method fails, it doesn't throw any exception but simply quits reporting the error to the Worker
          */
-        public static void RemoveDirContents(string folderPath, CancellationToken? cToken, Action ReportError)
+        public static void RemoveDirContents(string folderPath, CancellationToken? cToken, Action<string> ReportError)
         {
             // Retrieve informations for files and subdirectories
             DirectoryInfo directory = new DirectoryInfo(folderPath);
@@ -128,7 +132,7 @@ namespace CemuUpdateTool
 
                         if (choice == DialogResult.Cancel)
                         {
-                            ReportError();
+                            ReportError("Unable to complete folder contents removal.");
                             return;
                         }
                     }
@@ -145,7 +149,7 @@ namespace CemuUpdateTool
          *      
          *  TODO: callback per MigrationForm?
          */
-        public static void ExtractZipFileContents(string zipPath, CancellationToken? cToken, Action ReportError,
+        public static void ExtractZipFileContents(string zipPath, CancellationToken? cToken, Action<string> ReportError,
                                                   List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             string extractionPath = Path.GetDirectoryName(zipPath);
@@ -205,7 +209,7 @@ namespace CemuUpdateTool
                             throw;
                         else if (choice == DialogResult.Ignore)
                         {
-                            ReportError();
+                            ReportError($"Unable to extract file {entry.Name}: {exc.Message}.");
                             break;
                         }
                     }
