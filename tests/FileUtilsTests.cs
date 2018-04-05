@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CemuUpdateTool;
 using System.IO;
+using System.Diagnostics;
 
 namespace CemuUpdateTool.Tests
 {
@@ -15,8 +16,7 @@ namespace CemuUpdateTool.Tests
             if (!FileUtils.FileExists(testZip))
                 Assert.Inconclusive("Missing test archive");
 
-            Worker wk = new Worker(".", ".", null);
-            FileUtils.ExtractZipFileContents(testZip, wk);
+            FileUtils.ExtractZipFileContents(testZip, null, (err) => { Debug.WriteLine(err); });
         }
     }
 }
