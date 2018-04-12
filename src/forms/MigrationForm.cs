@@ -1,11 +1,10 @@
-﻿//#define LOGGING_DISABLED
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Windows.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -23,6 +22,7 @@ namespace CemuUpdateTool
         VersionNumber oldCemuExeVer, newCemuExeVer;
         Stopwatch stopwatch;
         StringBuilder logBuffer;
+        Dispatcher logUpdater;
 
         public bool DownloadMode { get; }   // value that determinates if newer version of Cemu must be downloaded before migrating
 
@@ -209,6 +209,10 @@ namespace CemuUpdateTool
             btnStart.Enabled = false;
             WorkOutcome result = WorkOutcome.Success;
 
+            // Start the dispatcher used to update log textbox
+            StartLogTextboxDispatcher();
+            Debug.Assert(logUpdater != null, "Failed to start dispatcher!");
+
             // Create a new Worker instance and pass it all needed data
             ctSource = new CancellationTokenSource();
             worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token, AppendLogMessage);
@@ -305,6 +309,9 @@ namespace CemuUpdateTool
                     break;
             }
 
+            // Stop log textbox dispatcher
+            logUpdater.Invoke(() => Dispatcher.CurrentDispatcher.InvokeShutdown());
+
             // If log textbox was hidden during the last part of the task, print all buffer content before it gets deleted
             if (logBuffer.Length > 0)
                 txtBoxLog.AppendText(logBuffer.ToString());
@@ -373,10 +380,7 @@ namespace CemuUpdateTool
                 lock (logBuffer)
                 {
                     string log = logBuffer.ToString();
-                    Task.Run(() => {
-                        lock (txtBoxLog)
-                            txtBoxLog.AppendText(log);
-                    });
+                    logUpdater.InvokeAsync(() => txtBoxLog.AppendText(log));
                     logBuffer.Clear();
                 }
             }
@@ -451,6 +455,33 @@ namespace CemuUpdateTool
                 else
                     this.Height -= txtBoxLog.Height;
             }
+        }
+
+        private void StartLogTextboxDispatcher()
+        {
+            // Create and start the thread on which the dispatcher will run
+            Thread uiDispatcherThread = new Thread(() => Dispatcher.Run());
+            uiDispatcherThread.IsBackground = true;
+            uiDispatcherThread.Name = "LogTextboxUpdater";
+            uiDispatcherThread.Start();
+            logUpdater = null;
+
+            // Wait until dispatcher is running
+            int maxWaitingCycles = 100;
+            int cycleIndex = 0;
+            while (logUpdater == null && cycleIndex < maxWaitingCycles)
+            {
+                logUpdater = Dispatcher.FromThread(uiDispatcherThread);
+                if (logUpdater == null)
+                {
+                    Debug.WriteLine("Couldn't get dispatcher. Retrying...");
+                    Thread.Sleep(10);
+                    cycleIndex++;
+                }
+            }
+
+            if (logUpdater == null)
+                uiDispatcherThread.Abort();
         }
     }
 }
