@@ -22,7 +22,7 @@ namespace CemuUpdateTool
             // Check if target folder exists, if not exit
             if (!DirectoryExists(folderPath))
             {
-                LogMessage($"Unable to find folder {folderPath}.", EventLogEntryType.Error);
+                LogMessage($"Unable to find folder {folderPath}. It will be skipped.", EventLogEntryType.Warning);
                 return 0;
             }
 
@@ -82,7 +82,7 @@ namespace CemuUpdateTool
                             throw;
                         else if (choice == DialogResult.Ignore)
                         {
-                            LogMessage($"\r\n{file.Name} not copied: {exc.Message}.", EventLogEntryType.Error);
+                            LogMessage($"\r\n{file.Name} not copied: {exc.Message}", EventLogEntryType.Error);
                             break;
                         }
                     }
@@ -212,7 +212,7 @@ namespace CemuUpdateTool
                             throw;
                         else if (choice == DialogResult.Ignore)
                         {
-                            LogMessage($"Unable to extract file {entry.Name}: {exc.Message}.", EventLogEntryType.Error);
+                            LogMessage($"Unable to extract file {entry.Name}: {exc.Message}", EventLogEntryType.Error);
                             break;
                         }
                     }
