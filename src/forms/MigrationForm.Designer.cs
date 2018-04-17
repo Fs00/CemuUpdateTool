@@ -52,7 +52,6 @@
             this.btnHelp = new System.Windows.Forms.Button();
             this.btnAbout = new System.Windows.Forms.Button();
             this.btnExit = new System.Windows.Forms.Button();
-            this.lblVersion = new System.Windows.Forms.Label();
             this.errProviderNewFolder = new System.Windows.Forms.ErrorProvider(this.components);
             this.errProviderOldFolder = new System.Windows.Forms.ErrorProvider(this.components);
             this.grpBoxFolderSelect.SuspendLayout();
@@ -325,14 +324,6 @@
             this.btnExit.UseVisualStyleBackColor = true;
             this.btnExit.Click += new System.EventHandler(this.Exit);
             // 
-            // lblVersion
-            // 
-            this.lblVersion.AutoSize = true;
-            this.lblVersion.Location = new System.Drawing.Point(74, 353);
-            this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(0, 13);
-            this.lblVersion.TabIndex = 5;
-            // 
             // errProviderNewFolder
             // 
             this.errProviderNewFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
@@ -348,7 +339,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(507, 468);
-            this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnAbout);
             this.Controls.Add(this.btnHelp);
@@ -388,7 +378,6 @@
         private System.Windows.Forms.Button btnHelp;
         private System.Windows.Forms.Button btnAbout;
         private System.Windows.Forms.Button btnExit;
-        private System.Windows.Forms.Label lblVersion;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.ErrorProvider errProviderNewFolder;
         private System.Windows.Forms.Label lblNewCemuVersion;

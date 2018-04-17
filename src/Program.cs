@@ -7,8 +7,6 @@ namespace CemuUpdateTool
 {
     static class Program
     {
-        public static string Version { get; } = "2.0-dev";
-
         [STAThread]
         static void Main()
         {
