@@ -349,6 +349,7 @@
             this.Name = "MigrationForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Cemu Update Tool";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ShutdownDispatcherOnFormClosing);
             this.grpBoxFolderSelect.ResumeLayout(false);
             this.grpBoxFolderSelect.PerformLayout();
             this.grpBoxProgress.ResumeLayout(false);

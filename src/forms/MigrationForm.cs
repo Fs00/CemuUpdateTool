@@ -481,5 +481,11 @@ namespace CemuUpdateTool
             if (logUpdater == null)
                 uiDispatcherThread.Abort();
         }
+
+        private void ShutdownDispatcherOnFormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!(logUpdater == null || logUpdater.HasShutdownStarted))
+                logUpdater.Invoke(() => Dispatcher.CurrentDispatcher.InvokeShutdown());
+        }
     }
 }
