@@ -290,7 +290,7 @@ namespace CemuUpdateTool
         /*
          *  Resets the GUI and all Worker-related variables in order for the form to be ready for another task
          */
-        private void ResetEverything(WorkOutcome outcome)
+        private async void ResetEverything(WorkOutcome outcome)
         {
             // Show a MessageBox with the final result of the task
             switch (outcome)
@@ -309,13 +309,8 @@ namespace CemuUpdateTool
                     break;
             }
 
-            // Stop log textbox dispatcher
-            logUpdater.Invoke(() => Dispatcher.CurrentDispatcher.InvokeShutdown());
-
-            // If log textbox was hidden during the last part of the task, print all buffer content before it gets deleted
-            if (logBuffer.Length > 0)
-                txtBoxLog.AppendText(logBuffer.ToString());
-            logBuffer.Clear();
+            // Tell the log textbox dispatcher to stop after finishing all work queued
+            var dispatcherShutdown = logUpdater.InvokeAsync(() => Dispatcher.CurrentDispatcher.InvokeShutdown());
 
             // Reset progress bars
             overallProgressBar.Value = 0;
@@ -343,6 +338,12 @@ namespace CemuUpdateTool
 
             // Reset stopwatch
             stopwatch.Reset();
+
+            // Once the log dispatcher has been shut down, print all buffer content before it gets deleted
+            await dispatcherShutdown;
+            if (logBuffer.Length > 0)
+                txtBoxLog.AppendText(logBuffer.ToString());
+            logBuffer.Clear();
         }
 
         private void CancelOperations(object sender, EventArgs e)
@@ -464,21 +465,18 @@ namespace CemuUpdateTool
             uiDispatcherThread.IsBackground = true;
             uiDispatcherThread.Name = "LogTextboxUpdater";
             uiDispatcherThread.Start();
-            logUpdater = null;
 
             // Wait until dispatcher is running
             int maxWaitingCycles = 100;
             int cycleIndex = 0;
-            while (logUpdater == null && cycleIndex < maxWaitingCycles)
+            do
             {
+                Thread.Sleep(10);
                 logUpdater = Dispatcher.FromThread(uiDispatcherThread);
-                if (logUpdater == null)
-                {
-                    Debug.WriteLine("Couldn't get dispatcher. Retrying...");
-                    Thread.Sleep(10);
-                    cycleIndex++;
-                }
+                Debug.WriteLine((logUpdater == null) ? "Couldn't get dispatcher. Retrying..." : "Dispatcher obtained.");
+                cycleIndex++;
             }
+            while (logUpdater == null && cycleIndex < maxWaitingCycles);
 
             if (logUpdater == null)
                 uiDispatcherThread.Abort();
