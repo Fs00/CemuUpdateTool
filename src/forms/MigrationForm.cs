@@ -12,19 +12,22 @@ namespace CemuUpdateTool
 {
     public partial class MigrationForm : Form
     {
-        Worker worker;
         OptionsManager opts;
-        Progress<long> progressHandler;
-        CancellationTokenSource ctSource;
-        bool progressBarMaxDivided = false;
-        bool srcFolderTxtBoxValidated = false,
-             destFolderTxtBoxValidated = false;
-        VersionNumber oldCemuExeVer, newCemuExeVer;
-        Stopwatch stopwatch;
-        StringBuilder logBuffer;
-        Dispatcher logUpdater;
+        Worker worker;
 
-        public bool DownloadMode { get; }   // value that determinates if newer version of Cemu must be downloaded before migrating
+        CancellationTokenSource ctSource;           // handles task cancellation
+        Progress<long> progressHandler;             // used to send callbacks to UI thread
+        bool progressBarMaxDivided = false;         /* if overall size to copy > int.MaxValue (maximum possible ProgressBar value), progress bar maximum
+                                                       is divided by 1000 and therefore the same applies to every increment to its value */
+        bool srcFolderTxtBoxValidated = false,
+             destFolderTxtBoxValidated = false;     // true when content of the textbox is verified to be correct
+        VersionNumber oldCemuExeVer, newCemuExeVer;
+
+        Stopwatch stopwatch;                        // used to measure how much time the task took to complete
+        StringBuilder logBuffer;                    // buffer used to store log messages that must be written into textbox
+        Dispatcher logUpdater;                      // used to update log textbox on another thread
+
+        public bool DownloadMode { get; }           // if true, newer version of Cemu will be downloaded before migrating
 
         public MigrationForm(bool downloadMode)
         {
@@ -309,7 +312,7 @@ namespace CemuUpdateTool
                     break;
             }
 
-            // Tell the log textbox dispatcher to stop after finishing all work queued
+            // Tell the log textbox dispatcher to stop after printing all queued messages
             var dispatcherShutdown = logUpdater.InvokeAsync(() => Dispatcher.CurrentDispatcher.InvokeShutdown());
 
             // Reset progress bars
@@ -482,6 +485,10 @@ namespace CemuUpdateTool
                 uiDispatcherThread.Abort();
         }
 
+        /*
+         *  Shutdown synchronously the log dispatcher if it's running when the form is closing.
+         *  It avoids exception caused by disposing the control during re-rendering.
+         */
         private void ShutdownDispatcherOnFormClosing(object sender, FormClosingEventArgs e)
         {
             if (!(logUpdater == null || logUpdater.HasShutdownStarted))

@@ -101,14 +101,22 @@ namespace CemuUpdateTool
                     if (FileUtils.DirectoryExists(destFolderPath))
                     {
                         PerformingWork($"Removing destination {folder} folder previous contents");
-                        FileUtils.RemoveDirContents(destFolderPath, HandleLogMessage, cancToken);
+                        try
+                        {
+                            FileUtils.RemoveDirContents(destFolderPath, HandleLogMessage, cancToken);
+                        }
+                        // Catch errors here since we don't want to abort the entire work if content deletion fails
+                        catch (Exception exc) when (!(exc is OperationCanceledException))
+                        {
+                            HandleLogMessage($"Unable to complete folder {folder} contents removal.", EventLogEntryType.Error);
+                        }
                     }
                 }
 
                 // Folder copy
-                if (foldersSizes[currentFolderIndex] > 0)       // avoiding to copy empty/unexisting folders
+                if (foldersSizes[currentFolderIndex] > 0)     // avoiding to copy empty/unexisting folders
                 {
-                    PerformingWork($"Copying {folder}");      // tell the main form which folder I'm about to copy
+                    PerformingWork($"Copying {folder}");      // tell the form which folder I'm about to copy
                     FileUtils.CopyDir(Path.Combine(BaseSourcePath, folder), Path.Combine(BaseDestinationPath, folder), HandleLogMessage,
                                       cancToken, progressHandler, CreatedFiles, CreatedDirectories);
                 }

@@ -82,7 +82,7 @@ namespace CemuUpdateTool
                             throw;
                         else if (choice == DialogResult.Ignore)
                         {
-                            LogMessage($"\r\n{file.Name} not copied: {exc.Message}", EventLogEntryType.Error);
+                            LogMessage($"{file.Name} not copied: {exc.Message}", EventLogEntryType.Error);
                             break;
                         }
                     }
@@ -128,13 +128,15 @@ namespace CemuUpdateTool
                     catch (Exception exc)
                     {
                         DialogResult choice = MessageBox.Show($"Unexpected error when deleting file {file.Name}: {exc.Message}" +
-                            " Do you want to retry or skip folder contents removal?",
-                            "Error during file deletion", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                            " Do you want to retry, ignore file or skip folder contents removal?",
+                            "Error during file deletion", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
 
-                        if (choice == DialogResult.Cancel)
+                        if (choice == DialogResult.Abort)
+                            throw;
+                        else if (choice == DialogResult.Ignore)
                         {
-                            LogMessage("Unable to complete folder contents removal.", EventLogEntryType.Error);
-                            return null;
+                            LogMessage($"Unable to delete {file.Name}: {exc.Message}", EventLogEntryType.Error);
+                            break;
                         }
                     }
                 }
@@ -143,7 +145,10 @@ namespace CemuUpdateTool
 
             // Delete subdirs recursively
             foreach (DirectoryInfo subdir in subdirsArray)
-                RemoveDirContents(Path.Combine(folderPath, subdir.Name), LogMessage, cToken).Delete();
+            {
+                var emptiedFolder = RemoveDirContents(Path.Combine(folderPath, subdir.Name), LogMessage, cToken);
+                emptiedFolder.Delete();
+            }
 
             return directory;       // return the DirectoryInfo object corresponding to this folder, so that the previous recursive call can delete it
         }
