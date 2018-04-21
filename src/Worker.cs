@@ -45,12 +45,55 @@ namespace CemuUpdateTool
             this.LoggerDelegate = LoggerDelegate;
 
             CalculateFoldersSizes();
+            client = new MyWebClient();
             cancToken.Register(StopPendingWebOperation);    // register the action to be performed when cancellation is requested
             CreatedFiles = new List<FileInfo>();
             CreatedDirectories = new List<DirectoryInfo>();
         }
 
-        // TODO: PerformDownloadOperations()
+        /*
+         *  Downloads and extracts the latest Cemu version.
+         *  Returns the version number of the downloaded Cemu version (needed by MigrationForm)
+         */
+        public VersionNumber PerformDownloadOperations(Dictionary<string, string> downloadOptions, Action<string> PerformingWork)
+        {
+            // TODO: verificare connessione (try/catch?)
+
+            // Get data from dictionary
+            PerformingWork("Downloading latest Cemu version");
+            client.BaseAddress = downloadOptions["cemuBaseUrl"];
+            string cemuUrlSuffix = downloadOptions["cemuUrlSuffix"];
+            VersionNumber lastKnownCemuVersion = new VersionNumber(downloadOptions["lastKnownCemuVersion"]);
+
+            // Find out which is the latest Cemu version
+            VersionNumber latestCemuVersion = WebUtils.GetLatestRemoteVersionInBranch(new VersionNumber(), client, cemuUrlSuffix,
+                                                                                      maxDepth: 3, lastKnownCemuVersion, cancToken);
+            if (latestCemuVersion == null)
+                throw new ApplicationException("Unable to find out Cemu latest version. Maybe you altered download options?");
+            HandleLogMessage($"Latest Cemu version found is {latestCemuVersion.ToString()}.", EventLogEntryType.Information);
+            downloadOptions["lastKnownCemuVersion"] = latestCemuVersion.ToString();     // update dictionary with latest version found
+
+            // Download the file
+            string destinationFile = Path.Combine(BaseDestinationPath, "cemu_dl.tmp.zip");
+            HandleLogMessage($"Downloading file {client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix}...", EventLogEntryType.Information);
+            client.DownloadFile(client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix, destinationFile);
+
+            // TODO: aggiungere progress reporting alla form
+
+            // Extract contents
+            PerformingWork("Extracting downloaded Cemu version");
+            FileUtils.ExtractZipFileContents(destinationFile, HandleLogMessage, cancToken);
+
+            // Since Cemu zips contain a root folder (./cemu_VERSION), move all the content outside that folder
+            string extractedRootFolder = Path.Combine(BaseDestinationPath, $"cemu_{latestCemuVersion.ToString()}");
+            FileUtils.CopyDir(extractedRootFolder, BaseDestinationPath, delegate {});
+            Directory.Delete(extractedRootFolder, true);
+
+            // Remove the zip file once extracted
+            System.IO.File.Delete(destinationFile);
+
+            return latestCemuVersion;
+        }
 
         /*
          *  Method that performs all the migration operations requested by user.
@@ -59,7 +102,7 @@ namespace CemuUpdateTool
         public void PerformMigrationOperations(Dictionary<string, bool> migrationOptions, Action<string> PerformingWork, IProgress<long> progressHandler)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(BaseSourcePath) && !string.IsNullOrWhiteSpace(BaseDestinationPath),
-                "Source and/or destination Cemu folder are set incorrectly!");
+                         "Source and/or destination Cemu folder are set incorrectly!");
 
             // COPY CEMU SETTINGS FILE
             if (migrationOptions["copyCemuSettingsFile"] == true)

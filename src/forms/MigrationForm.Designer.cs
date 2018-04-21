@@ -344,6 +344,7 @@
             this.Controls.Add(this.btnHelp);
             this.Controls.Add(this.grpBoxProgress);
             this.Controls.Add(this.grpBoxFolderSelect);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
             this.MaximizeBox = false;
             this.Name = "MigrationForm";

@@ -182,16 +182,19 @@ namespace CemuUpdateTool
         }
 
         private async void DoOperationsAsync(object sender, EventArgs e)
-        {           
+        {
             // Check if Cemu versions are ok, if not warn the user
-            if (oldCemuExeVer > newCemuExeVer)
+            if (!DownloadMode)
             {
-                DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
-                    "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested", 
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (oldCemuExeVer > newCemuExeVer)
+                {
+                    DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
+                        "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
-                if (choice == DialogResult.No)
-                    return;
+                    if (choice == DialogResult.No)
+                        return;
+                }
             }
 
             // Get the list of folders to copy telling the method if source Cemu version is >= 1.10..
@@ -233,13 +236,17 @@ namespace CemuUpdateTool
 
             try
             {
-                // Start operations in a secondary thread and enable cancel button once operations have started
-                var operationsTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ChangeProgressLabelText,
-                    progressHandler));
                 btnCancel.Enabled = true;
+                if (DownloadMode)
+                {
+                    var downloadTask = Task.Run(() => worker.PerformDownloadOperations(opts.downloadOptions, ChangeProgressLabelText));
+                    newCemuExeVer = await downloadTask;
+                }
 
-                // Yield control to the form
-                await operationsTask;
+                // Start operations in a secondary thread and enable cancel button once operations have started
+                var migrationTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ChangeProgressLabelText, progressHandler));
+                await migrationTask;
+
                 stopwatch.Stop();
 
                 // If there have been errors during operations, update result

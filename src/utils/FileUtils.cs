@@ -54,7 +54,10 @@ namespace CemuUpdateTool
 
             // Check if destination folder exists, if not create it
             if (!DirectoryExists(destFolderPath))
-                createdDirectories?.Add(Directory.CreateDirectory(destFolderPath));     // TODO: verificare se CreateDirectory viene eseguito quando createdDirectories è null
+            {
+                var newFolder = Directory.CreateDirectory(destFolderPath);
+                createdDirectories?.Add(newFolder);
+            }
 
             // Copy files
             foreach (FileInfo file in srcFilesArray)
@@ -198,7 +201,10 @@ namespace CemuUpdateTool
 
                         // If the entry is a folder, create it
                         if (entryRelativePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                            createdDirectories?.Add(Directory.CreateDirectory(extractedFilePath));
+                        {
+                            var newFolder = Directory.CreateDirectory(extractedFilePath);
+                            createdDirectories?.Add(newFolder);
+                        }
                         // Otherwise, if it's a file, extract it
                         else
                         {
@@ -214,7 +220,10 @@ namespace CemuUpdateTool
                                               "What do you want to do?", "Error during file extraction", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
 
                         if (choice == DialogResult.Abort)
+                        {
+                            archive.Dispose();
                             throw;
+                        }
                         else if (choice == DialogResult.Ignore)
                         {
                             LogMessage($"Unable to extract file {entry.Name}: {exc.Message}", EventLogEntryType.Error);
@@ -223,6 +232,9 @@ namespace CemuUpdateTool
                     }
                 }
             }
+
+            // Close the file
+            archive.Dispose();
         }
 
         /*
