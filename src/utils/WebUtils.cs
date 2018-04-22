@@ -101,6 +101,8 @@ namespace CemuUpdateTool
      */
     public class MyWebClient : WebClient
     {
+        public WebRequest MyUnderlyingWebRequest { private set; get; }
+
         /*
          *  Returns the response for a HTTP HEAD request to the given address
          */
@@ -111,11 +113,12 @@ namespace CemuUpdateTool
 
             request = (HttpWebRequest) GetWebRequest(new Uri(BaseAddress + address));
             request.Method = "HEAD";
-            request.Timeout = 30000;
-            request.ServicePoint.MaxIdleTime = 30000;
+            request.Timeout = 10000;
+            request.ServicePoint.MaxIdleTime = 10000;
 
             try
             {
+                MyUnderlyingWebRequest = request;
                 response = (HttpWebResponse) GetWebResponse(request);
             }
             // Avoid that the method throws an exception when an error response arrives

@@ -113,7 +113,7 @@ namespace CemuUpdateTool
                 lblOldVersionNr.Text = "";
             }
             // Check if it's a valid Cemu installation ONLY IF the form is not in download mode
-            else if (!DownloadMode && !FileUtils.FileExists(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe")))
+            else if (!FileUtils.FileExists(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe")))
             {
                 errProviderOldFolder.SetError(txtBoxOldFolder, "Not a valid Cemu installation (Cemu.exe is missing)");
                 srcFolderTxtBoxValidated = false;
@@ -208,42 +208,56 @@ namespace CemuUpdateTool
                 return;
             }
 
-            // Start preparing
-            txtBoxLog.Clear();
-            lblCurrentTask.Text = "Preparing...";
-            AppendLogMessage("Preparing...");
-            btnStart.Enabled = false;
-            WorkOutcome result = WorkOutcome.Success;
-
             // Start the dispatcher used to update log textbox
             StartLogTextboxDispatcher();
-            Debug.Assert(logUpdater != null, "Failed to start dispatcher!");
+
+            // Start preparing
+            txtBoxLog.Clear();
+            ChangeProgressLabelText("Preparing");
+            btnStart.Enabled = false;
+            WorkOutcome result = WorkOutcome.Success;
 
             // Create a new Worker instance and pass it all needed data
             ctSource = new CancellationTokenSource();
             worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token, AppendLogMessage);
 
+            // Starting from now, we can safely cancel operations without having problems
+            btnCancel.Enabled = true;
+
             stopwatch.Start();
-
-            // Set overall progress bar according to overall size
-            long overallSize = worker.GetOverallSizeToCopy();      // TODO: se si è in DownloadMode, va sommata la dimensione del file da scaricare
-            if (overallSize > Int32.MaxValue)
-            {
-                overallSize /= 1000;
-                progressBarMaxDivided = true;
-            }
-            overallProgressBar.Maximum = Convert.ToInt32(overallSize);
-
             try
             {
-                btnCancel.Enabled = true;
+                // Perform download operations if we are in download mode
                 if (DownloadMode)
                 {
-                    var downloadTask = Task.Run(() => worker.PerformDownloadOperations(opts.downloadOptions, ChangeProgressLabelText));
+                    var downloadTask = Task.Run(() => worker.PerformDownloadOperations(opts.downloadOptions, ChangeProgressLabelText,
+                                                (o, evtArgs) => {
+                                                    // Set maximum progress bar value according to file size
+                                                    if (overallProgressBar.Maximum != evtArgs.TotalBytesToReceive)
+                                                        overallProgressBar.Maximum = (int)evtArgs.TotalBytesToReceive;
+
+                                                    // Update percent label and progress bar
+                                                    lblPercent.Text = evtArgs.ProgressPercentage + "%";
+                                                    overallProgressBar.Value = (int)evtArgs.BytesReceived;
+
+                                                    // Refresh log textbox
+                                                    UpdateLogTextbox();
+                                                })
+                    );
                     newCemuExeVer = await downloadTask;
                 }
 
-                // Start operations in a secondary thread and enable cancel button once operations have started
+                // Set maximum progress bar value according to overall size to copy
+                long overallSize = worker.GetOverallSizeToCopy();
+                if (overallSize > int.MaxValue)
+                {
+                    overallSize /= 1000;
+                    progressBarMaxDivided = true;
+                }
+                overallProgressBar.Value = 0;       // reset progress bar
+                overallProgressBar.Maximum = (int)overallSize;
+
+                // Start migration operations in a secondary thread
                 var migrationTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ChangeProgressLabelText, progressHandler));
                 await migrationTask;
 
@@ -488,8 +502,12 @@ namespace CemuUpdateTool
             }
             while (logUpdater == null && cycleIndex < maxWaitingCycles);
 
+            // If dispatcher is still null, it means that we had some unknown problems
             if (logUpdater == null)
+            {
                 uiDispatcherThread.Abort();
+                throw new ApplicationException("Failed to start dispatcher!");
+            }
         }
 
         /*

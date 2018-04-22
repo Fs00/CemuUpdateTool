@@ -55,17 +55,15 @@ namespace CemuUpdateTool
          *  Downloads and extracts the latest Cemu version.
          *  Returns the version number of the downloaded Cemu version (needed by MigrationForm)
          */
-        public VersionNumber PerformDownloadOperations(Dictionary<string, string> downloadOptions, Action<string> PerformingWork)
+        public VersionNumber PerformDownloadOperations(Dictionary<string, string> downloadOptions, Action<string> PerformingWork, DownloadProgressChangedEventHandler progressHandler)
         {
-            // TODO: verificare connessione (try/catch?)
-
             // Get data from dictionary
             PerformingWork("Downloading latest Cemu version");
             client.BaseAddress = downloadOptions["cemuBaseUrl"];
             string cemuUrlSuffix = downloadOptions["cemuUrlSuffix"];
             VersionNumber lastKnownCemuVersion = new VersionNumber(downloadOptions["lastKnownCemuVersion"]);
 
-            // Find out which is the latest Cemu version
+            // Find out which is the latest Cemu version -- TODO: try/catch qui
             VersionNumber latestCemuVersion = WebUtils.GetLatestRemoteVersionInBranch(new VersionNumber(), client, cemuUrlSuffix,
                                                                                       maxDepth: 3, lastKnownCemuVersion, cancToken);
             if (latestCemuVersion == null)
@@ -73,12 +71,22 @@ namespace CemuUpdateTool
             HandleLogMessage($"Latest Cemu version found is {latestCemuVersion.ToString()}.", EventLogEntryType.Information);
             downloadOptions["lastKnownCemuVersion"] = latestCemuVersion.ToString();     // update dictionary with latest version found
 
-            // Download the file
-            string destinationFile = Path.Combine(BaseDestinationPath, "cemu_dl.tmp.zip");
-            HandleLogMessage($"Downloading file {client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix}...", EventLogEntryType.Information);
-            client.DownloadFile(client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix, destinationFile);
+            // Add the DownloadProgressChanged event handler
+            client.DownloadProgressChanged += progressHandler;
 
-            // TODO: aggiungere progress reporting alla form
+            // Download the file
+            string destinationFile;
+            try
+            {
+                destinationFile = Path.Combine(BaseDestinationPath, "cemu_dl.tmp.zip");
+                HandleLogMessage($"Downloading file {client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix}...", EventLogEntryType.Information);
+                client.DownloadFileTaskAsync(client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix, destinationFile).Wait(cancToken);
+            }
+            catch (WebException exc) when (exc.Status == WebExceptionStatus.RequestCanceled)    // handle web request cancellation
+            {
+                throw new OperationCanceledException();
+            }
+            // TODO: try/catch per errori di connessione
 
             // Extract contents
             PerformingWork("Extracting downloaded Cemu version");
@@ -86,7 +94,7 @@ namespace CemuUpdateTool
 
             // Since Cemu zips contain a root folder (./cemu_VERSION), move all the content outside that folder
             string extractedRootFolder = Path.Combine(BaseDestinationPath, $"cemu_{latestCemuVersion.ToString()}");
-            FileUtils.CopyDir(extractedRootFolder, BaseDestinationPath, delegate {});
+            FileUtils.CopyDir(extractedRootFolder, BaseDestinationPath, delegate {}, cancToken, null, CreatedFiles, CreatedDirectories);    // silent copy
             Directory.Delete(extractedRootFolder, true);
 
             // Remove the zip file once extracted
@@ -226,8 +234,8 @@ namespace CemuUpdateTool
          */
         private void StopPendingWebOperation()
         {
-            if (client != null && client.IsBusy)
-                client.CancelAsync();
+            client?.CancelAsync();
+            client?.MyUnderlyingWebRequest?.Abort();
         }
 
         /*

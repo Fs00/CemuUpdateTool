@@ -186,55 +186,52 @@ namespace CemuUpdateTool
                 }
             }
 
-            // Extract all archive files
-            bool entryWrittenSuccessfully = false;
-            foreach (ZipArchiveEntry entry in archive.Entries)
+            using (archive)
             {
-                cToken?.ThrowIfCancellationRequested();
-                entryWrittenSuccessfully = false;
-                while (!entryWrittenSuccessfully)
+                // Extract all archive files
+                bool entryWrittenSuccessfully = false;
+                foreach (ZipArchiveEntry entry in archive.Entries)
                 {
-                    try
+                    cToken?.ThrowIfCancellationRequested();
+                    entryWrittenSuccessfully = false;
+                    while (!entryWrittenSuccessfully)
                     {
-                        string entryRelativePath = entry.FullName.Replace('/', Path.DirectorySeparatorChar);    // replace all occurrencies of '/' with '\'
-                        string extractedFilePath = Path.Combine(extractionPath, entryRelativePath);
+                        try
+                        {
+                            string entryRelativePath = entry.FullName.Replace('/', Path.DirectorySeparatorChar);    // replace all occurrencies of '/' with '\'
+                            string extractedFilePath = Path.Combine(extractionPath, entryRelativePath);
 
-                        // If the entry is a folder, create it
-                        if (entryRelativePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                        {
-                            var newFolder = Directory.CreateDirectory(extractedFilePath);
-                            createdDirectories?.Add(newFolder);
+                            // If the entry is a folder, create it
+                            if (entryRelativePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                            {
+                                var newFolder = Directory.CreateDirectory(extractedFilePath);
+                                createdDirectories?.Add(newFolder);
+                            }
+                            // Otherwise, if it's a file, extract it
+                            else
+                            {
+                                entry.ExtractToFile(extractedFilePath, true);
+                                LogMessage($"Entry {entry.Name} extracted successfully in {Path.GetDirectoryName(extractedFilePath)}.", EventLogEntryType.Information);
+                                createdFiles?.Add(new FileInfo(extractedFilePath));
+                            }
+                            entryWrittenSuccessfully = true;
                         }
-                        // Otherwise, if it's a file, extract it
-                        else
+                        catch (Exception exc)
                         {
-                            entry.ExtractToFile(extractedFilePath, true);
-                            LogMessage($"Entry {entry.Name} extracted successfully in {Path.GetDirectoryName(extractedFilePath)}.", EventLogEntryType.Information);
-                            createdFiles?.Add(new FileInfo(extractedFilePath));
-                        }
-                        entryWrittenSuccessfully = true;
-                    }
-                    catch (Exception exc)
-                    {
-                        DialogResult choice = MessageBox.Show($"Unexpected error when extracting file {entry.Name} from {Path.GetFileName(zipPath)}: {exc.Message}" +
-                                              "What do you want to do?", "Error during file extraction", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
+                            DialogResult choice = MessageBox.Show($"Unexpected error when extracting file {entry.Name} from {Path.GetFileName(zipPath)}: {exc.Message}" +
+                                                  "What do you want to do?", "Error during file extraction", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
 
-                        if (choice == DialogResult.Abort)
-                        {
-                            archive.Dispose();
-                            throw;
-                        }
-                        else if (choice == DialogResult.Ignore)
-                        {
-                            LogMessage($"Unable to extract file {entry.Name}: {exc.Message}", EventLogEntryType.Error);
-                            break;
+                            if (choice == DialogResult.Abort)
+                                throw;
+                            else if (choice == DialogResult.Ignore)
+                            {
+                                LogMessage($"Unable to extract file {entry.Name}: {exc.Message}", EventLogEntryType.Error);
+                                break;
+                            }
                         }
                     }
                 }
             }
-
-            // Close the file
-            archive.Dispose();
         }
 
         /*
