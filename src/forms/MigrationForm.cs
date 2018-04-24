@@ -112,7 +112,7 @@ namespace CemuUpdateTool
                 lblOldCemuVersion.Visible = false;
                 lblOldVersionNr.Text = "";
             }
-            // Check if it's a valid Cemu installation ONLY IF the form is not in download mode
+            // Check if it's a valid Cemu installation
             else if (!FileUtils.FileExists(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe")))
             {
                 errProviderOldFolder.SetError(txtBoxOldFolder, "Not a valid Cemu installation (Cemu.exe is missing)");
@@ -183,13 +183,26 @@ namespace CemuUpdateTool
 
         private async void DoOperationsAsync(object sender, EventArgs e)
         {
-            // Check if Cemu versions are ok, if not warn the user
+            // If not in download mode, warn the user if old Cemu version is not older than new one
             if (!DownloadMode)
             {
                 if (oldCemuExeVer > newCemuExeVer)
                 {
                     DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
                         "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                    if (choice == DialogResult.No)
+                        return;
+                }
+            }
+            // If in download mode, warn the user if the destination folder contains a Cemu installation
+            else
+            {
+                if (FileUtils.FileExists(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")))
+                {
+                    DialogResult choice = MessageBox.Show("The chosen destination folder already contains a Cemu installation. " +
+                        "Do you want to overwrite it?", "Cemu installation already present",
                         MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
                     if (choice == DialogResult.No)
@@ -231,18 +244,18 @@ namespace CemuUpdateTool
                 if (DownloadMode)
                 {
                     var downloadTask = Task.Run(() => worker.PerformDownloadOperations(opts.downloadOptions, ChangeProgressLabelText,
-                                                (o, evtArgs) => {
-                                                    // Set maximum progress bar value according to file size
-                                                    if (overallProgressBar.Maximum != evtArgs.TotalBytesToReceive)
-                                                        overallProgressBar.Maximum = (int)evtArgs.TotalBytesToReceive;
-
-                                                    // Update percent label and progress bar
-                                                    lblPercent.Text = evtArgs.ProgressPercentage + "%";
-                                                    overallProgressBar.Value = (int)evtArgs.BytesReceived;
-
-                                                    // Refresh log textbox
-                                                    UpdateLogTextbox();
-                                                })
+                                                      (o, evtArgs) => {
+                                                          // Set maximum progress bar value according to file size
+                                                          if (overallProgressBar.Maximum != evtArgs.TotalBytesToReceive)
+                                                              overallProgressBar.Maximum = (int)evtArgs.TotalBytesToReceive;
+                                                       
+                                                          // Update percent label and progress bar
+                                                          lblPercent.Text = evtArgs.ProgressPercentage + "%";
+                                                          overallProgressBar.Value = (int)evtArgs.BytesReceived;
+                                                       
+                                                          // Refresh log textbox
+                                                          UpdateLogTextbox();
+                                                      })
                     );
                     newCemuExeVer = await downloadTask;
                 }
@@ -273,12 +286,9 @@ namespace CemuUpdateTool
                 try
                 {
                     // Ask if the user wants to remove files that have been created
-                    if (worker.CreatedFiles.Count > 0 || worker.CreatedDirectories.Count > 0)
-                    {
-                        DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
-                        if (choice == DialogResult.Yes)
-                            worker.PerformCleanup();
-                    }
+                    DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
+                    if (choice == DialogResult.Yes)
+                        worker.PerformCleanup();
                 }
                 catch (Exception cleanupExc)
                 {

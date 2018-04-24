@@ -57,48 +57,101 @@ namespace CemuUpdateTool
          */
         public VersionNumber PerformDownloadOperations(Dictionary<string, string> downloadOptions, Action<string> PerformingWork, DownloadProgressChangedEventHandler progressHandler)
         {
+            VersionNumber latestCemuVersion = null;
+
             // Get data from dictionary
             PerformingWork("Downloading latest Cemu version");
             client.BaseAddress = downloadOptions["cemuBaseUrl"];
             string cemuUrlSuffix = downloadOptions["cemuUrlSuffix"];
             VersionNumber lastKnownCemuVersion = new VersionNumber(downloadOptions["lastKnownCemuVersion"]);
 
-            // Find out which is the latest Cemu version -- TODO: try/catch qui
-            VersionNumber latestCemuVersion = WebUtils.GetLatestRemoteVersionInBranch(new VersionNumber(), client, cemuUrlSuffix,
-                                                                                      maxDepth: 3, lastKnownCemuVersion, cancToken);
+            // FIND OUT WHICH IS THE LATEST CEMU VERSION
+            bool versionObtained = false;
+            while (!versionObtained)
+            {
+                try
+                {
+                    latestCemuVersion = WebUtils.GetLatestRemoteVersionInBranch(new VersionNumber(), client, cemuUrlSuffix,
+                                                                                maxDepth: 3, lastKnownCemuVersion, cancToken);
+                    versionObtained = true;
+                }
+                // Handle web request cancellation
+                catch (WebException exc) when (exc.Status == WebExceptionStatus.RequestCanceled)
+                {
+                    throw new OperationCanceledException();
+                }
+                // Handle any web request error
+                catch (WebException exc)
+                {
+                    // Build the message according to the type of error
+                    string message = $"An error occurred when trying to find out which is the latest Cemu version: {GetWebErrorMessage(exc.Status)} ";
+                    message += "Would you like to retry or give up the entire operation?";
+
+                    DialogResult choice = MessageBox.Show(message, "Internet request error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                    if (choice == DialogResult.Cancel)
+                        throw;
+                }
+            }
+            // If this condition is true, it's much likely caused by wrong Cemu website set
             if (latestCemuVersion == null)
-                throw new ApplicationException("Unable to find out Cemu latest version. Maybe you altered download options?");
+                throw new ApplicationException("Unable to find out Cemu latest version. Maybe you altered download options with wrong information?");
+
             HandleLogMessage($"Latest Cemu version found is {latestCemuVersion.ToString()}.", EventLogEntryType.Information);
             downloadOptions["lastKnownCemuVersion"] = latestCemuVersion.ToString();     // update dictionary with latest version found
 
             // Add the DownloadProgressChanged event handler
             client.DownloadProgressChanged += progressHandler;
 
-            // Download the file
-            string destinationFile;
-            try
+            // DOWNLOAD THE FILE
+            string destinationFile = Path.Combine(BaseDestinationPath, "cemu_dl.tmp.zip");
+            bool fileDownloaded = false;
+            while (!fileDownloaded)
             {
-                destinationFile = Path.Combine(BaseDestinationPath, "cemu_dl.tmp.zip");
-                HandleLogMessage($"Downloading file {client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix}...", EventLogEntryType.Information);
-                client.DownloadFileTaskAsync(client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix, destinationFile).Wait(cancToken);
-            }
-            catch (WebException exc) when (exc.Status == WebExceptionStatus.RequestCanceled)    // handle web request cancellation
-            {
-                throw new OperationCanceledException();
-            }
-            // TODO: try/catch per errori di connessione
+                try
+                {
+                    HandleLogMessage($"Downloading file {client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix}...", EventLogEntryType.Information);
+                    client.DownloadFileTaskAsync(client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix, destinationFile).Wait(cancToken);
+                }
+                // Handle web request cancellation
+                catch (WebException exc) when (exc.Status == WebExceptionStatus.RequestCanceled)
+                {
+                    throw new OperationCanceledException();
+                }
+                // Handle any other type of error (web- or file-related)
+                catch (Exception exc) when (!(exc is OperationCanceledException))
+                {
+                    // Build the message according to the type of error
+                    string message = $"An error occurred when trying to download the latest Cemu version: ";
+                    if (exc is WebException webExc)             // internet error
+                        message += GetWebErrorMessage(webExc.Status);
+                    else if (exc is InvalidOperationException)  // file error
+                        message += exc.Message;
+                    message += " Would you like to retry or give up the entire operation?";
 
-            // Extract contents
+                    DialogResult choice = MessageBox.Show(message, "Download error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                    if (choice == DialogResult.Cancel)
+                        throw;
+                }
+            }
+
+            // EXTRACT CONTENTS
             PerformingWork("Extracting downloaded Cemu version");
             FileUtils.ExtractZipFileContents(destinationFile, HandleLogMessage, cancToken);
 
             // Since Cemu zips contain a root folder (./cemu_VERSION), move all the content outside that folder
             string extractedRootFolder = Path.Combine(BaseDestinationPath, $"cemu_{latestCemuVersion.ToString()}");
             FileUtils.CopyDir(extractedRootFolder, BaseDestinationPath, delegate {}, cancToken, null, CreatedFiles, CreatedDirectories);    // silent copy
-            Directory.Delete(extractedRootFolder, true);
 
-            // Remove the zip file once extracted
-            System.IO.File.Delete(destinationFile);
+            // Remove zip file and original folder once extraction is finished
+            try
+            {
+                Directory.Delete(extractedRootFolder, true);
+                System.IO.File.Delete(destinationFile);
+            }
+            catch (Exception exc)
+            {
+                HandleLogMessage($"Unexpected error during deletion of temporary download/extraction files: {exc.Message}", EventLogEntryType.Error);
+            }
 
             return latestCemuVersion;
         }
@@ -226,6 +279,11 @@ namespace CemuUpdateTool
                 copiedFile.Delete();
             foreach (DirectoryInfo copiedDir in Enumerable.Reverse(CreatedDirectories))
                 copiedDir.Delete();
+
+            // Delete temporary download file if present
+            string tmpDownloadFile = Path.Combine(BaseDestinationPath, "cemu_dl.tmp.zip");
+            if (FileUtils.FileExists(tmpDownloadFile))
+                System.IO.File.Delete(tmpDownloadFile);
         }
 
         /*
@@ -242,7 +300,7 @@ namespace CemuUpdateTool
          *  Callback that handles a log message given its type (warning, info, error etc.).
          *  Through this callback, methods called by the Worker can notify errors.
          */
-        public void HandleLogMessage(string message, EventLogEntryType type, bool newLine = true)
+        private void HandleLogMessage(string message, EventLogEntryType type, bool newLine = true)
         {
             string logMessage = "";
             if (type == EventLogEntryType.Error || type == EventLogEntryType.FailureAudit)
@@ -256,6 +314,31 @@ namespace CemuUpdateTool
 
             logMessage += message;
             LoggerDelegate(logMessage, newLine);   // give the message to the MigrationForm
+        }
+
+        /*
+         *  Return an error string according to the WebExceptionStatus passed.
+         *  Used by PerformDownloadOperations().
+         */
+        private string GetWebErrorMessage(WebExceptionStatus excStatus)
+        {
+            string message;
+            switch (excStatus)
+            {
+                case WebExceptionStatus.NameResolutionFailure:
+                    message = "Name resolution failure. This can be due to absent internet connection or wrong Cemu website option.";
+                    break;
+                case WebExceptionStatus.ConnectFailure:
+                    message = "Connection failure. Is your internet connection working?";
+                    break;
+                case WebExceptionStatus.Timeout:
+                    message = "Request timed out. Could be a temporary server error as well as missing internet connection.";
+                    break;
+                default:
+                    message = excStatus.ToString() + ".";
+                    break;
+            }
+            return message;
         }
     }
 }
