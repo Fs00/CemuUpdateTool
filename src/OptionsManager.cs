@@ -28,7 +28,12 @@ namespace CemuUpdateTool
             { "copyCemuSettingsFile", true },
             { "deleteDestFolderContents", false },
             { "dontCopyMlcFolderFor1.10+", false },
-            { "askForDesktopShortcut", true }
+            { "askForDesktopShortcut", true },
+            // Compatibility options for new Cemu installation
+            { "setCompatibilityOptions", true },
+            { "compatOpts_runAsAdmin", false },
+            { "compatOpts_noFullscreenOptimizations", true },
+            { "compatOpts_overrideHiDPIBehaviour", true }
         };
         Dictionary<string, string> defaultDownloadOptions = new Dictionary<string, string> {
             { "cemuBaseUrl", "http://cemu.info/releases/cemu_" },
@@ -159,7 +164,7 @@ namespace CemuUpdateTool
                     fileStream.ReadLine();
                 else
                 {
-                    if (sectionId <= 2)         // if I'm handling a dictionary
+                    if (sectionId <= 2)     // if I'm handling a dictionary
                     {
                         parsedLine = fileStream.ReadLine().Split(',');
                         if (parsedLine.Length != 2)
@@ -170,7 +175,7 @@ namespace CemuUpdateTool
                         else                    // if I'm handling a <string, string> dictionary (downloadOptions)
                             dictionary.Add(parsedLine[0], parsedLine[1]);
                     }
-                    else                        // section 3
+                    else                    // section 3
                     {
                         string tmpPath = fileStream.ReadLine();
                         if (tmpPath.IndexOfAny(Path.GetInvalidPathChars()) == -1)
@@ -192,6 +197,12 @@ namespace CemuUpdateTool
          */
         public void CheckForMissingEntries()
         {
+            foreach (string key in defaultFolderOptions.Keys)
+            {
+                if (!folderOptions.ContainsKey(key))
+                    folderOptions.Add(key, false);    // if a folder was not found, it means that it shouldn't be copied
+            }
+
             foreach (string key in defaultMigrationOptions.Keys)
             {
                 if (!migrationOptions.ContainsKey(key))

@@ -94,7 +94,7 @@ namespace CemuUpdateTool
             }
             // If this condition is true, it's much likely caused by wrong Cemu website set
             if (latestCemuVersion == null)
-                throw new ApplicationException("Unable to find out Cemu latest version. Maybe you altered download options with wrong information?");
+                throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");
 
             HandleLogMessage($"Latest Cemu version found is {latestCemuVersion.ToString()}.", EventLogEntryType.Information);
             downloadOptions["lastKnownCemuVersion"] = latestCemuVersion.ToString();     // update dictionary with latest version found
@@ -226,6 +226,8 @@ namespace CemuUpdateTool
                 }
                 currentFolderIndex++;
             }
+
+            // TODO: implementare modifica compatibility options
         }
 
         /*

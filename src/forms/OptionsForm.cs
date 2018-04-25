@@ -18,35 +18,37 @@ namespace CemuUpdateTool
         public void SetCheckboxesAccordingToOptions()   // Name is self-explanatory
         {
             // FOLDER OPTIONS
-            if (handler.folderOptions.ContainsKey("controllerProfiles"))
-                chkBoxControllerProfiles.Checked = handler.folderOptions["controllerProfiles"];
-            if (handler.folderOptions.ContainsKey("gameProfiles"))
-                chkBoxGameProfiles.Checked = handler.folderOptions["gameProfiles"];
-            if (handler.folderOptions.ContainsKey("graphicPacks"))
-                chkBoxGfxPacks.Checked = handler.folderOptions["graphicPacks"];
-
+            chkBoxControllerProfiles.Checked = handler.folderOptions["controllerProfiles"];
+            chkBoxGameProfiles.Checked = handler.folderOptions["gameProfiles"];
+            chkBoxGfxPacks.Checked = handler.folderOptions["graphicPacks"];
             // The program sets the saves' checkbox as indeterminate if there's only one of the two save folders (and it's set to true)
-            if (handler.folderOptions.ContainsKey(@"mlc01\emulatorSave") && handler.folderOptions[@"mlc01\emulatorSave"] == true)
+            if (handler.folderOptions[@"mlc01\emulatorSave"] == true)
                 chkBoxSavegames.CheckState = CheckState.Indeterminate;
-            if (handler.folderOptions.ContainsKey(@"mlc01\usr\save") && handler.folderOptions[@"mlc01\usr\save"] == true)
+            if (handler.folderOptions[@"mlc01\usr\save"] == true)
             {
                 if (chkBoxSavegames.CheckState == CheckState.Indeterminate)
                     chkBoxSavegames.CheckState = CheckState.Checked;
                 else
                     chkBoxSavegames.CheckState = CheckState.Indeterminate;
             }
-            if (handler.folderOptions.ContainsKey(@"mlc01\usr\title"))
-                chkBoxDLCUpds.Checked = handler.folderOptions[@"mlc01\usr\title"];
-            if (handler.folderOptions.ContainsKey(@"shaderCache\transferable"))
-                chkBoxShaderCaches.Checked = handler.folderOptions[@"shaderCache\transferable"];
+            chkBoxDLCUpds.Checked = handler.folderOptions[@"mlc01\usr\title"];
+            chkBoxShaderCaches.Checked = handler.folderOptions[@"shaderCache\transferable"];
 
             // MIGRATION OPTIONS
             chkBoxCemuSettings.Checked = handler.migrationOptions["copyCemuSettingsFile"];
             chkBoxDeletePrevContent.Checked = handler.migrationOptions["deleteDestFolderContents"];
+            chkBoxDesktopShortcut.Checked = handler.migrationOptions["askForDesktopShortcut"];
+            // Custom mlc01 folder
             chkBoxCustomMlc01Path.Checked = handler.migrationOptions["dontCopyMlcFolderFor1.10+"];
             if (!string.IsNullOrWhiteSpace(handler.mlcFolderExternalPath))
                 txtBoxCustomMlc01Path.Text = handler.mlcFolderExternalPath;
             UpdateCustomMlc01PathTextboxState();   // make sure that textbox state is correct in relation to the checkbox
+            // Compatibility options
+            chkBoxCompatOpts.Checked = handler.migrationOptions["setCompatibilityOptions"];
+            chkBoxRunAsAdmin.Checked = handler.migrationOptions["compatOpts_runAsAdmin"];
+            chkBoxNoFullscreenOptimiz.Checked = handler.migrationOptions["compatOpts_noFullscreenOptimizations"];
+            chkBoxOverrideHiDPIBehaviour.Checked = handler.migrationOptions["compatOpts_overrideHiDPIBehaviour"];
+            UpdateCompatOptsCheckboxesState();
 
             // SETTINGS FILE LOCATION
             if (handler.optionsFilePath == "")
@@ -62,57 +64,41 @@ namespace CemuUpdateTool
                 else if (handler.optionsFilePath == handler.APPDATA_FILEPATH)
                     radioBtnAppDataFolder.Checked = true;
             }
+
+            // DOWNLOAD OPTIONS
+            txtBoxBaseUrl.Text = handler.downloadOptions["cemuBaseUrl"];
+            txtBoxUrlSuffix.Text = handler.downloadOptions["cemuUrlSuffix"];
         }
 
         private void SetOptionsAccordingToCheckboxes()
         {
             // FOLDER OPTIONS
-            if (handler.folderOptions.ContainsKey("controllerProfiles"))
-                handler.folderOptions["controllerProfiles"] = chkBoxControllerProfiles.Checked;
-            else
-                handler.folderOptions.Add("controllerProfiles", chkBoxControllerProfiles.Checked);
-
-            if (handler.folderOptions.ContainsKey("gameProfiles"))
-                handler.folderOptions["gameProfiles"] = chkBoxGameProfiles.Checked;
-            else
-                handler.folderOptions.Add("gameProfiles", chkBoxGameProfiles.Checked);
-
-            if (handler.folderOptions.ContainsKey("graphicPacks"))
-                handler.folderOptions["graphicPacks"] = chkBoxGfxPacks.Checked;
-            else
-                handler.folderOptions.Add("graphicPacks", chkBoxGfxPacks.Checked);
-
+            handler.folderOptions["controllerProfiles"] = chkBoxControllerProfiles.Checked;
+            handler.folderOptions["gameProfiles"] = chkBoxGameProfiles.Checked;
+            handler.folderOptions["graphicPacks"] = chkBoxGfxPacks.Checked;
             if (chkBoxSavegames.CheckState != CheckState.Indeterminate)
             {
-                if (handler.folderOptions.ContainsKey(@"mlc01\emulatorSave"))
-                    handler.folderOptions[@"mlc01\emulatorSave"] = chkBoxSavegames.Checked;
-                else
-                    handler.folderOptions.Add(@"mlc01\emulatorSave", chkBoxSavegames.Checked);
-                if (handler.folderOptions.ContainsKey(@"mlc01\usr\save"))
-                    handler.folderOptions[@"mlc01\usr\save"] = chkBoxSavegames.Checked;
-                else
-                    handler.folderOptions.Add(@"mlc01\usr\save", chkBoxSavegames.Checked);
+                handler.folderOptions[@"mlc01\emulatorSave"] = chkBoxSavegames.Checked;
+                handler.folderOptions[@"mlc01\usr\save"] = chkBoxSavegames.Checked;
             }
-
-            if (handler.folderOptions.ContainsKey(@"mlc01\usr\title"))
-                handler.folderOptions[@"mlc01\usr\title"] = chkBoxDLCUpds.Checked;
-            else
-                handler.folderOptions.Add(@"mlc01\usr\title", chkBoxDLCUpds.Checked);
-
-            if (handler.folderOptions.ContainsKey(@"shaderCache\transferable"))
-                handler.folderOptions[@"shaderCache\transferable"] = chkBoxShaderCaches.Checked;
-            else
-                handler.folderOptions.Add(@"shaderCache\transferable", chkBoxShaderCaches.Checked);
+            handler.folderOptions[@"mlc01\usr\title"] = chkBoxDLCUpds.Checked;
+            handler.folderOptions[@"shaderCache\transferable"] = chkBoxShaderCaches.Checked;
 
             // MIGRATION OPTIONS
             handler.migrationOptions["copyCemuSettingsFile"] = chkBoxCemuSettings.Checked;
             handler.migrationOptions["deleteDestFolderContents"] = chkBoxDeletePrevContent.Checked;
+            handler.migrationOptions["askForDesktopShortcut"] = chkBoxDesktopShortcut.Checked;
+            // Custom mlc01 path
             handler.migrationOptions["dontCopyMlcFolderFor1.10+"] = chkBoxCustomMlc01Path.Checked;
-            
             if (!string.IsNullOrWhiteSpace(txtBoxCustomMlc01Path.Text) && errProviderMlcFolder.GetError(txtBoxCustomMlc01Path) == "")
                 handler.mlcFolderExternalPath = txtBoxCustomMlc01Path.Text;
             else
                 handler.mlcFolderExternalPath = "";
+            // Compatibility options
+            handler.migrationOptions["setCompatibilityOptions"] = chkBoxCompatOpts.Checked;
+            handler.migrationOptions["compatOpts_runAsAdmin"] = chkBoxRunAsAdmin.Checked;
+            handler.migrationOptions["compatOpts_noFullscreenOptimizations"] = chkBoxNoFullscreenOptimiz.Checked;
+            handler.migrationOptions["compatOpts_overrideHiDPIBehaviour"] = chkBoxOverrideHiDPIBehaviour.Checked;
 
             // SETTINGS FILE LOCATION
             if (chkBoxSettingsOnFile.Checked)
@@ -131,6 +117,11 @@ namespace CemuUpdateTool
                 handler.DeleteOptionsFile();
                 handler.optionsFilePath = "";
             }
+
+            // DOWNLOAD OPTIONS
+            // TODO: errorProvider per controllare validità Uri
+            handler.downloadOptions["cemuBaseUrl"] = txtBoxBaseUrl.Text;
+            handler.downloadOptions["cemuUrlSuffix"] = txtBoxUrlSuffix.Text;
         }
 
         private void DeleteSettingsFile(object sender, EventArgs e)
@@ -209,6 +200,22 @@ namespace CemuUpdateTool
                 txtBoxCustomMlc01Path.Enabled = true;
             else
                 txtBoxCustomMlc01Path.Enabled = false;
+        }
+
+        private void UpdateCompatOptsCheckboxesState(object sender = null, EventArgs e = null)
+        {
+            if (chkBoxCompatOpts.Checked)
+            {
+                chkBoxRunAsAdmin.Enabled = true;
+                chkBoxNoFullscreenOptimiz.Enabled = true;
+                chkBoxOverrideHiDPIBehaviour.Enabled = true;
+            }
+            else
+            {
+                chkBoxRunAsAdmin.Enabled = false;
+                chkBoxNoFullscreenOptimiz.Enabled = false;
+                chkBoxOverrideHiDPIBehaviour.Enabled = false;
+            }
         }
 
         private void CheckCustomMlc01PathForInvalidChars(object sender, EventArgs e)
