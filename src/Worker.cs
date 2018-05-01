@@ -6,6 +6,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Threading;
 using System.Net;
+using Microsoft.Win32;
 using IWshRuntimeLibrary;
 
 namespace CemuUpdateTool
@@ -111,6 +112,7 @@ namespace CemuUpdateTool
                 {
                     HandleLogMessage($"Downloading file {client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix}...", EventLogEntryType.Information);
                     client.DownloadFileTaskAsync(client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix, destinationFile).Wait(cancToken);
+                    fileDownloaded = true;
                 }
                 // Handle web request cancellation
                 catch (WebException exc) when (exc.Status == WebExceptionStatus.RequestCanceled)
@@ -227,7 +229,35 @@ namespace CemuUpdateTool
                 currentFolderIndex++;
             }
 
-            // TODO: implementare modifica compatibility options
+            // SET COMPATIBILITY OPTIONS for new Cemu executable
+            if (migrationOptions["setCompatibilityOptions"] == true)
+            {
+                // Build the key value
+                string keyValue = "";
+                if (migrationOptions["compatOpts_runAsAdmin"])
+                    keyValue += "RUNASADMIN ";
+                if (migrationOptions["compatOpts_noFullscreenOptimizations"])
+                    keyValue += "DISABLEDXMAXIMIZEDWINDOWEDMODE ";
+                if (migrationOptions["compatOpts_overrideHiDPIBehaviour"])
+                    keyValue += "HIGHDPIAWARE";
+
+                // Write the value in the registry
+                if (!string.IsNullOrEmpty(keyValue))
+                {
+                    string newCemuExePath = Path.Combine(BaseDestinationPath, "Cemu.exe");
+                    try
+                    {
+                        using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers", true))
+                            key.SetValue(newCemuExePath, keyValue);
+
+                        HandleLogMessage($"Compatibility options for {newCemuExePath} set in the Windows Registry correctly.", EventLogEntryType.Information);
+                    }
+                    catch (Exception exc)
+                    {
+                        HandleLogMessage($"Unable to set compatibility options for {newCemuExePath} in the Windows Registry: {exc.Message}", EventLogEntryType.Error);
+                    }
+                }
+            }
         }
 
         /*
