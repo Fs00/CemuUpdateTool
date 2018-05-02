@@ -46,7 +46,6 @@
             this.tabControl = new System.Windows.Forms.TabControl();
             this.foldersTab = new System.Windows.Forms.TabPage();
             this.lblCustomFolders = new System.Windows.Forms.Label();
-            this.dataGridCustomFolders = new System.Windows.Forms.DataGridView();
             this.chkBoxControllerProfiles = new System.Windows.Forms.CheckBox();
             this.chkBoxCemuSettings = new System.Windows.Forms.CheckBox();
             this.chkBoxGameProfiles = new System.Windows.Forms.CheckBox();
@@ -63,16 +62,21 @@
             this.chkBoxDeletePrevContent = new System.Windows.Forms.CheckBox();
             this.chkBoxDesktopShortcut = new System.Windows.Forms.CheckBox();
             this.downloadTab = new System.Windows.Forms.TabPage();
-            this.lblWarning = new System.Windows.Forms.Label();
-            this.lblUrl = new System.Windows.Forms.Label();
-            this.txtBoxBaseUrl = new System.Windows.Forms.TextBox();
-            this.txtBoxUrlSuffix = new System.Windows.Forms.TextBox();
             this.lblVersion = new System.Windows.Forms.Label();
+            this.txtBoxUrlSuffix = new System.Windows.Forms.TextBox();
+            this.txtBoxBaseUrl = new System.Windows.Forms.TextBox();
+            this.lblUrl = new System.Windows.Forms.Label();
+            this.lblWarning = new System.Windows.Forms.Label();
+            this.lblTotalCustomFolders = new System.Windows.Forms.Label();
+            this.lblEnabledCustomFolder = new System.Windows.Forms.Label();
+            this.btnEnableCustomFolders = new System.Windows.Forms.Button();
+            this.btnDisableCustomFolders = new System.Windows.Forms.Button();
+            this.lblCustomFoldersCnt = new System.Windows.Forms.Label();
+            this.lblEnabledCustomFoldersCnt = new System.Windows.Forms.Label();
             this.grpBoxProgramOpts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderMlcFolder)).BeginInit();
             this.tabControl.SuspendLayout();
             this.foldersTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridCustomFolders)).BeginInit();
             this.featuresTab.SuspendLayout();
             this.grpBoxMigration.SuspendLayout();
             this.downloadTab.SuspendLayout();
@@ -85,7 +89,7 @@
             this.grpBoxProgramOpts.Controls.Add(this.radioBtnAppDataFolder);
             this.grpBoxProgramOpts.Controls.Add(this.radioBtnExecFolder);
             this.grpBoxProgramOpts.Controls.Add(this.lblFileLocation);
-            this.grpBoxProgramOpts.Location = new System.Drawing.Point(12, 252);
+            this.grpBoxProgramOpts.Location = new System.Drawing.Point(12, 206);
             this.grpBoxProgramOpts.Name = "grpBoxProgramOpts";
             this.grpBoxProgramOpts.Size = new System.Drawing.Size(309, 124);
             this.grpBoxProgramOpts.TabIndex = 2;
@@ -150,7 +154,7 @@
             // btnSaveOpts
             // 
             this.btnSaveOpts.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnSaveOpts.Location = new System.Drawing.Point(142, 432);
+            this.btnSaveOpts.Location = new System.Drawing.Point(142, 380);
             this.btnSaveOpts.Name = "btnSaveOpts";
             this.btnSaveOpts.Size = new System.Drawing.Size(81, 25);
             this.btnSaveOpts.TabIndex = 3;
@@ -161,7 +165,7 @@
             // btnDiscard
             // 
             this.btnDiscard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDiscard.Location = new System.Drawing.Point(258, 432);
+            this.btnDiscard.Location = new System.Drawing.Point(258, 380);
             this.btnDiscard.Name = "btnDiscard";
             this.btnDiscard.Size = new System.Drawing.Size(96, 25);
             this.btnDiscard.TabIndex = 4;
@@ -190,7 +194,7 @@
             // btnRestoreDefaultOpts
             // 
             this.btnRestoreDefaultOpts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnRestoreDefaultOpts.Location = new System.Drawing.Point(12, 432);
+            this.btnRestoreDefaultOpts.Location = new System.Drawing.Point(12, 380);
             this.btnRestoreDefaultOpts.Name = "btnRestoreDefaultOpts";
             this.btnRestoreDefaultOpts.Size = new System.Drawing.Size(95, 25);
             this.btnRestoreDefaultOpts.TabIndex = 5;
@@ -208,7 +212,7 @@
             this.errProviderMlcFolder.SetIconPadding(this.txtBoxCustomMlc01Path, -20);
             this.txtBoxCustomMlc01Path.Location = new System.Drawing.Point(35, 206);
             this.txtBoxCustomMlc01Path.Name = "txtBoxCustomMlc01Path";
-            this.txtBoxCustomMlc01Path.Size = new System.Drawing.Size(242, 20);
+            this.txtBoxCustomMlc01Path.Size = new System.Drawing.Size(273, 20);
             this.txtBoxCustomMlc01Path.TabIndex = 9;
             this.txtBoxCustomMlc01Path.TextChanged += new System.EventHandler(this.CheckCustomMlc01PathForInvalidChars);
             // 
@@ -220,13 +224,18 @@
             this.tabControl.Location = new System.Drawing.Point(12, 10);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
-            this.tabControl.Size = new System.Drawing.Size(342, 414);
+            this.tabControl.Size = new System.Drawing.Size(342, 364);
             this.tabControl.TabIndex = 6;
             // 
             // foldersTab
             // 
+            this.foldersTab.Controls.Add(this.lblEnabledCustomFoldersCnt);
+            this.foldersTab.Controls.Add(this.lblCustomFoldersCnt);
+            this.foldersTab.Controls.Add(this.btnDisableCustomFolders);
+            this.foldersTab.Controls.Add(this.btnEnableCustomFolders);
+            this.foldersTab.Controls.Add(this.lblEnabledCustomFolder);
+            this.foldersTab.Controls.Add(this.lblTotalCustomFolders);
             this.foldersTab.Controls.Add(this.lblCustomFolders);
-            this.foldersTab.Controls.Add(this.dataGridCustomFolders);
             this.foldersTab.Controls.Add(this.txtBoxCustomMlc01Path);
             this.foldersTab.Controls.Add(this.chkBoxCustomMlc01Path);
             this.foldersTab.Controls.Add(this.chkBoxControllerProfiles);
@@ -239,7 +248,7 @@
             this.foldersTab.Location = new System.Drawing.Point(4, 22);
             this.foldersTab.Name = "foldersTab";
             this.foldersTab.Padding = new System.Windows.Forms.Padding(3);
-            this.foldersTab.Size = new System.Drawing.Size(334, 388);
+            this.foldersTab.Size = new System.Drawing.Size(334, 338);
             this.foldersTab.TabIndex = 0;
             this.foldersTab.Text = "Folders";
             this.foldersTab.UseVisualStyleBackColor = true;
@@ -252,14 +261,6 @@
             this.lblCustomFolders.Size = new System.Drawing.Size(79, 13);
             this.lblCustomFolders.TabIndex = 11;
             this.lblCustomFolders.Text = "Custom folders:";
-            // 
-            // dataGridCustomFolders
-            // 
-            this.dataGridCustomFolders.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridCustomFolders.Location = new System.Drawing.Point(35, 262);
-            this.dataGridCustomFolders.Name = "dataGridCustomFolders";
-            this.dataGridCustomFolders.Size = new System.Drawing.Size(242, 115);
-            this.dataGridCustomFolders.TabIndex = 10;
             // 
             // chkBoxControllerProfiles
             // 
@@ -338,7 +339,7 @@
             this.featuresTab.Location = new System.Drawing.Point(4, 22);
             this.featuresTab.Name = "featuresTab";
             this.featuresTab.Padding = new System.Windows.Forms.Padding(3);
-            this.featuresTab.Size = new System.Drawing.Size(334, 388);
+            this.featuresTab.Size = new System.Drawing.Size(334, 338);
             this.featuresTab.TabIndex = 1;
             this.featuresTab.Text = "Features";
             this.featuresTab.UseVisualStyleBackColor = true;
@@ -429,10 +430,42 @@
             this.downloadTab.Location = new System.Drawing.Point(4, 22);
             this.downloadTab.Name = "downloadTab";
             this.downloadTab.Padding = new System.Windows.Forms.Padding(3);
-            this.downloadTab.Size = new System.Drawing.Size(334, 388);
+            this.downloadTab.Size = new System.Drawing.Size(334, 338);
             this.downloadTab.TabIndex = 2;
             this.downloadTab.Text = "Download";
             this.downloadTab.UseVisualStyleBackColor = true;
+            // 
+            // lblVersion
+            // 
+            this.lblVersion.AutoSize = true;
+            this.lblVersion.Location = new System.Drawing.Point(219, 105);
+            this.lblVersion.Name = "lblVersion";
+            this.lblVersion.Size = new System.Drawing.Size(34, 13);
+            this.lblVersion.TabIndex = 4;
+            this.lblVersion.Text = "X.Y.Z";
+            // 
+            // txtBoxUrlSuffix
+            // 
+            this.txtBoxUrlSuffix.Location = new System.Drawing.Point(254, 102);
+            this.txtBoxUrlSuffix.Name = "txtBoxUrlSuffix";
+            this.txtBoxUrlSuffix.Size = new System.Drawing.Size(51, 20);
+            this.txtBoxUrlSuffix.TabIndex = 3;
+            // 
+            // txtBoxBaseUrl
+            // 
+            this.txtBoxBaseUrl.Location = new System.Drawing.Point(24, 102);
+            this.txtBoxBaseUrl.Name = "txtBoxBaseUrl";
+            this.txtBoxBaseUrl.Size = new System.Drawing.Size(194, 20);
+            this.txtBoxBaseUrl.TabIndex = 2;
+            // 
+            // lblUrl
+            // 
+            this.lblUrl.AutoSize = true;
+            this.lblUrl.Location = new System.Drawing.Point(12, 83);
+            this.lblUrl.Name = "lblUrl";
+            this.lblUrl.Size = new System.Drawing.Size(111, 13);
+            this.lblUrl.TabIndex = 1;
+            this.lblUrl.Text = "Cemu download URL:";
             // 
             // lblWarning
             // 
@@ -445,43 +478,67 @@
     " this option when not necessary will make the program unable to download new Cem" +
     "u versions!";
             // 
-            // lblUrl
+            // lblTotalCustomFolders
             // 
-            this.lblUrl.AutoSize = true;
-            this.lblUrl.Location = new System.Drawing.Point(12, 83);
-            this.lblUrl.Name = "lblUrl";
-            this.lblUrl.Size = new System.Drawing.Size(111, 13);
-            this.lblUrl.TabIndex = 1;
-            this.lblUrl.Text = "Cemu download URL:";
+            this.lblTotalCustomFolders.AutoSize = true;
+            this.lblTotalCustomFolders.Location = new System.Drawing.Point(32, 262);
+            this.lblTotalCustomFolders.Name = "lblTotalCustomFolders";
+            this.lblTotalCustomFolders.Size = new System.Drawing.Size(34, 13);
+            this.lblTotalCustomFolders.TabIndex = 12;
+            this.lblTotalCustomFolders.Text = "Total:";
             // 
-            // txtBoxBaseUrl
+            // lblEnabledCustomFolder
             // 
-            this.txtBoxBaseUrl.Location = new System.Drawing.Point(24, 102);
-            this.txtBoxBaseUrl.Name = "txtBoxBaseUrl";
-            this.txtBoxBaseUrl.Size = new System.Drawing.Size(194, 20);
-            this.txtBoxBaseUrl.TabIndex = 2;
+            this.lblEnabledCustomFolder.AutoSize = true;
+            this.lblEnabledCustomFolder.Location = new System.Drawing.Point(32, 280);
+            this.lblEnabledCustomFolder.Name = "lblEnabledCustomFolder";
+            this.lblEnabledCustomFolder.Size = new System.Drawing.Size(49, 13);
+            this.lblEnabledCustomFolder.TabIndex = 13;
+            this.lblEnabledCustomFolder.Text = "Enabled:";
             // 
-            // txtBoxUrlSuffix
+            // btnEnableCustomFolders
             // 
-            this.txtBoxUrlSuffix.Location = new System.Drawing.Point(254, 102);
-            this.txtBoxUrlSuffix.Name = "txtBoxUrlSuffix";
-            this.txtBoxUrlSuffix.Size = new System.Drawing.Size(51, 20);
-            this.txtBoxUrlSuffix.TabIndex = 3;
+            this.btnEnableCustomFolders.Location = new System.Drawing.Point(152, 270);
+            this.btnEnableCustomFolders.Name = "btnEnableCustomFolders";
+            this.btnEnableCustomFolders.Size = new System.Drawing.Size(75, 23);
+            this.btnEnableCustomFolders.TabIndex = 14;
+            this.btnEnableCustomFolders.Text = "Enable all";
+            this.btnEnableCustomFolders.UseVisualStyleBackColor = true;
+            this.btnEnableCustomFolders.Click += new System.EventHandler(this.EnableCustomFolders);
             // 
-            // lblVersion
+            // btnDisableCustomFolders
             // 
-            this.lblVersion.AutoSize = true;
-            this.lblVersion.Location = new System.Drawing.Point(219, 105);
-            this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(34, 13);
-            this.lblVersion.TabIndex = 4;
-            this.lblVersion.Text = "X.Y.Z";
+            this.btnDisableCustomFolders.Location = new System.Drawing.Point(233, 270);
+            this.btnDisableCustomFolders.Name = "btnDisableCustomFolders";
+            this.btnDisableCustomFolders.Size = new System.Drawing.Size(75, 23);
+            this.btnDisableCustomFolders.TabIndex = 15;
+            this.btnDisableCustomFolders.Text = "Disable all";
+            this.btnDisableCustomFolders.UseVisualStyleBackColor = true;
+            this.btnDisableCustomFolders.Click += new System.EventHandler(this.DisableCustomFolders);
+            // 
+            // lblCustomFoldersCnt
+            // 
+            this.lblCustomFoldersCnt.AutoSize = true;
+            this.lblCustomFoldersCnt.Location = new System.Drawing.Point(82, 262);
+            this.lblCustomFoldersCnt.Name = "lblCustomFoldersCnt";
+            this.lblCustomFoldersCnt.Size = new System.Drawing.Size(13, 13);
+            this.lblCustomFoldersCnt.TabIndex = 16;
+            this.lblCustomFoldersCnt.Text = "0";
+            // 
+            // lblEnabledCustomFoldersCnt
+            // 
+            this.lblEnabledCustomFoldersCnt.AutoSize = true;
+            this.lblEnabledCustomFoldersCnt.Location = new System.Drawing.Point(82, 280);
+            this.lblEnabledCustomFoldersCnt.Name = "lblEnabledCustomFoldersCnt";
+            this.lblEnabledCustomFoldersCnt.Size = new System.Drawing.Size(13, 13);
+            this.lblEnabledCustomFoldersCnt.TabIndex = 17;
+            this.lblEnabledCustomFoldersCnt.Text = "0";
             // 
             // OptionsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(366, 465);
+            this.ClientSize = new System.Drawing.Size(366, 413);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.btnRestoreDefaultOpts);
             this.Controls.Add(this.btnDiscard);
@@ -497,7 +554,6 @@
             this.tabControl.ResumeLayout(false);
             this.foldersTab.ResumeLayout(false);
             this.foldersTab.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridCustomFolders)).EndInit();
             this.featuresTab.ResumeLayout(false);
             this.grpBoxMigration.ResumeLayout(false);
             this.grpBoxMigration.PerformLayout();
@@ -535,7 +591,6 @@
         private System.Windows.Forms.CheckBox chkBoxDesktopShortcut;
         private System.Windows.Forms.CheckBox chkBoxDeletePrevContent;
         private System.Windows.Forms.Label lblCustomFolders;
-        private System.Windows.Forms.DataGridView dataGridCustomFolders;
         private System.Windows.Forms.GroupBox grpBoxMigration;
         private System.Windows.Forms.CheckBox chkBoxNoFullscreenOptimiz;
         private System.Windows.Forms.CheckBox chkBoxOverrideHiDPIBehaviour;
@@ -546,5 +601,11 @@
         private System.Windows.Forms.TextBox txtBoxUrlSuffix;
         private System.Windows.Forms.TextBox txtBoxBaseUrl;
         private System.Windows.Forms.Label lblUrl;
+        private System.Windows.Forms.Button btnDisableCustomFolders;
+        private System.Windows.Forms.Button btnEnableCustomFolders;
+        private System.Windows.Forms.Label lblEnabledCustomFolder;
+        private System.Windows.Forms.Label lblTotalCustomFolders;
+        private System.Windows.Forms.Label lblEnabledCustomFoldersCnt;
+        private System.Windows.Forms.Label lblCustomFoldersCnt;
     }
 }

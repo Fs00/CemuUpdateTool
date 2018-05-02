@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace CemuUpdateTool
@@ -33,6 +34,7 @@ namespace CemuUpdateTool
             }
             chkBoxDLCUpds.Checked = handler.folderOptions[@"mlc01\usr\title"];
             chkBoxShaderCaches.Checked = handler.folderOptions[@"shaderCache\transferable"];
+            RefreshCustomFolderStats();
 
             // MIGRATION OPTIONS
             chkBoxCemuSettings.Checked = handler.migrationOptions["copyCemuSettingsFile"];
@@ -122,6 +124,34 @@ namespace CemuUpdateTool
             // TODO: errorProvider per controllare validità Uri
             handler.downloadOptions["cemuBaseUrl"] = txtBoxBaseUrl.Text;
             handler.downloadOptions["cemuUrlSuffix"] = txtBoxUrlSuffix.Text;
+        }
+
+        private void RefreshCustomFolderStats()
+        {
+            int foldersCounter = 0,
+                enabledFoldersCounter = 0;
+
+            foreach (string folder in handler.CustomFolders())
+            {
+                foldersCounter++;
+                if (handler.folderOptions[folder] == true)
+                    enabledFoldersCounter++;
+            }
+
+            lblCustomFoldersCnt.Text = foldersCounter.ToString();
+            lblEnabledCustomFoldersCnt.Text = enabledFoldersCounter.ToString();
+        }
+
+        private void EnableOrDisableCustomFolders(bool enable)
+        {
+            // Save in a temporary list all the custom folders
+            List<string> customFolders = new List<string>();
+            foreach (string folder in handler.CustomFolders())
+                customFolders.Add(folder);
+
+            // Apply changes to folderOptions
+            foreach (string folder in customFolders)
+                handler.folderOptions[folder] = enable;
         }
 
         private void DeleteSettingsFile(object sender, EventArgs e)
@@ -242,6 +272,18 @@ namespace CemuUpdateTool
         private void DiscardAndClose(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void EnableCustomFolders(object sender, EventArgs e)
+        {
+            EnableOrDisableCustomFolders(true);
+            RefreshCustomFolderStats();
+        }
+
+        private void DisableCustomFolders(object sender, EventArgs e)
+        {
+            EnableOrDisableCustomFolders(false);
+            RefreshCustomFolderStats();
         }
     }
 }

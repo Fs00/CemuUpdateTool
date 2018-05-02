@@ -323,6 +323,18 @@ namespace CemuUpdateTool
                     yield return option.Key;
             }
         }
+
+        /*
+         *  Iterator method that returns only custom user folders (the ones that aren't in default dictionary)
+         */
+        public IEnumerable<string> CustomFolders()
+        {
+            foreach (KeyValuePair<string, bool> option in folderOptions)
+            {
+                if (!defaultFolderOptions.ContainsKey(option.Key))
+                    yield return option.Key;
+            }
+        }
     }
 
     /*
