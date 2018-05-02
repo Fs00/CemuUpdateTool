@@ -65,13 +65,15 @@ namespace CemuUpdateTool
          */
         private void SelectOldCemuFolder(object sender, EventArgs e)
         {
-            // Open folder picker in %UserProfile% folder and save the selected path
+            // Open folder picker in Computer or in the currently selected folder (if it exists)
             var folderPicker = new FolderBrowserDialog();
-            folderPicker.RootFolder = Environment.SpecialFolder.UserProfile;
-            DialogResult result = folderPicker.ShowDialog();
+            folderPicker.RootFolder = Environment.SpecialFolder.MyComputer;
+            if (!string.IsNullOrEmpty(txtBoxOldFolder.Text) && FileUtils.DirectoryExists(txtBoxOldFolder.Text))
+                folderPicker.SelectedPath = txtBoxOldFolder.Text;
 
-            // Check whether result is OK
-            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderPicker.SelectedPath))
+            DialogResult result = folderPicker.ShowDialog();
+            // Check whether result is different to the other selected folder (it mustn't be equal)
+            if (result == DialogResult.OK)
             {
                 if (folderPicker.SelectedPath != txtBoxNewFolder.Text)
                     txtBoxOldFolder.Text = folderPicker.SelectedPath;
@@ -85,13 +87,15 @@ namespace CemuUpdateTool
          */
         private void SelectNewCemuFolder(object sender, EventArgs e)
         {
-            // Open folder picker in %UserProfile% folder and save the selected path
+            // Open folder picker in Computer or in the currently selected folder (if it exists)
             var folderPicker = new FolderBrowserDialog();
-            folderPicker.RootFolder = Environment.SpecialFolder.UserProfile;
-            DialogResult result = folderPicker.ShowDialog();
+            folderPicker.RootFolder = Environment.SpecialFolder.MyComputer;
+            if (!string.IsNullOrEmpty(txtBoxNewFolder.Text) && FileUtils.DirectoryExists(txtBoxNewFolder.Text))
+                folderPicker.SelectedPath = txtBoxNewFolder.Text;
 
-            // Check whether result is OK
-            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderPicker.SelectedPath))
+            DialogResult result = folderPicker.ShowDialog();
+            // Check whether result is different to the other selected folder (it mustn't be equal)
+            if (result == DialogResult.OK)
             {
                 if (folderPicker.SelectedPath != txtBoxOldFolder.Text)
                     txtBoxNewFolder.Text = folderPicker.SelectedPath;
