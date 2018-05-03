@@ -14,7 +14,7 @@ namespace CemuUpdateTool
             linkLblDiscord.Links.Add(0, 7, "http://discordapp.com");
 
             // TODO: da aggiornare prima della release
-            richTxtBoxHelp.Rtf = @"{\rtf1\ansi\ansicpg1252\deff0\deflang1040{\fonttbl{\f0\fnil\fcharset0 Microsoft Sans Serif;}}" +
+            richTxtBoxHelp.Rtf = @"{\rtf1\ansi\ansicpg1252\deff0\deflang1040{\fonttbl{\f0\fnil\fcharset0 Segoe UI;}}" +
                 @"\viewkind4\uc1\pard\f0\fs19" +
                 @"{\b HOW DOES IT WORK?}\par" +
                 @"\fs8\par\fs19" +

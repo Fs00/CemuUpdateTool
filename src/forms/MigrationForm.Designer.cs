@@ -54,10 +54,13 @@
             this.btnExit = new System.Windows.Forms.Button();
             this.errProviderNewFolder = new System.Windows.Forms.ErrorProvider(this.components);
             this.errProviderOldFolder = new System.Windows.Forms.ErrorProvider(this.components);
+            this.bottomPanel = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
             this.grpBoxFolderSelect.SuspendLayout();
             this.grpBoxProgress.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderNewFolder)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).BeginInit();
+            this.bottomPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // grpBoxFolderSelect
@@ -76,9 +79,9 @@
             this.grpBoxFolderSelect.Controls.Add(this.txtBoxOldFolder);
             this.grpBoxFolderSelect.Controls.Add(this.lblOldFolder);
             this.grpBoxFolderSelect.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.grpBoxFolderSelect.Location = new System.Drawing.Point(12, 11);
+            this.grpBoxFolderSelect.Location = new System.Drawing.Point(14, 9);
             this.grpBoxFolderSelect.Name = "grpBoxFolderSelect";
-            this.grpBoxFolderSelect.Size = new System.Drawing.Size(480, 167);
+            this.grpBoxFolderSelect.Size = new System.Drawing.Size(539, 180);
             this.grpBoxFolderSelect.TabIndex = 0;
             this.grpBoxFolderSelect.TabStop = false;
             this.grpBoxFolderSelect.Text = "Select Cemu folders";
@@ -86,29 +89,31 @@
             // lblNewVersionNr
             // 
             this.lblNewVersionNr.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.lblNewVersionNr.AutoSize = true;
-            this.lblNewVersionNr.Location = new System.Drawing.Point(436, 73);
+            this.lblNewVersionNr.Location = new System.Drawing.Point(474, 82);
             this.lblNewVersionNr.Name = "lblNewVersionNr";
-            this.lblNewVersionNr.Size = new System.Drawing.Size(19, 15);
+            this.lblNewVersionNr.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.lblNewVersionNr.Size = new System.Drawing.Size(40, 15);
             this.lblNewVersionNr.TabIndex = 12;
             this.lblNewVersionNr.Text = "    ";
+            this.lblNewVersionNr.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblOldVersionNr
             // 
             this.lblOldVersionNr.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.lblOldVersionNr.AutoSize = true;
-            this.lblOldVersionNr.Location = new System.Drawing.Point(436, 25);
+            this.lblOldVersionNr.Location = new System.Drawing.Point(474, 27);
             this.lblOldVersionNr.Name = "lblOldVersionNr";
-            this.lblOldVersionNr.Size = new System.Drawing.Size(19, 15);
+            this.lblOldVersionNr.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.lblOldVersionNr.Size = new System.Drawing.Size(40, 15);
             this.lblOldVersionNr.TabIndex = 11;
             this.lblOldVersionNr.Text = "    ";
+            this.lblOldVersionNr.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblNewCemuVersion
             // 
             this.lblNewCemuVersion.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblNewCemuVersion.AutoSize = true;
             this.lblNewCemuVersion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblNewCemuVersion.Location = new System.Drawing.Point(353, 74);
+            this.lblNewCemuVersion.Location = new System.Drawing.Point(395, 82);
             this.lblNewCemuVersion.Name = "lblNewCemuVersion";
             this.lblNewCemuVersion.Size = new System.Drawing.Size(83, 15);
             this.lblNewCemuVersion.TabIndex = 10;
@@ -120,7 +125,7 @@
             this.lblOldCemuVersion.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblOldCemuVersion.AutoSize = true;
             this.lblOldCemuVersion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblOldCemuVersion.Location = new System.Drawing.Point(353, 25);
+            this.lblOldCemuVersion.Location = new System.Drawing.Point(395, 27);
             this.lblOldCemuVersion.Name = "lblOldCemuVersion";
             this.lblOldCemuVersion.Size = new System.Drawing.Size(83, 15);
             this.lblOldCemuVersion.TabIndex = 9;
@@ -129,11 +134,11 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(317, 128);
+            this.btnCancel.Location = new System.Drawing.Point(334, 141);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(75, 25);
+            this.btnCancel.Size = new System.Drawing.Size(87, 27);
             this.btnCancel.TabIndex = 8;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -141,11 +146,11 @@
             // 
             // btnStart
             // 
-            this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnStart.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.btnStart.Enabled = false;
-            this.btnStart.Location = new System.Drawing.Point(398, 128);
+            this.btnStart.Location = new System.Drawing.Point(426, 141);
             this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(76, 25);
+            this.btnStart.Size = new System.Drawing.Size(89, 27);
             this.btnStart.TabIndex = 7;
             this.btnStart.Text = "Start";
             this.btnStart.UseVisualStyleBackColor = true;
@@ -153,10 +158,10 @@
             // 
             // btnOptions
             // 
-            this.btnOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOptions.Location = new System.Drawing.Point(236, 128);
+            this.btnOptions.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.btnOptions.Location = new System.Drawing.Point(241, 141);
             this.btnOptions.Name = "btnOptions";
-            this.btnOptions.Size = new System.Drawing.Size(75, 25);
+            this.btnOptions.Size = new System.Drawing.Size(87, 27);
             this.btnOptions.TabIndex = 6;
             this.btnOptions.Text = "Options...";
             this.btnOptions.UseVisualStyleBackColor = true;
@@ -165,9 +170,9 @@
             // btnSelectNewFolder
             // 
             this.btnSelectNewFolder.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnSelectNewFolder.Location = new System.Drawing.Point(398, 90);
+            this.btnSelectNewFolder.Location = new System.Drawing.Point(426, 103);
             this.btnSelectNewFolder.Name = "btnSelectNewFolder";
-            this.btnSelectNewFolder.Size = new System.Drawing.Size(76, 22);
+            this.btnSelectNewFolder.Size = new System.Drawing.Size(89, 25);
             this.btnSelectNewFolder.TabIndex = 5;
             this.btnSelectNewFolder.Text = "Select";
             this.btnSelectNewFolder.UseVisualStyleBackColor = true;
@@ -177,9 +182,9 @@
             // 
             this.txtBoxNewFolder.AllowDrop = true;
             this.errProviderNewFolder.SetIconPadding(this.txtBoxNewFolder, -20);
-            this.txtBoxNewFolder.Location = new System.Drawing.Point(22, 92);
+            this.txtBoxNewFolder.Location = new System.Drawing.Point(26, 104);
             this.txtBoxNewFolder.Name = "txtBoxNewFolder";
-            this.txtBoxNewFolder.Size = new System.Drawing.Size(370, 23);
+            this.txtBoxNewFolder.Size = new System.Drawing.Size(394, 23);
             this.txtBoxNewFolder.TabIndex = 4;
             this.txtBoxNewFolder.TextChanged += new System.EventHandler(this.CheckNewFolderTextboxContent);
             this.txtBoxNewFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
@@ -189,7 +194,7 @@
             // 
             this.lblNewFolder.AutoSize = true;
             this.lblNewFolder.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblNewFolder.Location = new System.Drawing.Point(19, 73);
+            this.lblNewFolder.Location = new System.Drawing.Point(22, 82);
             this.lblNewFolder.Name = "lblNewFolder";
             this.lblNewFolder.Size = new System.Drawing.Size(100, 15);
             this.lblNewFolder.TabIndex = 3;
@@ -198,9 +203,9 @@
             // btnSelectOldFolder
             // 
             this.btnSelectOldFolder.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnSelectOldFolder.Location = new System.Drawing.Point(398, 42);
+            this.btnSelectOldFolder.Location = new System.Drawing.Point(426, 48);
             this.btnSelectOldFolder.Name = "btnSelectOldFolder";
-            this.btnSelectOldFolder.Size = new System.Drawing.Size(76, 22);
+            this.btnSelectOldFolder.Size = new System.Drawing.Size(89, 25);
             this.btnSelectOldFolder.TabIndex = 2;
             this.btnSelectOldFolder.Text = "Select";
             this.btnSelectOldFolder.UseVisualStyleBackColor = true;
@@ -210,9 +215,9 @@
             // 
             this.txtBoxOldFolder.AllowDrop = true;
             this.errProviderOldFolder.SetIconPadding(this.txtBoxOldFolder, -20);
-            this.txtBoxOldFolder.Location = new System.Drawing.Point(22, 44);
+            this.txtBoxOldFolder.Location = new System.Drawing.Point(26, 49);
             this.txtBoxOldFolder.Name = "txtBoxOldFolder";
-            this.txtBoxOldFolder.Size = new System.Drawing.Size(370, 23);
+            this.txtBoxOldFolder.Size = new System.Drawing.Size(394, 23);
             this.txtBoxOldFolder.TabIndex = 1;
             this.txtBoxOldFolder.TextChanged += new System.EventHandler(this.CheckOldFolderTextboxContent);
             this.txtBoxOldFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
@@ -222,7 +227,7 @@
             // 
             this.lblOldFolder.AutoSize = true;
             this.lblOldFolder.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblOldFolder.Location = new System.Drawing.Point(19, 25);
+            this.lblOldFolder.Location = new System.Drawing.Point(22, 27);
             this.lblOldFolder.Name = "lblOldFolder";
             this.lblOldFolder.Size = new System.Drawing.Size(105, 15);
             this.lblOldFolder.TabIndex = 0;
@@ -238,42 +243,40 @@
             this.grpBoxProgress.Controls.Add(this.overallProgressBar);
             this.grpBoxProgress.Controls.Add(this.lblCurrentTask);
             this.grpBoxProgress.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.grpBoxProgress.Location = new System.Drawing.Point(12, 184);
+            this.grpBoxProgress.Location = new System.Drawing.Point(14, 196);
             this.grpBoxProgress.Name = "grpBoxProgress";
-            this.grpBoxProgress.Size = new System.Drawing.Size(480, 240);
+            this.grpBoxProgress.Size = new System.Drawing.Size(539, 273);
             this.grpBoxProgress.TabIndex = 1;
             this.grpBoxProgress.TabStop = false;
             this.grpBoxProgress.Text = "Progress";
             // 
             // txtBoxLog
             // 
-            this.txtBoxLog.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.txtBoxLog.BackColor = System.Drawing.Color.White;
-            this.txtBoxLog.Location = new System.Drawing.Point(33, 105);
-            this.txtBoxLog.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            this.txtBoxLog.Location = new System.Drawing.Point(37, 121);
+            this.txtBoxLog.Margin = new System.Windows.Forms.Padding(3, 7, 3, 0);
             this.txtBoxLog.Multiline = true;
             this.txtBoxLog.Name = "txtBoxLog";
             this.txtBoxLog.ReadOnly = true;
             this.txtBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtBoxLog.Size = new System.Drawing.Size(424, 116);
+            this.txtBoxLog.Size = new System.Drawing.Size(478, 133);
             this.txtBoxLog.TabIndex = 7;
             this.txtBoxLog.VisibleChanged += new System.EventHandler(this.ResizeFormOnLogTextboxVisibleChanged);
             // 
             // lblDetails
             // 
             this.lblDetails.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDetails.Location = new System.Drawing.Point(18, 86);
+            this.lblDetails.Location = new System.Drawing.Point(21, 99);
             this.lblDetails.Name = "lblDetails";
-            this.lblDetails.Size = new System.Drawing.Size(439, 13);
+            this.lblDetails.Size = new System.Drawing.Size(512, 15);
             this.lblDetails.TabIndex = 6;
             this.lblDetails.Text = "▽ Details";
             this.lblDetails.Click += new System.EventHandler(this.ShowHideDetailsTextbox);
             // 
             // lblPercent
             // 
-            this.lblPercent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblPercent.AutoSize = true;
-            this.lblPercent.Location = new System.Drawing.Point(436, 25);
+            this.lblPercent.Location = new System.Drawing.Point(491, 29);
             this.lblPercent.Name = "lblPercent";
             this.lblPercent.Size = new System.Drawing.Size(23, 15);
             this.lblPercent.TabIndex = 5;
@@ -282,18 +285,17 @@
             // 
             // overallProgressBar
             // 
-            this.overallProgressBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.overallProgressBar.Location = new System.Drawing.Point(21, 44);
-            this.overallProgressBar.Margin = new System.Windows.Forms.Padding(3, 6, 3, 3);
+            this.overallProgressBar.Location = new System.Drawing.Point(23, 51);
+            this.overallProgressBar.Margin = new System.Windows.Forms.Padding(3, 7, 3, 3);
             this.overallProgressBar.Name = "overallProgressBar";
-            this.overallProgressBar.Size = new System.Drawing.Size(436, 30);
+            this.overallProgressBar.Size = new System.Drawing.Size(492, 35);
             this.overallProgressBar.TabIndex = 3;
             // 
             // lblCurrentTask
             // 
             this.lblCurrentTask.AutoSize = true;
             this.lblCurrentTask.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCurrentTask.Location = new System.Drawing.Point(18, 25);
+            this.lblCurrentTask.Location = new System.Drawing.Point(21, 29);
             this.lblCurrentTask.Name = "lblCurrentTask";
             this.lblCurrentTask.Size = new System.Drawing.Size(174, 15);
             this.lblCurrentTask.TabIndex = 1;
@@ -301,11 +303,11 @@
             // 
             // btnHelp
             // 
-            this.btnHelp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnHelp.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.btnHelp.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnHelp.Location = new System.Drawing.Point(255, 429);
+            this.btnHelp.Location = new System.Drawing.Point(263, 7);
             this.btnHelp.Name = "btnHelp";
-            this.btnHelp.Size = new System.Drawing.Size(75, 29);
+            this.btnHelp.Size = new System.Drawing.Size(87, 29);
             this.btnHelp.TabIndex = 2;
             this.btnHelp.Text = "Help!";
             this.btnHelp.UseVisualStyleBackColor = true;
@@ -313,11 +315,11 @@
             // 
             // btnAbout
             // 
-            this.btnAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAbout.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.btnAbout.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAbout.Location = new System.Drawing.Point(336, 429);
+            this.btnAbout.Location = new System.Drawing.Point(356, 7);
             this.btnAbout.Name = "btnAbout";
-            this.btnAbout.Size = new System.Drawing.Size(75, 29);
+            this.btnAbout.Size = new System.Drawing.Size(87, 29);
             this.btnAbout.TabIndex = 3;
             this.btnAbout.Text = "About...";
             this.btnAbout.UseVisualStyleBackColor = true;
@@ -325,11 +327,11 @@
             // 
             // btnExit
             // 
-            this.btnExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnExit.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.btnExit.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExit.Location = new System.Drawing.Point(417, 429);
+            this.btnExit.Location = new System.Drawing.Point(449, 7);
             this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(75, 29);
+            this.btnExit.Size = new System.Drawing.Size(87, 29);
             this.btnExit.TabIndex = 4;
             this.btnExit.Text = "Exit";
             this.btnExit.UseVisualStyleBackColor = true;
@@ -345,16 +347,38 @@
             this.errProviderOldFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
             this.errProviderOldFolder.ContainerControl = this;
             // 
+            // bottomPanel
+            // 
+            this.bottomPanel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.bottomPanel.BackColor = System.Drawing.SystemColors.Control;
+            this.bottomPanel.Controls.Add(this.label1);
+            this.bottomPanel.Controls.Add(this.btnHelp);
+            this.bottomPanel.Controls.Add(this.btnExit);
+            this.bottomPanel.Controls.Add(this.btnAbout);
+            this.bottomPanel.Location = new System.Drawing.Point(-8, 480);
+            this.bottomPanel.Name = "bottomPanel";
+            this.bottomPanel.Size = new System.Drawing.Size(582, 51);
+            this.bottomPanel.TabIndex = 5;
+            // 
+            // label1
+            // 
+            this.label1.BackColor = System.Drawing.SystemColors.Control;
+            this.label1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.label1.Location = new System.Drawing.Point(0, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(582, 2);
+            this.label1.TabIndex = 13;
+            // 
             // MigrationForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(507, 468);
-            this.Controls.Add(this.btnExit);
-            this.Controls.Add(this.btnAbout);
-            this.Controls.Add(this.btnHelp);
+            this.BackColor = System.Drawing.Color.White;
+            this.ClientSize = new System.Drawing.Size(567, 524);
+            this.Controls.Add(this.bottomPanel);
             this.Controls.Add(this.grpBoxProgress);
             this.Controls.Add(this.grpBoxFolderSelect);
+            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
             this.MaximizeBox = false;
@@ -368,6 +392,7 @@
             this.grpBoxProgress.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderNewFolder)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).EndInit();
+            this.bottomPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -400,6 +425,8 @@
         private System.Windows.Forms.ErrorProvider errProviderOldFolder;
         private System.Windows.Forms.Label lblDetails;
         private System.Windows.Forms.TextBox txtBoxLog;
+        private System.Windows.Forms.Panel bottomPanel;
+        private System.Windows.Forms.Label label1;
     }
 }
 

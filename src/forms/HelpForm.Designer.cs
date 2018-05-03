@@ -39,18 +39,18 @@
             // lblContact
             // 
             this.lblContact.AutoSize = true;
-            this.lblContact.Location = new System.Drawing.Point(28, 282);
+            this.lblContact.Location = new System.Drawing.Point(12, 307);
             this.lblContact.Name = "lblContact";
-            this.lblContact.Size = new System.Drawing.Size(217, 13);
+            this.lblContact.Size = new System.Drawing.Size(241, 15);
             this.lblContact.TabIndex = 1;
             this.lblContact.Text = "More questions? Don\'t hesitate to ask me on";
             // 
             // linkLblDiscord
             // 
             this.linkLblDiscord.AutoSize = true;
-            this.linkLblDiscord.Location = new System.Drawing.Point(241, 282);
+            this.linkLblDiscord.Location = new System.Drawing.Point(251, 307);
             this.linkLblDiscord.Name = "linkLblDiscord";
-            this.linkLblDiscord.Size = new System.Drawing.Size(43, 13);
+            this.linkLblDiscord.Size = new System.Drawing.Size(47, 15);
             this.linkLblDiscord.TabIndex = 2;
             this.linkLblDiscord.TabStop = true;
             this.linkLblDiscord.Text = "Discord";
@@ -59,18 +59,18 @@
             // lblOr
             // 
             this.lblOr.AutoSize = true;
-            this.lblOr.Location = new System.Drawing.Point(281, 282);
+            this.lblOr.Location = new System.Drawing.Point(295, 307);
             this.lblOr.Name = "lblOr";
-            this.lblOr.Size = new System.Drawing.Size(45, 13);
+            this.lblOr.Size = new System.Drawing.Size(51, 15);
             this.lblOr.TabIndex = 3;
             this.lblOr.Text = "or in the";
             // 
             // linkLblForum
             // 
             this.linkLblForum.AutoSize = true;
-            this.linkLblForum.Location = new System.Drawing.Point(323, 282);
+            this.linkLblForum.Location = new System.Drawing.Point(344, 307);
             this.linkLblForum.Name = "linkLblForum";
-            this.linkLblForum.Size = new System.Drawing.Size(96, 13);
+            this.linkLblForum.Size = new System.Drawing.Size(112, 15);
             this.linkLblForum.TabIndex = 4;
             this.linkLblForum.TabStop = true;
             this.linkLblForum.Text = "Cemu forum thread";
@@ -78,9 +78,9 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(439, 277);
+            this.btnClose.Location = new System.Drawing.Point(489, 300);
             this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(82, 25);
+            this.btnClose.Size = new System.Drawing.Size(96, 29);
             this.btnClose.TabIndex = 5;
             this.btnClose.Text = "Close";
             this.btnClose.UseVisualStyleBackColor = true;
@@ -88,26 +88,29 @@
             // 
             // richTxtBoxHelp
             // 
+            this.richTxtBoxHelp.BackColor = System.Drawing.Color.White;
             this.richTxtBoxHelp.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTxtBoxHelp.Location = new System.Drawing.Point(12, 12);
             this.richTxtBoxHelp.Name = "richTxtBoxHelp";
             this.richTxtBoxHelp.ReadOnly = true;
             this.richTxtBoxHelp.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.richTxtBoxHelp.Size = new System.Drawing.Size(509, 257);
+            this.richTxtBoxHelp.Size = new System.Drawing.Size(573, 277);
             this.richTxtBoxHelp.TabIndex = 6;
             this.richTxtBoxHelp.Text = "";
             // 
             // HelpForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(533, 312);
+            this.BackColor = System.Drawing.Color.White;
+            this.ClientSize = new System.Drawing.Size(597, 338);
             this.Controls.Add(this.richTxtBoxHelp);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.linkLblForum);
             this.Controls.Add(this.lblOr);
             this.Controls.Add(this.linkLblDiscord);
             this.Controls.Add(this.lblContact);
+            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "HelpForm";

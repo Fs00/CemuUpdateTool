@@ -11,8 +11,8 @@ namespace CemuUpdateTool
         {
             InitializeComponent();
             Icon = SystemIcons.Information;
-            var fileVersionAttribute = (AssemblyFileVersionAttribute) Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyFileVersionAttribute));
-            lblVersion.Text += fileVersionAttribute.Version;
+            var fileVersionAttribute = Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyInformationalVersionAttribute));
+            lblVersion.Text += ((AssemblyInformationalVersionAttribute) fileVersionAttribute).InformationalVersion;
             PageLinkLbl.Links.Add(0, 17, "http://forum.cemu.info/forumdisplay.php/15-Guides-amp-modifications");
         }
 
