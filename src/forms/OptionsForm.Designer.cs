@@ -273,7 +273,7 @@
             this.btnEnableCustomFolders.TabIndex = 14;
             this.btnEnableCustomFolders.Text = "Enable all";
             this.btnEnableCustomFolders.UseVisualStyleBackColor = true;
-            this.btnEnableCustomFolders.Click += new System.EventHandler(this.EnableCustomFolders);
+            this.btnEnableCustomFolders.Click += new System.EventHandler(this.CustomFoldersWillBeEnabled);
             // 
             // lblEnabledCustomFoldersCnt
             // 
@@ -324,7 +324,7 @@
             this.btnDisableCustomFolders.TabIndex = 15;
             this.btnDisableCustomFolders.Text = "Disable all";
             this.btnDisableCustomFolders.UseVisualStyleBackColor = true;
-            this.btnDisableCustomFolders.Click += new System.EventHandler(this.DisableCustomFolders);
+            this.btnDisableCustomFolders.Click += new System.EventHandler(this.CustomFoldersWillBeDisabled);
             // 
             // chkBoxControllerProfiles
             // 

@@ -8,6 +8,7 @@ namespace CemuUpdateTool
     {
         OptionsManager handler;
         bool optionsFileLocationChanged;
+        bool? newCustomFoldersEnabledState = null;  // null if custom folders must remain untouched, otherwise they're enabled/disabled according to the value
 
         public OptionsForm(OptionsManager classInstance)
         {
@@ -260,6 +261,8 @@ namespace CemuUpdateTool
         private void SaveOptionsAndClose(object sender, EventArgs e)
         {
             SetOptionsAccordingToCheckboxes();
+            if (newCustomFoldersEnabledState != null)
+                EnableOrDisableCustomFolders(newCustomFoldersEnabledState.Value);
 
             if (chkBoxSettingsOnFile.Checked)
                 handler.WriteOptionsToFile();
@@ -274,16 +277,20 @@ namespace CemuUpdateTool
             Close();
         }
 
-        private void EnableCustomFolders(object sender, EventArgs e)
+        /*
+         *  These methods will just update the "Enabled" label and notify the form to 
+         *  enable/disable custom folders once the user clicks on "Save options"
+         */
+        private void CustomFoldersWillBeEnabled(object sender, EventArgs e)
         {
-            EnableOrDisableCustomFolders(true);
-            RefreshCustomFolderStats();
+            lblEnabledCustomFoldersCnt.Text = lblCustomFoldersCnt.Text;
+            newCustomFoldersEnabledState = true;
         }
 
-        private void DisableCustomFolders(object sender, EventArgs e)
+        private void CustomFoldersWillBeDisabled(object sender, EventArgs e)
         {
-            EnableOrDisableCustomFolders(false);
-            RefreshCustomFolderStats();
+            lblEnabledCustomFoldersCnt.Text = "0";
+            newCustomFoldersEnabledState = false;
         }
     }
 }
