@@ -38,6 +38,11 @@ namespace CemuUpdateTool
             stopwatch = new Stopwatch();
             logBuffer = new StringBuilder(1000);
             progressHandler = new Progress<long>(UpdateProgressBarsAndLog);
+
+            if (DownloadMode)
+                lblTitle.Text = "Download and Migrate";
+            else
+                lblTitle.Text = "Migrate";
         }
 
         private void Exit(object sender, EventArgs e)
@@ -432,7 +437,7 @@ namespace CemuUpdateTool
         private void ChangeProgressLabelText(string newLabelText)
         {
             lblCurrentTask.Text = $"{newLabelText}...";
-            AppendLogMessage($"{newLabelText}...");
+            AppendLogMessage($"-- {newLabelText} --");
             UpdateLogTextbox();
         }
 
@@ -441,7 +446,7 @@ namespace CemuUpdateTool
          */
         private void AppendLogMessage(string message, bool newLine = true)
         {
-            // Lock avoids race conditions with UpdateProgressBarsAndLog
+            // Lock avoids race conditions with UpdateLogTextbox
             lock (logBuffer)
             {
                 logBuffer.Append(message);
