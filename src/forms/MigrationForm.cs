@@ -47,7 +47,7 @@ namespace CemuUpdateTool
 
         private void Exit(object sender, EventArgs e)
         {
-            Close();
+            ContainerForm.ShowForm(new HomeForm());
         }
 
         private void OpenHelpForm(object sender, EventArgs e)

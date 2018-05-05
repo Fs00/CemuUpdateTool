@@ -15,7 +15,7 @@ namespace CemuUpdateTool
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en");
 
             #if DEBUG
-            Application.Run(new MigrationForm(true));
+            Application.Run(new ContainerForm(new HomeForm()));
 
             #else
             try

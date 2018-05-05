@@ -55,9 +55,9 @@
             this.bottomPanel = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.headerPanel = new System.Windows.Forms.Panel();
-            this.label2 = new System.Windows.Forms.Label();
-            this.lblTitle = new System.Windows.Forms.Label();
             this.lblDescription = new System.Windows.Forms.Label();
+            this.lblTitle = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderNewFolder)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).BeginInit();
             this.bottomPanel.SuspendLayout();
@@ -205,7 +205,7 @@
             // txtBoxLog
             // 
             this.txtBoxLog.BackColor = System.Drawing.Color.White;
-            this.txtBoxLog.Location = new System.Drawing.Point(30, 332);
+            this.txtBoxLog.Location = new System.Drawing.Point(30, 331);
             this.txtBoxLog.Margin = new System.Windows.Forms.Padding(3, 7, 3, 0);
             this.txtBoxLog.Multiline = true;
             this.txtBoxLog.Name = "txtBoxLog";
@@ -257,7 +257,7 @@
             // 
             this.btnHelp.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.btnHelp.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnHelp.Location = new System.Drawing.Point(239, 9);
+            this.btnHelp.Location = new System.Drawing.Point(234, 9);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(87, 29);
             this.btnHelp.TabIndex = 2;
@@ -269,7 +269,7 @@
             // 
             this.btnAbout.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.btnAbout.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAbout.Location = new System.Drawing.Point(332, 9);
+            this.btnAbout.Location = new System.Drawing.Point(327, 9);
             this.btnAbout.Name = "btnAbout";
             this.btnAbout.Size = new System.Drawing.Size(87, 29);
             this.btnAbout.TabIndex = 3;
@@ -281,7 +281,7 @@
             // 
             this.btnExit.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.btnExit.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExit.Location = new System.Drawing.Point(425, 9);
+            this.btnExit.Location = new System.Drawing.Point(420, 9);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(87, 29);
             this.btnExit.TabIndex = 4;
@@ -301,15 +301,15 @@
             // 
             // bottomPanel
             // 
-            this.bottomPanel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.bottomPanel.BackColor = System.Drawing.SystemColors.Control;
             this.bottomPanel.Controls.Add(this.label1);
             this.bottomPanel.Controls.Add(this.btnHelp);
             this.bottomPanel.Controls.Add(this.btnExit);
             this.bottomPanel.Controls.Add(this.btnAbout);
-            this.bottomPanel.Location = new System.Drawing.Point(-4, 478);
+            this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.bottomPanel.Location = new System.Drawing.Point(0, 473);
             this.bottomPanel.Name = "bottomPanel";
-            this.bottomPanel.Size = new System.Drawing.Size(524, 51);
+            this.bottomPanel.Size = new System.Drawing.Size(519, 51);
             this.bottomPanel.TabIndex = 5;
             // 
             // label1
@@ -323,25 +323,24 @@
             // 
             // headerPanel
             // 
-            this.headerPanel.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.headerPanel.BackColor = System.Drawing.SystemColors.Control;
             this.headerPanel.Controls.Add(this.lblDescription);
             this.headerPanel.Controls.Add(this.lblTitle);
             this.headerPanel.Controls.Add(this.label2);
-            this.headerPanel.Location = new System.Drawing.Point(-4, -1);
+            this.headerPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.headerPanel.Location = new System.Drawing.Point(0, 0);
             this.headerPanel.Name = "headerPanel";
-            this.headerPanel.Size = new System.Drawing.Size(524, 64);
+            this.headerPanel.Size = new System.Drawing.Size(519, 64);
             this.headerPanel.TabIndex = 13;
             // 
-            // label2
+            // lblDescription
             // 
-            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.label2.BackColor = System.Drawing.SystemColors.Control;
-            this.label2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.label2.Location = new System.Drawing.Point(0, 62);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(582, 2);
-            this.label2.TabIndex = 13;
+            this.lblDescription.AutoSize = true;
+            this.lblDescription.Location = new System.Drawing.Point(18, 34);
+            this.lblDescription.Name = "lblDescription";
+            this.lblDescription.Size = new System.Drawing.Size(403, 15);
+            this.lblDescription.TabIndex = 15;
+            this.lblDescription.Text = "Choose the source Cemu folder, the destination folder and then press Start.";
             // 
             // lblTitle
             // 
@@ -354,14 +353,15 @@
             this.lblTitle.Size = new System.Drawing.Size(0, 17);
             this.lblTitle.TabIndex = 14;
             // 
-            // lblDescription
+            // label2
             // 
-            this.lblDescription.AutoSize = true;
-            this.lblDescription.Location = new System.Drawing.Point(18, 34);
-            this.lblDescription.Name = "lblDescription";
-            this.lblDescription.Size = new System.Drawing.Size(403, 15);
-            this.lblDescription.TabIndex = 15;
-            this.lblDescription.Text = "Choose the source Cemu folder, the destination folder and then press Start.";
+            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.label2.BackColor = System.Drawing.SystemColors.Control;
+            this.label2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.label2.Location = new System.Drawing.Point(-3, 62);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(582, 2);
+            this.label2.TabIndex = 13;
             // 
             // MigrationForm
             // 
