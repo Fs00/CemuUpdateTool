@@ -48,8 +48,7 @@
             this.overallProgressBar = new System.Windows.Forms.ProgressBar();
             this.lblCurrentTask = new System.Windows.Forms.Label();
             this.btnHelp = new System.Windows.Forms.Button();
-            this.btnAbout = new System.Windows.Forms.Button();
-            this.btnExit = new System.Windows.Forms.Button();
+            this.btnBack = new System.Windows.Forms.Button();
             this.errProviderNewFolder = new System.Windows.Forms.ErrorProvider(this.components);
             this.errProviderOldFolder = new System.Windows.Forms.ErrorProvider(this.components);
             this.bottomPanel = new System.Windows.Forms.Panel();
@@ -130,7 +129,7 @@
             // 
             // btnOptions
             // 
-            this.btnOptions.Location = new System.Drawing.Point(231, 189);
+            this.btnOptions.Location = new System.Drawing.Point(16, 189);
             this.btnOptions.Name = "btnOptions";
             this.btnOptions.Size = new System.Drawing.Size(87, 27);
             this.btnOptions.TabIndex = 6;
@@ -228,7 +227,7 @@
             // lblPercent
             // 
             this.lblPercent.AutoSize = true;
-            this.lblPercent.Location = new System.Drawing.Point(484, 240);
+            this.lblPercent.Location = new System.Drawing.Point(485, 240);
             this.lblPercent.Name = "lblPercent";
             this.lblPercent.Size = new System.Drawing.Size(23, 15);
             this.lblPercent.TabIndex = 5;
@@ -255,9 +254,9 @@
             // 
             // btnHelp
             // 
-            this.btnHelp.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.btnHelp.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.btnHelp.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnHelp.Location = new System.Drawing.Point(234, 9);
+            this.btnHelp.Location = new System.Drawing.Point(421, 10);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(87, 29);
             this.btnHelp.TabIndex = 2;
@@ -265,29 +264,17 @@
             this.btnHelp.UseVisualStyleBackColor = true;
             this.btnHelp.Click += new System.EventHandler(this.OpenHelpForm);
             // 
-            // btnAbout
+            // btnBack
             // 
-            this.btnAbout.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnAbout.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAbout.Location = new System.Drawing.Point(327, 9);
-            this.btnAbout.Name = "btnAbout";
-            this.btnAbout.Size = new System.Drawing.Size(87, 29);
-            this.btnAbout.TabIndex = 3;
-            this.btnAbout.Text = "About...";
-            this.btnAbout.UseVisualStyleBackColor = true;
-            this.btnAbout.Click += new System.EventHandler(this.OpenAboutForm);
-            // 
-            // btnExit
-            // 
-            this.btnExit.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnExit.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExit.Location = new System.Drawing.Point(420, 9);
-            this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(87, 29);
-            this.btnExit.TabIndex = 4;
-            this.btnExit.Text = "Exit";
-            this.btnExit.UseVisualStyleBackColor = true;
-            this.btnExit.Click += new System.EventHandler(this.Exit);
+            this.btnBack.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.btnBack.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnBack.Location = new System.Drawing.Point(16, 9);
+            this.btnBack.Name = "btnBack";
+            this.btnBack.Size = new System.Drawing.Size(87, 29);
+            this.btnBack.TabIndex = 4;
+            this.btnBack.Text = "< Back";
+            this.btnBack.UseVisualStyleBackColor = true;
+            this.btnBack.Click += new System.EventHandler(this.Exit);
             // 
             // errProviderNewFolder
             // 
@@ -304,8 +291,7 @@
             this.bottomPanel.BackColor = System.Drawing.SystemColors.Control;
             this.bottomPanel.Controls.Add(this.label1);
             this.bottomPanel.Controls.Add(this.btnHelp);
-            this.bottomPanel.Controls.Add(this.btnExit);
-            this.bottomPanel.Controls.Add(this.btnAbout);
+            this.bottomPanel.Controls.Add(this.btnBack);
             this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.bottomPanel.Location = new System.Drawing.Point(0, 473);
             this.bottomPanel.Name = "bottomPanel";
@@ -318,7 +304,7 @@
             this.label1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.label1.Location = new System.Drawing.Point(0, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(582, 2);
+            this.label1.Size = new System.Drawing.Size(530, 2);
             this.label1.TabIndex = 13;
             // 
             // headerPanel
@@ -355,12 +341,12 @@
             // 
             // label2
             // 
-            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.BackColor = System.Drawing.SystemColors.Control;
             this.label2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.label2.Location = new System.Drawing.Point(-3, 62);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(582, 2);
+            this.label2.Size = new System.Drawing.Size(530, 2);
             this.label2.TabIndex = 13;
             // 
             // MigrationForm
@@ -420,8 +406,7 @@
         private System.Windows.Forms.ProgressBar overallProgressBar;
         private System.Windows.Forms.Label lblCurrentTask;
         private System.Windows.Forms.Button btnHelp;
-        private System.Windows.Forms.Button btnAbout;
-        private System.Windows.Forms.Button btnExit;
+        private System.Windows.Forms.Button btnBack;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.ErrorProvider errProviderNewFolder;
         private System.Windows.Forms.Label lblNewCemuVersion;

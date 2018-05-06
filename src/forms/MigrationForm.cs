@@ -29,12 +29,13 @@ namespace CemuUpdateTool
 
         public bool DownloadMode { get; }           // if true, newer version of Cemu will be downloaded before migrating
 
-        public MigrationForm(bool downloadMode)
+        public MigrationForm(OptionsManager opts, bool downloadMode)
         {
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;
             DownloadMode = downloadMode;
-            opts = new OptionsManager();
+            this.opts = opts;
+
             stopwatch = new Stopwatch();
             logBuffer = new StringBuilder(1000);
             progressHandler = new Progress<long>(UpdateProgressBarsAndLog);

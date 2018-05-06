@@ -37,8 +37,9 @@
             this.formContainer.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.formContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.formContainer.Location = new System.Drawing.Point(0, 0);
+            this.formContainer.Margin = new System.Windows.Forms.Padding(0);
             this.formContainer.Name = "formContainer";
-            this.formContainer.Size = new System.Drawing.Size(519, 367);
+            this.formContainer.Size = new System.Drawing.Size(278, 173);
             this.formContainer.TabIndex = 0;
             // 
             // ContainerForm
@@ -47,9 +48,11 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(519, 367);
+            this.ClientSize = new System.Drawing.Size(278, 173);
             this.Controls.Add(this.formContainer);
+            this.MaximizeBox = false;
             this.Name = "ContainerForm";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Cemu Update Tool";
             this.ResumeLayout(false);
             this.PerformLayout();

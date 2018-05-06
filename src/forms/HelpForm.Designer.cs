@@ -38,6 +38,7 @@
             // 
             // lblContact
             // 
+            this.lblContact.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblContact.AutoSize = true;
             this.lblContact.Location = new System.Drawing.Point(12, 307);
             this.lblContact.Name = "lblContact";
@@ -47,6 +48,7 @@
             // 
             // linkLblDiscord
             // 
+            this.linkLblDiscord.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.linkLblDiscord.AutoSize = true;
             this.linkLblDiscord.Location = new System.Drawing.Point(251, 307);
             this.linkLblDiscord.Name = "linkLblDiscord";
@@ -58,6 +60,7 @@
             // 
             // lblOr
             // 
+            this.lblOr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblOr.AutoSize = true;
             this.lblOr.Location = new System.Drawing.Point(295, 307);
             this.lblOr.Name = "lblOr";
@@ -67,6 +70,7 @@
             // 
             // linkLblForum
             // 
+            this.linkLblForum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.linkLblForum.AutoSize = true;
             this.linkLblForum.Location = new System.Drawing.Point(344, 307);
             this.linkLblForum.Name = "linkLblForum";
@@ -78,6 +82,7 @@
             // 
             // btnClose
             // 
+            this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClose.Location = new System.Drawing.Point(489, 300);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(96, 29);
@@ -88,7 +93,11 @@
             // 
             // richTxtBoxHelp
             // 
+            this.richTxtBoxHelp.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.richTxtBoxHelp.BackColor = System.Drawing.Color.White;
+            this.richTxtBoxHelp.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.richTxtBoxHelp.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTxtBoxHelp.Location = new System.Drawing.Point(12, 12);
             this.richTxtBoxHelp.Name = "richTxtBoxHelp";
@@ -111,8 +120,8 @@
             this.Controls.Add(this.linkLblDiscord);
             this.Controls.Add(this.lblContact);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(580, 150);
             this.Name = "HelpForm";
             this.Text = "Help";
             this.ResumeLayout(false);

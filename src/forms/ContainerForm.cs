@@ -31,7 +31,6 @@ namespace CemuUpdateTool
 
             // Render the requested form
             form.TopLevel = false;
-            form.AutoScroll = true;
             form.FormBorderStyle = FormBorderStyle.None;
             activeInstance.formContainer.Controls.Add(form);
             form.Show();
