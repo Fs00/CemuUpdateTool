@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace CemuUpdateTool
@@ -15,6 +16,20 @@ namespace CemuUpdateTool
             InitializeComponent();
             handler = classInstance;
             SetCheckboxesAccordingToOptions();
+
+            // Downscale and draw the icon in the help button
+            var iconBitmap = new Bitmap(19, 19);
+            using (Graphics g = Graphics.FromImage(iconBitmap))
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.DrawImage(SystemIcons.Question.ToBitmap(), new Rectangle(Point.Empty, SystemInformation.SmallIconSize));
+            }
+            btnHelp.Image = iconBitmap;
+
+            // Remove default (and useless) menu strips
+            txtBoxCustomMlc01Path.ContextMenuStrip = new ContextMenuStrip();
+            txtBoxUrlSuffix.ContextMenuStrip = new ContextMenuStrip();
+            txtBoxBaseUrl.ContextMenuStrip = new ContextMenuStrip();
         }
 
         public void SetCheckboxesAccordingToOptions()   // Name is self-explanatory
@@ -69,7 +84,7 @@ namespace CemuUpdateTool
             }
 
             // DOWNLOAD OPTIONS
-            txtBoxBaseUrl.Text = handler.downloadOptions["cemuBaseUrl"];
+            txtBoxBaseUrl.Text = handler.downloadOptions["cemuBaseUrl"].Remove(0,7);    // remove "http://" because there's a label for it
             txtBoxUrlSuffix.Text = handler.downloadOptions["cemuUrlSuffix"];
         }
 
@@ -122,9 +137,11 @@ namespace CemuUpdateTool
             }
 
             // DOWNLOAD OPTIONS
-            // TODO: errorProvider per controllare validità Uri
-            handler.downloadOptions["cemuBaseUrl"] = txtBoxBaseUrl.Text;
-            handler.downloadOptions["cemuUrlSuffix"] = txtBoxUrlSuffix.Text;
+            if (!lblUriError.Visible)
+            {
+                handler.downloadOptions["cemuBaseUrl"] = "http://" + txtBoxBaseUrl.Text;
+                handler.downloadOptions["cemuUrlSuffix"] = txtBoxUrlSuffix.Text;
+            }
         }
 
         private void RefreshCustomFolderStats()
@@ -291,6 +308,22 @@ namespace CemuUpdateTool
         {
             lblEnabledCustomFoldersCnt.Text = "0";
             newCustomFoldersEnabledState = false;
+        }
+
+        /*
+         *  Checks if Cemu download URL is valid
+         */
+        private void CheckIfDownloadUrlIsValid(object sender, EventArgs e)
+        {
+            if (!Uri.IsWellFormedUriString("http://" + txtBoxBaseUrl.Text + lblSampleVersion.Text + txtBoxUrlSuffix.Text, UriKind.Absolute))
+                lblUriError.Visible = true;
+            else
+                lblUriError.Visible = false;
+        }
+
+        private void OpenHelpForm(object sender, EventArgs e)
+        {
+            new HelpForm().Show();
         }
     }
 }

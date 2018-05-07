@@ -44,6 +44,11 @@ namespace CemuUpdateTool
                 lblTitle.Text = "Download and Migrate";
             else
                 lblTitle.Text = "Migrate";
+
+            // Remove default (and useless) menu strips
+            txtBoxLog.ContextMenuStrip = new ContextMenuStrip();
+            txtBoxOldFolder.ContextMenuStrip = new ContextMenuStrip();
+            txtBoxNewFolder.ContextMenuStrip = new ContextMenuStrip();
         }
 
         private void Exit(object sender, EventArgs e)

@@ -68,11 +68,14 @@
             this.chkBoxDeletePrevContent = new System.Windows.Forms.CheckBox();
             this.chkBoxDesktopShortcut = new System.Windows.Forms.CheckBox();
             this.downloadTab = new System.Windows.Forms.TabPage();
-            this.lblVersion = new System.Windows.Forms.Label();
+            this.lblHttp = new System.Windows.Forms.Label();
+            this.lblUriError = new System.Windows.Forms.Label();
+            this.lblSampleVersion = new System.Windows.Forms.Label();
             this.txtBoxUrlSuffix = new System.Windows.Forms.TextBox();
             this.txtBoxBaseUrl = new System.Windows.Forms.TextBox();
             this.lblUrl = new System.Windows.Forms.Label();
             this.lblWarning = new System.Windows.Forms.Label();
+            this.btnHelp = new System.Windows.Forms.Button();
             this.grpBoxProgramOpts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderMlcFolder)).BeginInit();
             this.tabControl.SuspendLayout();
@@ -167,7 +170,7 @@
             // btnDiscard
             // 
             this.btnDiscard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDiscard.Location = new System.Drawing.Point(283, 418);
+            this.btnDiscard.Location = new System.Drawing.Point(282, 418);
             this.btnDiscard.Name = "btnDiscard";
             this.btnDiscard.Size = new System.Drawing.Size(112, 29);
             this.btnDiscard.TabIndex = 4;
@@ -487,7 +490,9 @@
             // 
             // downloadTab
             // 
-            this.downloadTab.Controls.Add(this.lblVersion);
+            this.downloadTab.Controls.Add(this.lblHttp);
+            this.downloadTab.Controls.Add(this.lblUriError);
+            this.downloadTab.Controls.Add(this.lblSampleVersion);
             this.downloadTab.Controls.Add(this.txtBoxUrlSuffix);
             this.downloadTab.Controls.Add(this.txtBoxBaseUrl);
             this.downloadTab.Controls.Add(this.lblUrl);
@@ -500,14 +505,32 @@
             this.downloadTab.Text = "Download";
             this.downloadTab.UseVisualStyleBackColor = true;
             // 
-            // lblVersion
+            // lblHttp
             // 
-            this.lblVersion.AutoSize = true;
-            this.lblVersion.Location = new System.Drawing.Point(256, 121);
-            this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(34, 15);
-            this.lblVersion.TabIndex = 4;
-            this.lblVersion.Text = "X.Y.Z";
+            this.lblHttp.AutoSize = true;
+            this.lblHttp.Location = new System.Drawing.Point(25, 121);
+            this.lblHttp.Name = "lblHttp";
+            this.lblHttp.Size = new System.Drawing.Size(42, 15);
+            this.lblHttp.TabIndex = 6;
+            this.lblHttp.Text = "http://";
+            // 
+            // lblUriError
+            // 
+            this.lblUriError.ForeColor = System.Drawing.Color.Red;
+            this.lblUriError.Location = new System.Drawing.Point(17, 162);
+            this.lblUriError.Name = "lblUriError";
+            this.lblUriError.Size = new System.Drawing.Size(334, 34);
+            this.lblUriError.TabIndex = 5;
+            this.lblUriError.Text = "The URL you entered isn\'t valid, thus won\'t be saved when you close the window.";
+            // 
+            // lblSampleVersion
+            // 
+            this.lblSampleVersion.AutoSize = true;
+            this.lblSampleVersion.Location = new System.Drawing.Point(256, 121);
+            this.lblSampleVersion.Name = "lblSampleVersion";
+            this.lblSampleVersion.Size = new System.Drawing.Size(34, 15);
+            this.lblSampleVersion.TabIndex = 4;
+            this.lblSampleVersion.Text = "X.Y.Z";
             // 
             // txtBoxUrlSuffix
             // 
@@ -515,13 +538,15 @@
             this.txtBoxUrlSuffix.Name = "txtBoxUrlSuffix";
             this.txtBoxUrlSuffix.Size = new System.Drawing.Size(59, 23);
             this.txtBoxUrlSuffix.TabIndex = 3;
+            this.txtBoxUrlSuffix.TextChanged += new System.EventHandler(this.CheckIfDownloadUrlIsValid);
             // 
             // txtBoxBaseUrl
             // 
-            this.txtBoxBaseUrl.Location = new System.Drawing.Point(28, 118);
+            this.txtBoxBaseUrl.Location = new System.Drawing.Point(67, 118);
             this.txtBoxBaseUrl.Name = "txtBoxBaseUrl";
-            this.txtBoxBaseUrl.Size = new System.Drawing.Size(226, 23);
+            this.txtBoxBaseUrl.Size = new System.Drawing.Size(187, 23);
             this.txtBoxBaseUrl.TabIndex = 2;
+            this.txtBoxBaseUrl.TextChanged += new System.EventHandler(this.CheckIfDownloadUrlIsValid);
             // 
             // lblUrl
             // 
@@ -543,12 +568,25 @@
     " this option when not necessary will make the program unable to download new Cem" +
     "u versions!";
             // 
+            // btnHelp
+            // 
+            this.btnHelp.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.btnHelp.FlatAppearance.BorderSize = 0;
+            this.btnHelp.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnHelp.Location = new System.Drawing.Point(371, 9);
+            this.btnHelp.Name = "btnHelp";
+            this.btnHelp.Size = new System.Drawing.Size(23, 23);
+            this.btnHelp.TabIndex = 7;
+            this.btnHelp.UseVisualStyleBackColor = true;
+            this.btnHelp.Click += new System.EventHandler(this.OpenHelpForm);
+            // 
             // OptionsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(407, 457);
+            this.Controls.Add(this.btnHelp);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.btnRestoreDefaultOpts);
             this.Controls.Add(this.btnDiscard);
@@ -609,7 +647,7 @@
         private System.Windows.Forms.CheckBox chkBoxRunAsAdmin;
         private System.Windows.Forms.CheckBox chkBoxCompatOpts;
         private System.Windows.Forms.Label lblWarning;
-        private System.Windows.Forms.Label lblVersion;
+        private System.Windows.Forms.Label lblSampleVersion;
         private System.Windows.Forms.TextBox txtBoxUrlSuffix;
         private System.Windows.Forms.TextBox txtBoxBaseUrl;
         private System.Windows.Forms.Label lblUrl;
@@ -620,5 +658,8 @@
         private System.Windows.Forms.Label lblEnabledCustomFoldersCnt;
         private System.Windows.Forms.Label lblCustomFoldersCnt;
         private System.Windows.Forms.GroupBox grpBoxCustomFolders;
+        private System.Windows.Forms.Label lblHttp;
+        private System.Windows.Forms.Label lblUriError;
+        private System.Windows.Forms.Button btnHelp;
     }
 }
