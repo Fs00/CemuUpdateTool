@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace CemuUpdateTool
@@ -13,9 +14,10 @@ namespace CemuUpdateTool
             linkLblForum.Links.Add(0, 17, "http://forum.cemu.info/forumdisplay.php/15-Guides-amp-modifications");
             linkLblDiscord.Links.Add(0, 7, "http://discordapp.com");
 
-            // TODO: da aggiornare prima della release
-            richTxtBoxHelp.Rtf = @"{\rtf1\ansi\ansicpg1252\deff0\deflang1040{\fonttbl{\f0\fnil\fcharset0 Segoe UI;}}" +
-                @"\viewkind4\uc1\pard\f0\fs19" +
+            ComponentResourceManager textResources = new ComponentResourceManager(typeof(HelpForm));
+            string loadedRtfString = textResources.GetString("baseRtfText");
+            // TODO: da fare in base alla singola form
+            loadedRtfString += @"\viewkind4\uc1\pard\f0\fs19" + 
                 @"{\b HOW DOES IT WORK?}\par" +
                 @"\fs8\par\fs19" +
                 @" The functioning of this program is very simple: just select your old Cemu folder, choose the destination folder which contains the newer Cemu version and click Start! The program will do all the work for you, copying only the folders selected in Options and overwriting automatically any existing file with the same name. You can cancel the operation at any time, and in that case the program will ask you if you want to revert back to the original situation, deleting all the file that had been copied before you clicked on the Cancel button.\par" +
@@ -35,7 +37,9 @@ namespace CemuUpdateTool
                 @"\par" +
                 @"{\b FOUND A BUG?}\par" +
                 @"\fs8\par\fs19" +
-                @" If the application printed out a fatal error and then exited, send me the cvmt-crashlog file you find in executable folder. Otherwise you can report any unexpected behavior (there shouldn't be any, hopefully) in the official thread in Cemu forum, or sending me a PM on Discord \fs18 (my username: Fs00#9393).}";   
+                @" If the application printed out a fatal error and then exited, send me the cvmt-crashlog file you find in executable folder. Otherwise you can report any unexpected behavior (there shouldn't be any, hopefully) in the official thread in Cemu forum, or sending me a PM on Discord \fs18 (my username: Fs00#9393).}";
+
+            richTxtBoxHelp.Rtf = loadedRtfString;
         }
 
         private void Exit(object sender, EventArgs e)
