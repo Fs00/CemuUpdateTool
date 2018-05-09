@@ -181,6 +181,7 @@ namespace CemuUpdateTool
                         {
                             settingsFile.CopyTo(Path.Combine(BaseDestinationPath, "settings.bin"), true);
                             copySuccessful = true;
+                            HandleLogMessage("Settings file copied successfully.", EventLogEntryType.Information);
                         }
                         catch (Exception exc)
                         {
@@ -247,8 +248,13 @@ namespace CemuUpdateTool
                     string newCemuExePath = Path.Combine(BaseDestinationPath, "Cemu.exe");
                     try
                     {
-                        using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers", true))
+                        using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"))
+                        {
+                            if (key == null)
+                                throw new KeyNotFoundException("Unable to create the key.");
+
                             key.SetValue(newCemuExePath, keyValue);
+                        }
 
                         HandleLogMessage($"Compatibility options for {newCemuExePath} set in the Windows Registry correctly.", EventLogEntryType.Information);
                     }
