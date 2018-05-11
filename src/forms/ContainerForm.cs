@@ -33,7 +33,6 @@ namespace CemuUpdateTool
             form.TopLevel = false;
             form.FormBorderStyle = FormBorderStyle.None;
             activeInstance.formContainer.Controls.Add(form);
-            activeInstance.BackColor = form.BackColor;      // temporary partial workaround for the unexpected 3px margin
             form.Show();
 
             // We must do these operations here otherwise the container resizing would be messed up

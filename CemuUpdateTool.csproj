@@ -119,6 +119,9 @@
     <EmbeddedResource Include="src\forms\HelpForm.resx">
       <DependentUpon>HelpForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="src\forms\HelpFormTexts.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="src\forms\HomeForm.resx">
       <DependentUpon>HomeForm.cs</DependentUpon>
     </EmbeddedResource>

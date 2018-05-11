@@ -58,7 +58,7 @@ namespace CemuUpdateTool
 
         private void OpenHelpForm(object sender, EventArgs e)
         {
-            new HelpForm().Show();
+            new HelpForm(this).Show();
         }
 
         private void OpenAboutForm(object sender, EventArgs e)

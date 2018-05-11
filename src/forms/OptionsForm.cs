@@ -323,7 +323,7 @@ namespace CemuUpdateTool
 
         private void OpenHelpForm(object sender, EventArgs e)
         {
-            new HelpForm().Show();
+            new HelpForm(this).Show();
         }
     }
 }

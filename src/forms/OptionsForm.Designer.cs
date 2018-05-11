@@ -159,7 +159,7 @@
             // btnSaveOpts
             // 
             this.btnSaveOpts.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnSaveOpts.Location = new System.Drawing.Point(158, 418);
+            this.btnSaveOpts.Location = new System.Drawing.Point(157, 418);
             this.btnSaveOpts.Name = "btnSaveOpts";
             this.btnSaveOpts.Size = new System.Drawing.Size(94, 29);
             this.btnSaveOpts.TabIndex = 3;
@@ -170,7 +170,7 @@
             // btnDiscard
             // 
             this.btnDiscard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDiscard.Location = new System.Drawing.Point(282, 418);
+            this.btnDiscard.Location = new System.Drawing.Point(281, 418);
             this.btnDiscard.Name = "btnDiscard";
             this.btnDiscard.Size = new System.Drawing.Size(112, 29);
             this.btnDiscard.TabIndex = 4;
@@ -199,7 +199,7 @@
             // btnRestoreDefaultOpts
             // 
             this.btnRestoreDefaultOpts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnRestoreDefaultOpts.Location = new System.Drawing.Point(14, 418);
+            this.btnRestoreDefaultOpts.Location = new System.Drawing.Point(13, 418);
             this.btnRestoreDefaultOpts.Name = "btnRestoreDefaultOpts";
             this.btnRestoreDefaultOpts.Size = new System.Drawing.Size(111, 29);
             this.btnRestoreDefaultOpts.TabIndex = 5;

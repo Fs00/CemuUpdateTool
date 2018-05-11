@@ -20,7 +20,7 @@ namespace CemuUpdateTool
             #else
             try
             {
-                Application.Run(new MigrationForm(false));
+                Application.Run(new ContainerForm(new HomeForm()));
             }
             catch(Exception exc)
             {
@@ -55,7 +55,7 @@ namespace CemuUpdateTool
                 File.WriteAllText($@".\cemut-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt", crashlogContent);
                 Application.Exit();
             }
-        #endif
+            #endif
         }
     }
 }

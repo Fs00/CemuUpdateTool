@@ -117,4 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="baseRtfText" xml:space="preserve">
+    <value>{\rtf1\ansi\ansicpg1252\deff0\deflang1040{\fonttbl{\f0\fnil\fcharset0 Segoe UI;}}</value>
+  </data>
+  <data name="homeFormText" xml:space="preserve">
+    <value>{\b WHICH MODE DO I CHOOSE?}\par
+\fs8\par\fs19
+{\i Migrate} mode is used to copy all data from a Cemu installation to another one. You can obviously control which data must be copied and which not by editing settings in Options window. It is very useful if you want to keep both the older version and the last one to avoid regressions when they happen.\par
+{\i Download and Migrate} mode works same as previous one, with the only difference that the program downloads and extracts the latest Cemu version in the folder you selected and then migrates all data. This spares you the procedure of downloading manually Cemu from the website.</value>
+  </data>
+  <data name="migrationFormText" xml:space="preserve">
+    <value>{\b HOW DO I PROCEED?}\par
+\fs8\par\fs19
+You need to do just two steps from here: select the source Cemu folder (the one where data must be migrated from) and the destination one. Then click start: depending on the mode you've chosen (Migrate or Download and Migrate), the program will perform all the steps in order to migrate the data.\par
+The Details log will show you all the information about the process, including warnings and errors.\par
+To decide which data must be copied and what the program must do before and after the migration, head to Options.</value>
+  </data>
 </root>

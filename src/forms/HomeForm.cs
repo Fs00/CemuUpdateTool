@@ -10,7 +10,7 @@ namespace CemuUpdateTool
         public HomeForm()
         {
             InitializeComponent();
-            opts = new OptionsManager();
+            opts = new OptionsManager();    // load program options
         }
 
         private void ShowMigrateForm(object sender, EventArgs e)
@@ -31,6 +31,11 @@ namespace CemuUpdateTool
         private void ShowAboutForm(object sender, LinkLabelLinkClickedEventArgs e)
         {
             new AboutForm().ShowDialog();
+        }
+
+        private void ShowHelpForm(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            new HelpForm(this).Show();
         }
     }
 }
