@@ -16,6 +16,10 @@ namespace CemuUpdateTool
             
             InitializeComponent();
             activeInstance = this;
+
+            // Retrieve the icon from application resources
+            IntPtr iconPtr = Properties.Resources.Icon.GetHicon();
+            Icon = System.Drawing.Icon.FromHandle(iconPtr);
         }
 
         public ContainerForm(Form homeForm) : this()

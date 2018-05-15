@@ -15,7 +15,7 @@ namespace CemuUpdateTool
             linkLblDiscord.Links.Add(0, 7, "http://discordapp.com");
 
             // Initialize the resource manager used to load text
-            ResourceManager textResources = new ResourceManager("CemuUpdateTool.src.forms.HelpFormTexts", typeof(HelpForm).Assembly);
+            ResourceManager textResources = new ResourceManager("CemuUpdateTool.resources.HelpFormTexts", GetType().Assembly);
 
             // Load the RTF text according to the form that launched HelpForm
             string loadedRtfString = textResources.GetString("baseRtfText");
