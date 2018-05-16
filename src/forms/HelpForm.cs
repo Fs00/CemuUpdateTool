@@ -24,13 +24,13 @@ namespace CemuUpdateTool
             else if (launcher is MigrationForm)
                 loadedRtfString += textResources.GetString("migrationFormText");
             else if (launcher is OptionsForm)
-                loadedRtfString += textResources.GetString("optionsFormText");  // TODO: da scrivere
+                loadedRtfString += textResources.GetString("optionsFormText");
             richTxtBoxHelp.Rtf = loadedRtfString;
 
             // Set textbox left/right padding
             richTxtBoxHelp.SelectAll();
-            richTxtBoxHelp.SelectionIndent += 10;
-            richTxtBoxHelp.SelectionRightIndent += 10;
+            richTxtBoxHelp.SelectionIndent += 8;
+            richTxtBoxHelp.SelectionRightIndent += 8;
             richTxtBoxHelp.DeselectAll();
         }
 

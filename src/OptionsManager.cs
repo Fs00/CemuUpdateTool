@@ -8,9 +8,9 @@ namespace CemuUpdateTool
 {
     public class OptionsManager
     {
-        public Dictionary<string, bool> folderOptions { set; get; }      // contains a list of Cemu subfolders and whether they have to be copied
-        public Dictionary<string, bool> migrationOptions { set; get; }   // contains a set of additional options for the migration
-        public Dictionary<string, string> downloadOptions { set; get; }  // contains a set of options for the download of Cemu versions
+        public Dictionary<string, bool> folderOptions { private set; get; }      // contains a list of Cemu subfolders and whether they have to be copied
+        public Dictionary<string, bool> migrationOptions { private set; get; }   // contains a set of additional options for the migration
+        public Dictionary<string, string> downloadOptions { private set; get; }  // contains a set of options for the download of Cemu versions
         public string mlcFolderExternalPath { get; set; } = "";          // mlc01 folder's external path for Cemu 1.10+
         public string optionsFilePath { set; get; } = "";                // the path of the settings file
 

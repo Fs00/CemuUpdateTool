@@ -226,7 +226,7 @@
             this.tabControl.Controls.Add(this.foldersTab);
             this.tabControl.Controls.Add(this.featuresTab);
             this.tabControl.Controls.Add(this.downloadTab);
-            this.tabControl.Location = new System.Drawing.Point(14, 10);
+            this.tabControl.Location = new System.Drawing.Point(14, 9);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
             this.tabControl.Size = new System.Drawing.Size(381, 401);
@@ -573,7 +573,7 @@
             this.btnHelp.FlatAppearance.BorderColor = System.Drawing.Color.White;
             this.btnHelp.FlatAppearance.BorderSize = 0;
             this.btnHelp.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnHelp.Location = new System.Drawing.Point(371, 9);
+            this.btnHelp.Location = new System.Drawing.Point(371, 8);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(23, 23);
             this.btnHelp.TabIndex = 7;
