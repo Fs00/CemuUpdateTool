@@ -174,11 +174,15 @@ namespace CemuUpdateTool
 
         private void DeleteSettingsFile(object sender, EventArgs e)
         {
-            handler.DeleteOptionsFile();
-            btnDeleteSettingsFile.Enabled = false;
+            string msgBoxMessage = "";
+            bool optionsFileFound = handler.DeleteOptionsFile();
 
-            MessageBox.Show("Please take note that unless you uncheck \"Save options in a file\", options file will be recreated when you click on \"Save options\".",
-                            "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // Build message telling if options file has been found and deleted or not
+            msgBoxMessage += optionsFileFound ? $"Deleted options file in {handler.optionsFilePath}.\r\n\r\n" : "No options file found.\r\n\r\n";
+            msgBoxMessage += "Please take note that unless you uncheck \"Save options in a file\", options file will be recreated when you click on \"Save options\".";
+
+            MessageBox.Show(msgBoxMessage, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            btnDeleteSettingsFile.Enabled = false;
         }
 
         private void RestoreDefaultOptions(object sender, EventArgs e)
