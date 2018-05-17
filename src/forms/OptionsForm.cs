@@ -35,41 +35,41 @@ namespace CemuUpdateTool
         public void SetCheckboxesAccordingToOptions()   // Name is self-explanatory
         {
             // FOLDER OPTIONS
-            chkBoxControllerProfiles.Checked = handler.folderOptions["controllerProfiles"];
-            chkBoxGameProfiles.Checked = handler.folderOptions["gameProfiles"];
-            chkBoxGfxPacks.Checked = handler.folderOptions["graphicPacks"];
+            chkBoxControllerProfiles.Checked = handler.FolderOptions["controllerProfiles"];
+            chkBoxGameProfiles.Checked = handler.FolderOptions["gameProfiles"];
+            chkBoxGfxPacks.Checked = handler.FolderOptions["graphicPacks"];
             // The program sets the saves' checkbox as indeterminate if there's only one of the two save folders (and it's set to true)
-            if (handler.folderOptions[@"mlc01\emulatorSave"] == true)
+            if (handler.FolderOptions[@"mlc01\emulatorSave"] == true)
                 chkBoxSavegames.CheckState = CheckState.Indeterminate;
-            if (handler.folderOptions[@"mlc01\usr\save"] == true)
+            if (handler.FolderOptions[@"mlc01\usr\save"] == true)
             {
                 if (chkBoxSavegames.CheckState == CheckState.Indeterminate)
                     chkBoxSavegames.CheckState = CheckState.Checked;
                 else
                     chkBoxSavegames.CheckState = CheckState.Indeterminate;
             }
-            chkBoxDLCUpds.Checked = handler.folderOptions[@"mlc01\usr\title"];
-            chkBoxShaderCaches.Checked = handler.folderOptions[@"shaderCache\transferable"];
+            chkBoxDLCUpds.Checked = handler.FolderOptions[@"mlc01\usr\title"];
+            chkBoxShaderCaches.Checked = handler.FolderOptions[@"shaderCache\transferable"];
             RefreshCustomFolderStats();
 
             // MIGRATION OPTIONS
-            chkBoxCemuSettings.Checked = handler.migrationOptions["copyCemuSettingsFile"];
-            chkBoxDeletePrevContent.Checked = handler.migrationOptions["deleteDestFolderContents"];
-            chkBoxDesktopShortcut.Checked = handler.migrationOptions["askForDesktopShortcut"];
+            chkBoxCemuSettings.Checked = handler.MigrationOptions["copyCemuSettingsFile"];
+            chkBoxDeletePrevContent.Checked = handler.MigrationOptions["deleteDestFolderContents"];
+            chkBoxDesktopShortcut.Checked = handler.MigrationOptions["askForDesktopShortcut"];
             // Custom mlc01 folder
-            chkBoxCustomMlc01Path.Checked = handler.migrationOptions["dontCopyMlcFolderFor1.10+"];
-            if (!string.IsNullOrWhiteSpace(handler.mlcFolderExternalPath))
-                txtBoxCustomMlc01Path.Text = handler.mlcFolderExternalPath;
+            chkBoxCustomMlc01Path.Checked = handler.MigrationOptions["dontCopyMlcFolderFor1.10+"];
+            if (!string.IsNullOrWhiteSpace(handler.MlcFolderExternalPath))
+                txtBoxCustomMlc01Path.Text = handler.MlcFolderExternalPath;
             UpdateCustomMlc01PathTextboxState();   // make sure that textbox state is correct in relation to the checkbox
             // Compatibility options
-            chkBoxCompatOpts.Checked = handler.migrationOptions["setCompatibilityOptions"];
-            chkBoxRunAsAdmin.Checked = handler.migrationOptions["compatOpts_runAsAdmin"];
-            chkBoxNoFullscreenOptimiz.Checked = handler.migrationOptions["compatOpts_noFullscreenOptimizations"];
-            chkBoxOverrideHiDPIBehaviour.Checked = handler.migrationOptions["compatOpts_overrideHiDPIBehaviour"];
+            chkBoxCompatOpts.Checked = handler.MigrationOptions["setCompatibilityOptions"];
+            chkBoxRunAsAdmin.Checked = handler.MigrationOptions["compatOpts_runAsAdmin"];
+            chkBoxNoFullscreenOptimiz.Checked = handler.MigrationOptions["compatOpts_noFullscreenOptimizations"];
+            chkBoxOverrideHiDPIBehaviour.Checked = handler.MigrationOptions["compatOpts_overrideHiDPIBehaviour"];
             UpdateCompatOptsCheckboxesState();
 
             // SETTINGS FILE LOCATION
-            if (handler.optionsFilePath == "")
+            if (handler.OptionsFilePath == "")
             {
                 chkBoxSettingsOnFile.Checked = false;
                 UpdateOptionsFileLocationRadioButtons();    // disables file location radio buttons
@@ -77,70 +77,96 @@ namespace CemuUpdateTool
             else
             {
                 chkBoxSettingsOnFile.Checked = true;
-                if (handler.optionsFilePath == handler.LOCAL_FILEPATH)
+                if (handler.OptionsFilePath == handler.LOCAL_FILEPATH)
                     radioBtnExecFolder.Checked = true;
-                else if (handler.optionsFilePath == handler.APPDATA_FILEPATH)
+                else if (handler.OptionsFilePath == handler.APPDATA_FILEPATH)
                     radioBtnAppDataFolder.Checked = true;
             }
 
             // DOWNLOAD OPTIONS
-            txtBoxBaseUrl.Text = handler.downloadOptions["cemuBaseUrl"].Remove(0,7);    // remove "http://" because there's a label for it
-            txtBoxUrlSuffix.Text = handler.downloadOptions["cemuUrlSuffix"];
+            txtBoxBaseUrl.Text = handler.DownloadOptions["cemuBaseUrl"].Remove(0,7);    // remove "http://" because there's a label for it
+            txtBoxUrlSuffix.Text = handler.DownloadOptions["cemuUrlSuffix"];
         }
 
         private void SetOptionsAccordingToCheckboxes()
         {
             // FOLDER OPTIONS
-            handler.folderOptions["controllerProfiles"] = chkBoxControllerProfiles.Checked;
-            handler.folderOptions["gameProfiles"] = chkBoxGameProfiles.Checked;
-            handler.folderOptions["graphicPacks"] = chkBoxGfxPacks.Checked;
+            handler.FolderOptions["controllerProfiles"] = chkBoxControllerProfiles.Checked;
+            handler.FolderOptions["gameProfiles"] = chkBoxGameProfiles.Checked;
+            handler.FolderOptions["graphicPacks"] = chkBoxGfxPacks.Checked;
             if (chkBoxSavegames.CheckState != CheckState.Indeterminate)
             {
-                handler.folderOptions[@"mlc01\emulatorSave"] = chkBoxSavegames.Checked;
-                handler.folderOptions[@"mlc01\usr\save"] = chkBoxSavegames.Checked;
+                handler.FolderOptions[@"mlc01\emulatorSave"] = chkBoxSavegames.Checked;
+                handler.FolderOptions[@"mlc01\usr\save"] = chkBoxSavegames.Checked;
             }
-            handler.folderOptions[@"mlc01\usr\title"] = chkBoxDLCUpds.Checked;
-            handler.folderOptions[@"shaderCache\transferable"] = chkBoxShaderCaches.Checked;
+            handler.FolderOptions[@"mlc01\usr\title"] = chkBoxDLCUpds.Checked;
+            handler.FolderOptions[@"shaderCache\transferable"] = chkBoxShaderCaches.Checked;
 
             // MIGRATION OPTIONS
-            handler.migrationOptions["copyCemuSettingsFile"] = chkBoxCemuSettings.Checked;
-            handler.migrationOptions["deleteDestFolderContents"] = chkBoxDeletePrevContent.Checked;
-            handler.migrationOptions["askForDesktopShortcut"] = chkBoxDesktopShortcut.Checked;
+            handler.MigrationOptions["copyCemuSettingsFile"] = chkBoxCemuSettings.Checked;
+            handler.MigrationOptions["deleteDestFolderContents"] = chkBoxDeletePrevContent.Checked;
+            handler.MigrationOptions["askForDesktopShortcut"] = chkBoxDesktopShortcut.Checked;
             // Custom mlc01 path
-            handler.migrationOptions["dontCopyMlcFolderFor1.10+"] = chkBoxCustomMlc01Path.Checked;
+            handler.MigrationOptions["dontCopyMlcFolderFor1.10+"] = chkBoxCustomMlc01Path.Checked;
             if (!string.IsNullOrWhiteSpace(txtBoxCustomMlc01Path.Text) && errProviderMlcFolder.GetError(txtBoxCustomMlc01Path) == "")
-                handler.mlcFolderExternalPath = txtBoxCustomMlc01Path.Text;
+                handler.MlcFolderExternalPath = txtBoxCustomMlc01Path.Text;
             else
-                handler.mlcFolderExternalPath = "";
+                handler.MlcFolderExternalPath = "";
             // Compatibility options
-            handler.migrationOptions["setCompatibilityOptions"] = chkBoxCompatOpts.Checked;
-            handler.migrationOptions["compatOpts_runAsAdmin"] = chkBoxRunAsAdmin.Checked;
-            handler.migrationOptions["compatOpts_noFullscreenOptimizations"] = chkBoxNoFullscreenOptimiz.Checked;
-            handler.migrationOptions["compatOpts_overrideHiDPIBehaviour"] = chkBoxOverrideHiDPIBehaviour.Checked;
+            handler.MigrationOptions["setCompatibilityOptions"] = chkBoxCompatOpts.Checked;
+            handler.MigrationOptions["compatOpts_runAsAdmin"] = chkBoxRunAsAdmin.Checked;
+            handler.MigrationOptions["compatOpts_noFullscreenOptimizations"] = chkBoxNoFullscreenOptimiz.Checked;
+            handler.MigrationOptions["compatOpts_overrideHiDPIBehaviour"] = chkBoxOverrideHiDPIBehaviour.Checked;
 
             // SETTINGS FILE LOCATION
-            if (chkBoxSettingsOnFile.Checked)
+            try
             {
-                if (optionsFileLocationChanged)
+                if (chkBoxSettingsOnFile.Checked)
+                {
+                    if (optionsFileLocationChanged)
+                    {
+                        handler.DeleteOptionsFile();        // delete current settings file
+                        if (handler.OptionsFileExists())    // if another settings file has been found in the selected directory, ask if the user wants to load it
+                        {
+                            DialogResult choice = MessageBox.Show("Another options file has been found in the folder you selected. Do you want to load it?",
+                                                                  "Settings file found", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                            if (choice == DialogResult.Yes)
+                            {
+                                try
+                                {
+                                    handler.ReadOptionsFromFile();
+                                }
+                                catch
+                                {
+                                    handler.SetDefaultOptions();
+                                }
+                            }
+                        }
+                        else    // apply requested setting
+                        {
+                            if (radioBtnExecFolder.Checked)
+                                handler.OptionsFilePath = handler.LOCAL_FILEPATH;
+                            else if (radioBtnAppDataFolder.Checked)
+                                handler.OptionsFilePath = handler.APPDATA_FILEPATH;
+                        }
+                    }
+                }
+                else
                 {
                     handler.DeleteOptionsFile();
-                    if (radioBtnExecFolder.Checked)
-                        handler.optionsFilePath = handler.LOCAL_FILEPATH;
-                    else if (radioBtnAppDataFolder.Checked)
-                        handler.optionsFilePath = handler.APPDATA_FILEPATH;
+                    handler.OptionsFilePath = "";
                 }
             }
-            else
+            catch (Exception exc)       // handles exceptions in DeleteOptionsFile()
             {
-                handler.DeleteOptionsFile();
-                handler.optionsFilePath = "";
+                MessageBox.Show($"Unexpected error when deleting options file: {exc.Message}", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             // DOWNLOAD OPTIONS
             if (!lblUriError.Visible)
             {
-                handler.downloadOptions["cemuBaseUrl"] = "http://" + txtBoxBaseUrl.Text;
-                handler.downloadOptions["cemuUrlSuffix"] = txtBoxUrlSuffix.Text;
+                handler.DownloadOptions["cemuBaseUrl"] = "http://" + txtBoxBaseUrl.Text;
+                handler.DownloadOptions["cemuUrlSuffix"] = txtBoxUrlSuffix.Text;
             }
         }
 
@@ -152,7 +178,7 @@ namespace CemuUpdateTool
             foreach (string folder in handler.CustomFolders())
             {
                 foldersCounter++;
-                if (handler.folderOptions[folder] == true)
+                if (handler.FolderOptions[folder] == true)
                     enabledFoldersCounter++;
             }
 
@@ -169,16 +195,23 @@ namespace CemuUpdateTool
 
             // Apply changes to folderOptions
             foreach (string folder in customFolders)
-                handler.folderOptions[folder] = enable;
+                handler.FolderOptions[folder] = enable;
         }
 
         private void DeleteSettingsFile(object sender, EventArgs e)
         {
             string msgBoxMessage = "";
-            bool optionsFileFound = handler.DeleteOptionsFile();
+            try
+            {
+                bool optionsFileFound = handler.DeleteOptionsFile();
 
-            // Build message telling if options file has been found and deleted or not
-            msgBoxMessage += optionsFileFound ? $"Deleted options file in {handler.optionsFilePath}.\r\n\r\n" : "No options file found.\r\n\r\n";
+                // Build message telling if options file has been found and deleted or not
+                msgBoxMessage += optionsFileFound ? $"Deleted options file in {handler.OptionsFilePath}.\r\n\r\n" : "No options file found.\r\n\r\n";
+            }
+            catch (Exception exc)
+            {
+                msgBoxMessage += $"An unexpected error occurred when deleting options file: {exc.Message}\r\n\r\n";
+            }
             msgBoxMessage += "Please take note that unless you uncheck \"Save options in a file\", options file will be recreated when you click on \"Save options\".";
 
             MessageBox.Show(msgBoxMessage, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -204,14 +237,14 @@ namespace CemuUpdateTool
         private void CheckIfOptionsFileLocationHasChanged(object sender, EventArgs e)
         {
             // Evaluate whether settings file location has been changed looking at its current value
-            if (handler.optionsFilePath == handler.LOCAL_FILEPATH)
+            if (handler.OptionsFilePath == handler.LOCAL_FILEPATH)
             {
                 if (!radioBtnExecFolder.Checked)
                     optionsFileLocationChanged = true;
                 else
                     optionsFileLocationChanged = false;
             }
-            else if (handler.optionsFilePath == handler.APPDATA_FILEPATH)
+            else if (handler.OptionsFilePath == handler.APPDATA_FILEPATH)
             {
                 if (!radioBtnAppDataFolder.Checked)
                     optionsFileLocationChanged = true;
@@ -241,7 +274,7 @@ namespace CemuUpdateTool
                 btnDeleteSettingsFile.Enabled = true;
 
                 // Obviously, if current options file path is not set, tell the program to change it before writing the file on disk
-                if (handler.optionsFilePath == "")
+                if (handler.OptionsFilePath == "")
                     optionsFileLocationChanged = true;
             }
         }
@@ -285,10 +318,17 @@ namespace CemuUpdateTool
             if (newCustomFoldersEnabledState != null)
                 EnableOrDisableCustomFolders(newCustomFoldersEnabledState.Value);
 
-            if (chkBoxSettingsOnFile.Checked)
-                handler.WriteOptionsToFile();
-            else
-                MessageBox.Show("Please take note that if you don't store options in a file, they'll be lost as soon as you exit the application.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            try
+            {
+                if (chkBoxSettingsOnFile.Checked)
+                    handler.WriteOptionsToFile();
+                else
+                    MessageBox.Show("Please take note that if you don't store options in a file, they'll be lost as soon as you exit the application.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show($"Unexpected error when saving options on file: {exc.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
             Close();
         }

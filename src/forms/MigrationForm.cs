@@ -258,7 +258,7 @@ namespace CemuUpdateTool
                 // Perform download operations if we are in download mode
                 if (DownloadMode)
                 {
-                    var downloadTask = Task.Run(() => worker.PerformDownloadOperations(opts.downloadOptions, ChangeProgressLabelText,
+                    var downloadTask = Task.Run(() => worker.PerformDownloadOperations(opts.DownloadOptions, ChangeProgressLabelText,
                                                       (o, evtArgs) => {
                                                           // Set maximum progress bar value according to file size
                                                           if (overallProgressBar.Maximum != evtArgs.TotalBytesToReceive)
@@ -286,7 +286,7 @@ namespace CemuUpdateTool
                 overallProgressBar.Maximum = (int)overallSize;
 
                 // Start migration operations in a secondary thread
-                var migrationTask = Task.Run(() => worker.PerformMigrationOperations(opts.migrationOptions, ChangeProgressLabelText, progressHandler));
+                var migrationTask = Task.Run(() => worker.PerformMigrationOperations(opts.MigrationOptions, ChangeProgressLabelText, progressHandler));
                 await migrationTask;
 
                 stopwatch.Stop();
@@ -321,13 +321,13 @@ namespace CemuUpdateTool
             }
 
             // Once work has completed, ask if user wants to create Cemu desktop shortcut...
-            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.migrationOptions["askForDesktopShortcut"] == true)
+            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.MigrationOptions["askForDesktopShortcut"] == true)
             {
                 DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 bool isNewCemuVersionAtLeast110 = newCemuExeVer.Major > 1 || newCemuExeVer.Minor >= 10;
                 if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
                     worker.CreateDesktopShortcut(newCemuExeVer.ToString(),
-                      (isNewCemuVersionAtLeast110 && opts.migrationOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.mlcFolderExternalPath : null);
+                      (isNewCemuVersionAtLeast110 && opts.MigrationOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.MlcFolderExternalPath : null);
             }
 
             AppendLogMessage($"\r\nOperations terminated after {(float) stopwatch.ElapsedMilliseconds / 1000} seconds.");

@@ -8,11 +8,11 @@ namespace CemuUpdateTool
 {
     public class OptionsManager
     {
-        public Dictionary<string, bool> folderOptions { private set; get; }      // contains a list of Cemu subfolders and whether they have to be copied
-        public Dictionary<string, bool> migrationOptions { private set; get; }   // contains a set of additional options for the migration
-        public Dictionary<string, string> downloadOptions { private set; get; }  // contains a set of options for the download of Cemu versions
-        public string mlcFolderExternalPath { get; set; } = "";          // mlc01 folder's external path for Cemu 1.10+
-        public string optionsFilePath { set; get; } = "";                // the path of the settings file
+        public Dictionary<string, bool> FolderOptions { private set; get; }      // contains a list of Cemu subfolders and whether they have to be copied
+        public Dictionary<string, bool> MigrationOptions { private set; get; }   // contains a set of additional options for the migration
+        public Dictionary<string, string> DownloadOptions { private set; get; }  // contains a set of options for the download of Cemu versions
+        public string MlcFolderExternalPath { get; set; } = "";                  // mlc01 folder's external path for Cemu 1.10+
+        public string OptionsFilePath { set; get; }                              // the path of the settings file
 
         // Default options for every dictionary
         Dictionary<string, bool> defaultFolderOptions = new Dictionary<string, bool> {
@@ -51,82 +51,102 @@ namespace CemuUpdateTool
          */
         public OptionsManager()
         {
-            if (ReadOptionsFromFile() == false)
-                SetDefaultOptions();
+            if (OptionsFileExists())
+            {
+                try
+                {
+                    ReadOptionsFromFile();
+                }
+                catch
+                {
+                    SetDefaultOptions();
+                }
+            }
             else
-                CheckForMissingEntries();
+                SetDefaultOptions();
         }
 
         /*
-         *  Method that populates options dictionaries reading settings file
-         *  If there's no options file or an error happens when parsing it, SetDefaultOptions() is called instead.
+         *  Looks for options file in executable and %AppData% folder and updates the propery accordingly.
          *  Priority is given to the file in the local folder.
          */
-        public bool ReadOptionsFromFile()
+        public bool OptionsFileExists()
         {
             bool localFileExists;
-            bool readingOutcome = true;
-
             if ((localFileExists = FileUtils.FileExists(LOCAL_FILEPATH)) || FileUtils.FileExists(APPDATA_FILEPATH))
             {
-                // Create the dictionaries here so we are sure that OptionsForm won't throw NullReferenceException if there aren't any options in the file
-                folderOptions = new Dictionary<string, bool>();
-                migrationOptions = new Dictionary<string, bool>();
-                downloadOptions = new Dictionary<string, string>();
-
                 // Set the file path property according to the current file position
                 if (localFileExists)
-                    optionsFilePath = LOCAL_FILEPATH;
+                    OptionsFilePath = LOCAL_FILEPATH;
                 else
-                    optionsFilePath = APPDATA_FILEPATH;
+                    OptionsFilePath = APPDATA_FILEPATH;
 
-                MyStreamReader optionsFile = new MyStreamReader(optionsFilePath);
-                try
-                {
-                    // Check if the file is empty
-                    if (optionsFile.BaseStream.Length == 0)
-                        throw new InvalidDataException("Options file is empty.");
-
-                    // Start reading
-                    byte sectionId;
-                    string sectionHeaderLine = null;
-                    while (!optionsFile.EndOfStream)
-                    {
-                        if (optionsFile.Peek() == 35)   // if the next char is '#'
-                        {
-                            sectionHeaderLine = optionsFile.ReadLine();
-                            // Check if the sectionId is a number
-                            if (!byte.TryParse(sectionHeaderLine.TrimStart('#'), out sectionId))
-                                throw new FormatException("Section ID is not a number");
-                            else
-                                ReadFileSection(optionsFile, sectionId);
-                        }
-                        else
-                            optionsFile.ReadLine();
-                    }
-
-                    if (sectionHeaderLine == null)      // if no lines starting with '#' have been encountered
-                        throw new InvalidDataException("Options file didn't contain any useful information.");
-                }
-                catch (Exception exc)
-                {
-                    string message;
-                    if (exc is InvalidDataException)
-                        message = exc.Message;
-                    else
-                        message = $"An unexpected error occurred when parsing options file: {exc.Message.TrimEnd('.')} at line {optionsFile.LineCount}.";
-
-                    MessageBox.Show(message + "\r\nDefault settings will be loaded instead.", "Error in settings.dat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    readingOutcome = false;
-                }
-                finally
-                {
-                    optionsFile.Close();
-                }
-                return readingOutcome;
+                return true;
             }
-            else       // if there's no option file, optionsFilePath remains at its default value ("")
+            else
+            {
+                OptionsFilePath = "";
                 return false;
+            }
+        }
+
+        /*
+         *  Method that populates options dictionaries reading settings file.
+         *  If there's no options file or an error happens when parsing it, SetDefaultOptions() is called instead.
+         */
+        public void ReadOptionsFromFile()
+        {
+            // Create the dictionaries here so we are sure that OptionsForm won't throw NullReferenceException if there aren't any options in the file
+            FolderOptions = new Dictionary<string, bool>();
+            MigrationOptions = new Dictionary<string, bool>();
+            DownloadOptions = new Dictionary<string, string>();
+
+            MyStreamReader optionsFile = new MyStreamReader(OptionsFilePath);
+            try
+            {
+                // Check if the file is empty
+                if (optionsFile.BaseStream.Length == 0)
+                    throw new InvalidDataException("Options file is empty.");
+
+                // Start reading
+                byte sectionId;
+                string sectionHeaderLine = null;
+                while (!optionsFile.EndOfStream)
+                {
+                    if (optionsFile.Peek() == 35)   // if the next char is '#'
+                    {
+                        sectionHeaderLine = optionsFile.ReadLine();
+                        // Check if the sectionId is a number
+                        if (!byte.TryParse(sectionHeaderLine.TrimStart('#'), out sectionId))
+                            throw new FormatException("Section ID is not a number");
+                        else
+                            ReadFileSection(optionsFile, sectionId);
+                    }
+                    else
+                        optionsFile.ReadLine();
+                }
+
+                if (sectionHeaderLine == null)      // if no lines starting with '#' have been encountered
+                    throw new InvalidDataException("Options file didn't contain any useful information.");
+
+                // Check for missing options in file
+                CheckForMissingEntries();
+            }
+            catch (Exception exc)
+            {
+                string message;
+                if (exc is InvalidDataException)
+                    message = exc.Message;
+                else
+                    message = $"An unexpected error occurred when parsing options file: {exc.Message.TrimEnd('.')} at line {optionsFile.LineCount}.";
+
+                MessageBox.Show(message + "\r\nDefault settings will be loaded instead.", "Error in settings.dat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                throw;
+            }
+            finally
+            {
+                optionsFile.Close();
+            }
         }
 
         /*
@@ -147,11 +167,11 @@ namespace CemuUpdateTool
             // Set up the dynamic dictionary "pointer" according to the sectionId
             dynamic dictionary = null;
             if (sectionId == 0)
-                dictionary = folderOptions;
+                dictionary = FolderOptions;
             else if (sectionId == 1)
-                dictionary = migrationOptions;
+                dictionary = MigrationOptions;
             else if (sectionId == 2)
-                dictionary = downloadOptions;
+                dictionary = DownloadOptions;
 
             int startingChar;       // first char code of the current reading line
             string[] parsedLine;    // the "splitted" line
@@ -180,7 +200,7 @@ namespace CemuUpdateTool
                         string tmpPath = fileStream.ReadLine();
                         if (tmpPath.IndexOfAny(Path.GetInvalidPathChars()) == -1)
                         {
-                            mlcFolderExternalPath = tmpPath;
+                            MlcFolderExternalPath = tmpPath;
                             return;     // for this section there aren't any other things to read
                         }
                         else
@@ -195,24 +215,24 @@ namespace CemuUpdateTool
          *  If an entry is not found, it is created with default option.
          *  Called only if ReadOptionsFromFile() terminates successfully.
          */
-        public void CheckForMissingEntries()
+        private void CheckForMissingEntries()
         {
             foreach (string key in defaultFolderOptions.Keys)
             {
-                if (!folderOptions.ContainsKey(key))
-                    folderOptions.Add(key, false);    // if a folder was not found, it means that it shouldn't be copied
+                if (!FolderOptions.ContainsKey(key))
+                    FolderOptions.Add(key, false);    // if a folder was not found, it means that it shouldn't be copied
             }
 
             foreach (string key in defaultMigrationOptions.Keys)
             {
-                if (!migrationOptions.ContainsKey(key))
-                    migrationOptions.Add(key, defaultMigrationOptions[key]);
+                if (!MigrationOptions.ContainsKey(key))
+                    MigrationOptions.Add(key, defaultMigrationOptions[key]);
             }
 
             foreach (string key in defaultDownloadOptions.Keys)
             {
-                if (!downloadOptions.ContainsKey(key))
-                    downloadOptions.Add(key, defaultDownloadOptions[key]);
+                if (!DownloadOptions.ContainsKey(key))
+                    DownloadOptions.Add(key, defaultDownloadOptions[key]);
             }
         }
 
@@ -222,10 +242,10 @@ namespace CemuUpdateTool
          */
         public void SetDefaultOptions()
         {
-            folderOptions = new Dictionary<string, bool>(defaultFolderOptions);
-            migrationOptions = new Dictionary<string, bool>(defaultMigrationOptions);
-            downloadOptions = new Dictionary<string, string>(defaultDownloadOptions);
-            mlcFolderExternalPath = "";
+            FolderOptions = new Dictionary<string, bool>(defaultFolderOptions);
+            MigrationOptions = new Dictionary<string, bool>(defaultMigrationOptions);
+            DownloadOptions = new Dictionary<string, string>(defaultDownloadOptions);
+            MlcFolderExternalPath = "";
         }
 
         /*
@@ -239,29 +259,29 @@ namespace CemuUpdateTool
 
             // Write folder options
             dataToWrite.AppendLine("#0");
-            foreach (KeyValuePair<string, bool> option in folderOptions)
+            foreach (KeyValuePair<string, bool> option in FolderOptions)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
             // Write additional options
             dataToWrite.AppendLine("#1");
-            foreach (KeyValuePair<string, bool> option in migrationOptions)
+            foreach (KeyValuePair<string, bool> option in MigrationOptions)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
             // Write download options
             dataToWrite.AppendLine("#2");
-            foreach (KeyValuePair<string, string> option in downloadOptions)
+            foreach (KeyValuePair<string, string> option in DownloadOptions)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
             // Write mlc01 custom folder path
-            if (mlcFolderExternalPath != "")
-                dataToWrite.Append("#3\r\n" + mlcFolderExternalPath);   // \r\n -> CR-LF
+            if (MlcFolderExternalPath != "")
+                dataToWrite.Append("#3\r\n" + MlcFolderExternalPath);   // \r\n -> CR-LF
 
             try
             {
                 // Create destination directory if it doesn't exist
-                string optionsFileDir = Path.GetDirectoryName(optionsFilePath);
+                string optionsFileDir = Path.GetDirectoryName(OptionsFilePath);
                 if (!FileUtils.DirectoryExists(optionsFileDir))
                     Directory.CreateDirectory(optionsFileDir);
 
                 // Write string on file overwriting any existing content
-                File.WriteAllText(optionsFilePath, dataToWrite.ToString());
+                File.WriteAllText(OptionsFilePath, dataToWrite.ToString());
             }
             catch(Exception exc)
             {
@@ -275,10 +295,10 @@ namespace CemuUpdateTool
          */
         public bool DeleteOptionsFile()
         {
-            if (!string.IsNullOrEmpty(optionsFilePath) && FileUtils.FileExists(optionsFilePath))
+            if (!string.IsNullOrEmpty(OptionsFilePath) && FileUtils.FileExists(OptionsFilePath))
             {
-                File.Delete(optionsFilePath);
-                if (optionsFilePath == APPDATA_FILEPATH)    // clean redundant empty folders
+                File.Delete(OptionsFilePath);
+                if (OptionsFilePath == APPDATA_FILEPATH)    // clean redundant empty folders
                     Directory.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fs00"), true);
                 return true;
             }
@@ -295,7 +315,7 @@ namespace CemuUpdateTool
             List<string> foldersToCopy = new List<string>();
 
             // Ignore mlc01 subfolders if source Cemu version is at least 1.10 and custom mlc folder option is selected
-            if (cemuVersionIsAtLeast110 && migrationOptions["dontCopyMlcFolderFor1.10+"] == true)
+            if (cemuVersionIsAtLeast110 && MigrationOptions["dontCopyMlcFolderFor1.10+"] == true)
             {
                 foreach (string folder in SelectedFolders())
                 {
@@ -317,7 +337,7 @@ namespace CemuUpdateTool
          */
         public IEnumerable<string> SelectedFolders()
         {
-            foreach(KeyValuePair<string, bool> option in folderOptions)
+            foreach(KeyValuePair<string, bool> option in FolderOptions)
             {
                 if (option.Value == true)
                     yield return option.Key;
@@ -329,7 +349,7 @@ namespace CemuUpdateTool
          */
         public IEnumerable<string> CustomFolders()
         {
-            foreach (KeyValuePair<string, bool> option in folderOptions)
+            foreach (KeyValuePair<string, bool> option in FolderOptions)
             {
                 if (!defaultFolderOptions.ContainsKey(option.Key))
                     yield return option.Key;
