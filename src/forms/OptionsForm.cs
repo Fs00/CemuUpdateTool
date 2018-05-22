@@ -142,7 +142,7 @@ namespace CemuUpdateTool
                                 }
                             }
                         }
-                        else    // apply requested setting
+                        else    // apply requested setting (not needed in the first case because OptionsFileExists() does it itself)
                         {
                             if (radioBtnExecFolder.Checked)
                                 handler.OptionsFilePath = handler.LOCAL_FILEPATH;
