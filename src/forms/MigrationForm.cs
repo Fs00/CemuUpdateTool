@@ -41,7 +41,7 @@ namespace CemuUpdateTool
             progressHandler = new Progress<long>(UpdateProgressBarsAndLog);
 
             if (DownloadMode)
-                lblTitle.Text = "Download and Migrate";
+                lblTitle.Text = "Download & Migrate";
             else
                 lblTitle.Text = "Migrate";
 

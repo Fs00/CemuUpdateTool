@@ -41,6 +41,7 @@
             // pictBoxInfo
             // 
             this.pictBoxInfo.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictBoxInfo.BackgroundImage")));
+            this.pictBoxInfo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pictBoxInfo.Location = new System.Drawing.Point(24, 20);
             this.pictBoxInfo.Name = "pictBoxInfo";
             this.pictBoxInfo.Size = new System.Drawing.Size(64, 65);
@@ -52,7 +53,7 @@
             // 
             this.lblName.AutoSize = true;
             this.lblName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblName.Location = new System.Drawing.Point(104, 15);
+            this.lblName.Location = new System.Drawing.Point(104, 16);
             this.lblName.Name = "lblName";
             this.lblName.Size = new System.Drawing.Size(109, 15);
             this.lblName.TabIndex = 1;

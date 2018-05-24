@@ -48,7 +48,7 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>resources\Icon.ico</ApplicationIcon>
+    <ApplicationIcon>resources\icons\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -156,9 +156,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="resources\Settings.ico" />
-    <Content Include="resources\Icon.ico" />
-    <Content Include="resources\Raster.png" />
+    <Content Include="resources\icons\Migrate.png" />
+    <Content Include="resources\icons\Settings.ico" />
+    <Content Include="resources\icons\AppIcon.ico" />
+    <Content Include="resources\icons\AppIcon.png" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">

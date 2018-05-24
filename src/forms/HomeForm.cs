@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace CemuUpdateTool
@@ -11,6 +12,9 @@ namespace CemuUpdateTool
         {
             InitializeComponent();
             opts = new OptionsManager();    // load program options
+
+            Bitmap image = (Bitmap) new System.ComponentModel.ComponentResourceManager(GetType()).GetObject("btnMigrate.Image");
+            btnMigrate.Image = new Bitmap(image, new Size(125, 125));
         }
 
         private void ShowMigrateForm(object sender, EventArgs e)

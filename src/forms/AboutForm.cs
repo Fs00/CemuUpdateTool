@@ -10,10 +10,13 @@ namespace CemuUpdateTool
         public AboutForm()
         {
             InitializeComponent();
-            Icon = SystemIcons.Information;
+            Icon = SystemIcons.Information;     // set form icon
+
+            // Get program version from assembly attribute
             var fileVersionAttribute = Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyInformationalVersionAttribute));
             lblVersion.Text += ((AssemblyInformationalVersionAttribute) fileVersionAttribute).InformationalVersion;
-            PageLinkLbl.Links.Add(0, 17, "http://forum.cemu.info/forumdisplay.php/15-Guides-amp-modifications");
+
+            PageLinkLbl.Links.Add(0, 17, "http://forum.cemu.info/forumdisplay.php/15-Guides-amp-modifications");    // add link to link label
         }
 
         private void LinkLabelClicked(object sender, LinkLabelLinkClickedEventArgs e)

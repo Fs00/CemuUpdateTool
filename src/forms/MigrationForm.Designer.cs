@@ -339,6 +339,7 @@
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(0, 17);
             this.lblTitle.TabIndex = 14;
+            this.lblTitle.UseMnemonic = false;
             // 
             // pnlBorder1
             // 
