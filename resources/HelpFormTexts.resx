@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="baseRtfText" xml:space="preserve">
-    <value>{\rtf1\ansi\ansicpg1252\deff0\deflang1040{\fonttbl{\f0\fnil\fcharset0 Segoe UI;}}</value>
+    <value>{\rtf1\ansi\ansicpg1252\deff0\deflang1040{\fonttbl{\f0\fnil\fcharset0 Segoe UI;}{\f1\fnil\fcharset0 Courier New;}}</value>
   </data>
   <data name="homeFormText" xml:space="preserve">
     <value>{\b WHICH MODE DO I CHOOSE?}\par
@@ -143,10 +143,10 @@ Inside the file, settings are organized in sections marked by a number. Except s
 \fs23 {\b WHICH OPTIONS ARE AVAILABLE?}\par
 \fs8\par\fs19
 As you may have seen, options are divided in 3 tabs:\par
-\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\ri120\b\f0\fs19\lang1040 Folders.\b0  In this section, you have the opportunity to choose which Cemu folders will be copied. If you want to define other folders different than default ones, you need to add them manually to settings file under section #0 in the following format: \i folder,true\i0 , whereas {\i folder} is the path relative to Cemu directory. You can see if custom folders have been correctly detected just looking at Total value in Custom folders box.\line
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\ri120\b\f0\fs19\lang1040 Folders.\b0  In this section, you have the opportunity to choose which Cemu folders will be copied. If you want to define other folders different than default ones, you need to add them manually to settings file under section #0 in the format \f1 folder,true\f0 , whereas \f1 folder\f0  is the path relative to Cemu directory. You can see if custom folders have been correctly detected just looking at Total value in Custom folders box.\line
 In addition, you can warn the tool that you're using a custom mlc01 path (which is the subfolder where Cemu puts savegames and DLCs). If that option is true, the program will ignore that folder when migrating from a version higher than 1.10 and if the custom path is set, Cemu desktop shortcut will be created adding the '-mlc' parameter accordingly.
 \line\b\i NOTE:\b0  when the option "Copy settings file" is enabled, the program will actually copy ONLY settings.bin and not the settings.xml file introduced in 1.11.6 for game list. This will be addressed in a future version.\i0\par
 {\pntext\f2\'B7\tab}\b Features.\b0  This tab gives you the ability to enable/disable migration-related features - which consist in: wiping destination folder contents coming from the original Cemu archive, asking for the creation of Cemu desktop shortcut and setting compatibility options for Cemu executable - as well as decide if options must be saved in a file and where (see above).\f1\fs18\lang1026\par
-{\pntext\f2\'B7\tab}\b\f0\fs19\lang1040 Download.\b0  Here you can change the remote location where Cemu versions are downloaded. You will have to touch it only if Cemu devs change their download repository.\f1\fs18\lang1026\par</value>
+{\pntext\f2\'B7\tab}\b\f0\fs19\lang1040 Download.\b0  Here you can change the remote location where Cemu versions are downloaded. You will have to touch it only if Cemu developers change their download repository.\f1\fs18\lang1026\par</value>
   </data>
 </root>
