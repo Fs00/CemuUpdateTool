@@ -13,8 +13,13 @@ namespace CemuUpdateTool
             InitializeComponent();
             opts = new OptionsManager();    // load program options
 
-            Bitmap image = (Bitmap) new System.ComponentModel.ComponentResourceManager(GetType()).GetObject("btnMigrate.Image");
+            // Set button icons with the correct size
+            var resourceMgr = new System.ComponentModel.ComponentResourceManager(GetType());
+            Bitmap image = (Bitmap) resourceMgr.GetObject("btnMigrate.Image");
             btnMigrate.Image = new Bitmap(image, new Size(125, 125));
+
+            image = (Bitmap) resourceMgr.GetObject("btnDlMigrate.Image");
+            btnDlMigrate.Image = new Bitmap(image, new Size(125, 125));
         }
 
         private void ShowMigrateForm(object sender, EventArgs e)

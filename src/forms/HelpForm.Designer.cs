@@ -28,12 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.lblContact = new System.Windows.Forms.Label();
             this.linkLblDiscord = new System.Windows.Forms.LinkLabel();
             this.lblOr = new System.Windows.Forms.Label();
             this.linkLblForum = new System.Windows.Forms.LinkLabel();
             this.btnClose = new System.Windows.Forms.Button();
             this.richTxtBoxHelp = new System.Windows.Forms.RichTextBox();
+            this.toolTipProfileInfo = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
             // 
             // lblContact
@@ -56,6 +58,7 @@
             this.linkLblDiscord.TabIndex = 2;
             this.linkLblDiscord.TabStop = true;
             this.linkLblDiscord.Text = "Discord";
+            this.toolTipProfileInfo.SetToolTip(this.linkLblDiscord, "(user ID: Fs00#9393)");
             this.linkLblDiscord.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelClicked);
             // 
             // lblOr
@@ -107,6 +110,12 @@
             this.richTxtBoxHelp.TabIndex = 6;
             this.richTxtBoxHelp.Text = "";
             // 
+            // toolTipProfileInfo
+            // 
+            this.toolTipProfileInfo.AutoPopDelay = 5000;
+            this.toolTipProfileInfo.InitialDelay = 300;
+            this.toolTipProfileInfo.ReshowDelay = 100;
+            // 
             // HelpForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -136,5 +145,6 @@
         private System.Windows.Forms.LinkLabel linkLblForum;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.RichTextBox richTxtBoxHelp;
+        private System.Windows.Forms.ToolTip toolTipProfileInfo;
     }
 }

@@ -157,6 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="resources\icons\Migrate.png" />
+    <Content Include="resources\icons\DlMigrate.png" />
     <Content Include="resources\icons\Settings.ico" />
     <Content Include="resources\icons\AppIcon.ico" />
     <Content Include="resources\icons\AppIcon.png" />

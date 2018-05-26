@@ -51,7 +51,7 @@ namespace CemuUpdateTool
             txtBoxNewFolder.ContextMenuStrip = new ContextMenuStrip();
         }
 
-        private void Exit(object sender, EventArgs e)
+        private void Back(object sender, EventArgs e)
         {
             ContainerForm.ShowHomeForm();
         }

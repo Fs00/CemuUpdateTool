@@ -275,7 +275,7 @@
             this.btnBack.TabIndex = 8;
             this.btnBack.Text = "< Back";
             this.btnBack.UseVisualStyleBackColor = true;
-            this.btnBack.Click += new System.EventHandler(this.Exit);
+            this.btnBack.Click += new System.EventHandler(this.Back);
             // 
             // errProviderNewFolder
             // 

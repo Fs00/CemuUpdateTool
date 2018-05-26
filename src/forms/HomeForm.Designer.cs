@@ -30,7 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(HomeForm));
             this.btnMigrate = new System.Windows.Forms.Button();
-            this.btnDlAndMigrate = new System.Windows.Forms.Button();
+            this.btnDlMigrate = new System.Windows.Forms.Button();
             this.lnklblOpts = new System.Windows.Forms.LinkLabel();
             this.lnklblAbout = new System.Windows.Forms.LinkLabel();
             this.lnkLblHelp = new System.Windows.Forms.LinkLabel();
@@ -41,37 +41,39 @@
             // 
             // btnMigrate
             // 
-            this.btnMigrate.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btnMigrate.FlatAppearance.BorderColor = System.Drawing.SystemColors.Control;
+            this.btnMigrate.FlatAppearance.BorderSize = 2;
             this.btnMigrate.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnMigrate.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnMigrate.Image = ((System.Drawing.Image)(resources.GetObject("btnMigrate.Image")));
             this.btnMigrate.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.btnMigrate.Location = new System.Drawing.Point(79, 89);
+            this.btnMigrate.Location = new System.Drawing.Point(81, 89);
             this.btnMigrate.Name = "btnMigrate";
             this.btnMigrate.Size = new System.Drawing.Size(145, 150);
-            this.btnMigrate.TabIndex = 0;
+            this.btnMigrate.TabIndex = 1;
             this.btnMigrate.Text = "Migrate";
             this.btnMigrate.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.btnMigrate.UseMnemonic = false;
             this.btnMigrate.UseVisualStyleBackColor = true;
             this.btnMigrate.Click += new System.EventHandler(this.ShowMigrateForm);
             // 
-            // btnDlAndMigrate
+            // btnDlMigrate
             // 
-            this.btnDlAndMigrate.FlatAppearance.BorderColor = System.Drawing.SystemColors.Control;
-            this.btnDlAndMigrate.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnDlAndMigrate.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDlAndMigrate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btnDlAndMigrate.Location = new System.Drawing.Point(294, 89);
-            this.btnDlAndMigrate.Name = "btnDlAndMigrate";
-            this.btnDlAndMigrate.Size = new System.Drawing.Size(145, 150);
-            this.btnDlAndMigrate.TabIndex = 1;
-            this.btnDlAndMigrate.Text = "Download & Migrate";
-            this.btnDlAndMigrate.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
-            this.btnDlAndMigrate.UseMnemonic = false;
-            this.btnDlAndMigrate.UseVisualStyleBackColor = true;
-            this.btnDlAndMigrate.Click += new System.EventHandler(this.ShowDownloadMigrateForm);
+            this.btnDlMigrate.FlatAppearance.BorderColor = System.Drawing.SystemColors.Control;
+            this.btnDlMigrate.FlatAppearance.BorderSize = 2;
+            this.btnDlMigrate.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnDlMigrate.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnDlMigrate.Image = ((System.Drawing.Image)(resources.GetObject("btnDlMigrate.Image")));
+            this.btnDlMigrate.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.btnDlMigrate.Location = new System.Drawing.Point(292, 89);
+            this.btnDlMigrate.Name = "btnDlMigrate";
+            this.btnDlMigrate.Size = new System.Drawing.Size(145, 150);
+            this.btnDlMigrate.TabIndex = 2;
+            this.btnDlMigrate.Text = "Download & Migrate";
+            this.btnDlMigrate.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.btnDlMigrate.UseMnemonic = false;
+            this.btnDlMigrate.UseVisualStyleBackColor = true;
+            this.btnDlMigrate.Click += new System.EventHandler(this.ShowDownloadMigrateForm);
             // 
             // lnklblOpts
             // 
@@ -80,7 +82,7 @@
             this.lnklblOpts.Location = new System.Drawing.Point(281, 15);
             this.lnklblOpts.Name = "lnklblOpts";
             this.lnklblOpts.Size = new System.Drawing.Size(49, 15);
-            this.lnklblOpts.TabIndex = 2;
+            this.lnklblOpts.TabIndex = 3;
             this.lnklblOpts.TabStop = true;
             this.lnklblOpts.Text = "Options";
             this.lnklblOpts.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ShowOptionsForm);
@@ -92,7 +94,7 @@
             this.lnklblAbout.Location = new System.Drawing.Point(424, 15);
             this.lnklblAbout.Name = "lnklblAbout";
             this.lnklblAbout.Size = new System.Drawing.Size(49, 15);
-            this.lnklblAbout.TabIndex = 3;
+            this.lnklblAbout.TabIndex = 5;
             this.lnklblAbout.TabStop = true;
             this.lnklblAbout.Text = "About...";
             this.lnklblAbout.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ShowAboutForm);
@@ -119,7 +121,7 @@
             this.bottomPanel.Location = new System.Drawing.Point(0, 325);
             this.bottomPanel.Name = "bottomPanel";
             this.bottomPanel.Size = new System.Drawing.Size(504, 46);
-            this.bottomPanel.TabIndex = 5;
+            this.bottomPanel.TabIndex = 0;
             // 
             // pnlBorder
             // 
@@ -138,7 +140,7 @@
             this.ClientSize = new System.Drawing.Size(504, 371);
             this.Controls.Add(this.pnlBorder);
             this.Controls.Add(this.bottomPanel);
-            this.Controls.Add(this.btnDlAndMigrate);
+            this.Controls.Add(this.btnDlMigrate);
             this.Controls.Add(this.btnMigrate);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "HomeForm";
@@ -152,7 +154,7 @@
         #endregion
 
         private System.Windows.Forms.Button btnMigrate;
-        private System.Windows.Forms.Button btnDlAndMigrate;
+        private System.Windows.Forms.Button btnDlMigrate;
         private System.Windows.Forms.LinkLabel lnklblOpts;
         private System.Windows.Forms.LinkLabel lnklblAbout;
         private System.Windows.Forms.LinkLabel lnkLblHelp;
