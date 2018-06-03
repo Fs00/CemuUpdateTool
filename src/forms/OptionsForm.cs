@@ -212,7 +212,7 @@ namespace CemuUpdateTool
             {
                 msgBoxMessage += $"An unexpected error occurred when deleting options file: {exc.Message}\r\n\r\n";
             }
-            msgBoxMessage += "Please take note that unless you uncheck \"Save options in a file\", options file will be recreated when you click on \"Save options\".";
+            msgBoxMessage += $"Please take note that unless you uncheck \"{chkBoxSettingsOnFile.Text}\", options file will be recreated when you click on \"{btnSaveOpts.Text}\".";
 
             MessageBox.Show(msgBoxMessage, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
             btnDeleteSettingsFile.Enabled = false;

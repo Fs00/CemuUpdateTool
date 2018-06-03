@@ -105,34 +105,38 @@ namespace CemuUpdateTool
 
             // DOWNLOAD THE FILE
             string destinationFile = Path.Combine(BaseDestinationPath, "cemu_dl.tmp.zip");
+            HandleLogMessage($"Downloading file {client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix}... ", EventLogEntryType.Information, false);
             bool fileDownloaded = false;
             while (!fileDownloaded)
             {
                 try
                 {
-                    HandleLogMessage($"Downloading file {client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix}...", EventLogEntryType.Information);
-                    client.DownloadFileTaskAsync(client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix, destinationFile).Wait(cancToken);
+                    client.DownloadFileTaskAsync(client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix, destinationFile).Wait();
                     fileDownloaded = true;
+                    HandleLogMessage("Done!", EventLogEntryType.Information);
                 }
-                // Handle web request cancellation
-                catch (WebException exc) when (exc.Status == WebExceptionStatus.RequestCanceled)
+                catch (AggregateException exc)    // DownloadFileTaskAsync wraps all its exceptions in an AggregateException
                 {
-                    throw new OperationCanceledException();
-                }
-                // Handle any other type of error (web- or file-related)
-                catch (Exception exc) when (!(exc is OperationCanceledException))
-                {
+                    // Handle web request cancellation
+                    if ((exc.InnerException as WebException)?.Status == WebExceptionStatus.RequestCanceled)
+                        throw new OperationCanceledException();
+
                     // Build the message according to the type of error
                     string message = $"An error occurred when trying to download the latest Cemu version: ";
-                    if (exc is WebException webExc)             // internet error
-                        message += GetWebErrorMessage(webExc.Status);
-                    else if (exc is InvalidOperationException)  // file error
-                        message += exc.Message;
+                    if (exc.InnerException is WebException webExc)     // internet or read-only file error
+                    {
+                        if (webExc.Status == WebExceptionStatus.UnknownError && webExc.InnerException != null)  // file error
+                            message += webExc.InnerException.Message;
+                        else
+                            message += GetWebErrorMessage(webExc.Status);
+                    }
+                    else if (exc.InnerException is InvalidOperationException)  // should never happen
+                        message += exc.InnerException.Message;
                     message += " Would you like to retry or give up the entire operation?";
 
                     DialogResult choice = MessageBox.Show(message, "Download error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
                     if (choice == DialogResult.Cancel)
-                        throw;
+                        throw exc.InnerException;
                 }
             }
 

@@ -42,7 +42,7 @@
             // 
             this.lblContact.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblContact.AutoSize = true;
-            this.lblContact.Location = new System.Drawing.Point(12, 278);
+            this.lblContact.Location = new System.Drawing.Point(12, 277);
             this.lblContact.Name = "lblContact";
             this.lblContact.Size = new System.Drawing.Size(241, 15);
             this.lblContact.TabIndex = 1;
@@ -52,7 +52,7 @@
             // 
             this.linkLblDiscord.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.linkLblDiscord.AutoSize = true;
-            this.linkLblDiscord.Location = new System.Drawing.Point(251, 278);
+            this.linkLblDiscord.Location = new System.Drawing.Point(251, 277);
             this.linkLblDiscord.Name = "linkLblDiscord";
             this.linkLblDiscord.Size = new System.Drawing.Size(47, 15);
             this.linkLblDiscord.TabIndex = 2;
@@ -65,7 +65,7 @@
             // 
             this.lblOr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblOr.AutoSize = true;
-            this.lblOr.Location = new System.Drawing.Point(295, 278);
+            this.lblOr.Location = new System.Drawing.Point(295, 277);
             this.lblOr.Name = "lblOr";
             this.lblOr.Size = new System.Drawing.Size(51, 15);
             this.lblOr.TabIndex = 3;
@@ -75,7 +75,7 @@
             // 
             this.linkLblForum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.linkLblForum.AutoSize = true;
-            this.linkLblForum.Location = new System.Drawing.Point(344, 278);
+            this.linkLblForum.Location = new System.Drawing.Point(344, 277);
             this.linkLblForum.Name = "linkLblForum";
             this.linkLblForum.Size = new System.Drawing.Size(112, 15);
             this.linkLblForum.TabIndex = 4;
@@ -106,7 +106,7 @@
             this.richTxtBoxHelp.Name = "richTxtBoxHelp";
             this.richTxtBoxHelp.ReadOnly = true;
             this.richTxtBoxHelp.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.richTxtBoxHelp.Size = new System.Drawing.Size(562, 248);
+            this.richTxtBoxHelp.Size = new System.Drawing.Size(562, 251);
             this.richTxtBoxHelp.TabIndex = 6;
             this.richTxtBoxHelp.Text = "";
             // 

@@ -65,7 +65,7 @@
             // 
             // lblNewVersionNr
             // 
-            this.lblNewVersionNr.Location = new System.Drawing.Point(464, 129);
+            this.lblNewVersionNr.Location = new System.Drawing.Point(464, 130);
             this.lblNewVersionNr.Name = "lblNewVersionNr";
             this.lblNewVersionNr.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.lblNewVersionNr.Size = new System.Drawing.Size(40, 15);
@@ -75,7 +75,7 @@
             // 
             // lblOldVersionNr
             // 
-            this.lblOldVersionNr.Location = new System.Drawing.Point(465, 74);
+            this.lblOldVersionNr.Location = new System.Drawing.Point(465, 75);
             this.lblOldVersionNr.Name = "lblOldVersionNr";
             this.lblOldVersionNr.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.lblOldVersionNr.Size = new System.Drawing.Size(40, 15);
@@ -87,7 +87,7 @@
             // 
             this.lblNewCemuVersion.AutoSize = true;
             this.lblNewCemuVersion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblNewCemuVersion.Location = new System.Drawing.Point(385, 129);
+            this.lblNewCemuVersion.Location = new System.Drawing.Point(385, 130);
             this.lblNewCemuVersion.Name = "lblNewCemuVersion";
             this.lblNewCemuVersion.Size = new System.Drawing.Size(83, 15);
             this.lblNewCemuVersion.TabIndex = 10;
@@ -98,7 +98,7 @@
             // 
             this.lblOldCemuVersion.AutoSize = true;
             this.lblOldCemuVersion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblOldCemuVersion.Location = new System.Drawing.Point(385, 74);
+            this.lblOldCemuVersion.Location = new System.Drawing.Point(385, 75);
             this.lblOldCemuVersion.Name = "lblOldCemuVersion";
             this.lblOldCemuVersion.Size = new System.Drawing.Size(83, 15);
             this.lblOldCemuVersion.TabIndex = 9;
@@ -163,11 +163,11 @@
             // 
             this.lblNewFolder.AutoSize = true;
             this.lblNewFolder.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblNewFolder.Location = new System.Drawing.Point(12, 129);
+            this.lblNewFolder.Location = new System.Drawing.Point(12, 130);
             this.lblNewFolder.Name = "lblNewFolder";
-            this.lblNewFolder.Size = new System.Drawing.Size(100, 15);
+            this.lblNewFolder.Size = new System.Drawing.Size(136, 15);
             this.lblNewFolder.TabIndex = 3;
-            this.lblNewFolder.Text = "New Cemu folder";
+            this.lblNewFolder.Text = "Destination Cemu folder";
             // 
             // btnSelectOldFolder
             // 
@@ -195,11 +195,11 @@
             // 
             this.lblOldFolder.AutoSize = true;
             this.lblOldFolder.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblOldFolder.Location = new System.Drawing.Point(12, 74);
+            this.lblOldFolder.Location = new System.Drawing.Point(12, 75);
             this.lblOldFolder.Name = "lblOldFolder";
-            this.lblOldFolder.Size = new System.Drawing.Size(105, 15);
+            this.lblOldFolder.Size = new System.Drawing.Size(112, 15);
             this.lblOldFolder.TabIndex = 0;
-            this.lblOldFolder.Text = "Older Cemu folder";
+            this.lblOldFolder.Text = "Source Cemu folder";
             // 
             // txtBoxLog
             // 
