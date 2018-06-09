@@ -22,7 +22,7 @@ namespace CemuUpdateTool
             {
                 Application.Run(new ContainerForm(new HomeForm()));
             }
-            catch(Exception exc)
+            catch (Exception exc)
             {
                 /*
                  *   UNHANDLED EXCEPTIONS MANAGEMENT in order to create a crashlog
@@ -36,7 +36,7 @@ namespace CemuUpdateTool
                     "\nFor detailed information check the latest cemut-crashlog in executable folder.", "Fatal error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                 // Build crashlog file content
-                crashlogContent += $"Cemu Update Tool v{Version} crashlog - {thisMoment.ToString(@"yyyy/MM/dd HH:mm:ss")}" +
+                crashlogContent += $"Cemu Update Tool v{Application.ProductVersion} crashlog - {thisMoment.ToString(@"yyyy/MM/dd HH:mm:ss")}" +
                                    "\r\n------------------------------------------------------------\r\n\r\n" +
                                    $"Method \"{exc.TargetSite}\" threw a {exceptionName} due to the following reason:\r\n{exc.Message}" +
                                    "\r\n\r\nAdditional error information\r\n" +

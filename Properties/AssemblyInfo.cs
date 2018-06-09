@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // Le informazioni generali relative a un assembly sono controllate dal seguente 
 // set di attributi. Modificare i valori di questi attributi per modificare le informazioni
 // associate a un assembly.
-[assembly: AssemblyTitle("Cemu Version Migration Tool")]
-[assembly: AssemblyDescription("A simple tool to make migration between Cemu versions easier and faster")]
+[assembly: AssemblyTitle("Cemu Update Tool")]
+[assembly: AssemblyDescription("A simple tool to migrate between Cemu versions easier and faster")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Fs00")]
-[assembly: AssemblyProduct("")]
+[assembly: AssemblyProduct("Cemu Update Tool")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
