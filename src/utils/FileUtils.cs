@@ -7,6 +7,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace CemuUpdateTool
 {
@@ -232,6 +233,17 @@ namespace CemuUpdateTool
                     }
                 }
             }
+        }
+
+        /*
+         *  Checks if a given directory has no elements inside.
+         */
+        public static bool DirectoryIsEmpty(string dirPath)
+        {
+            if (!DirectoryExists(dirPath))
+                throw new DirectoryNotFoundException();
+
+            return Directory.EnumerateFileSystemEntries(dirPath).Count() == 0;
         }
 
         /*

@@ -266,20 +266,23 @@ namespace CemuUpdateTool
             StringBuilder dataToWrite = new StringBuilder();
 
             // Write folder options
-            dataToWrite.AppendLine($"{(char)SECTION_HEADER_CHAR}0");
+            dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}0");
             foreach (KeyValuePair<string, bool> option in FolderOptions)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
+
             // Write additional options
-            dataToWrite.AppendLine($"{(char)SECTION_HEADER_CHAR}1");
+            dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}1");
             foreach (KeyValuePair<string, bool> option in MigrationOptions)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
+
             // Write download options
-            dataToWrite.AppendLine($"{(char)SECTION_HEADER_CHAR}2");
+            dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}2");
             foreach (KeyValuePair<string, string> option in DownloadOptions)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
+
             // Write mlc01 custom folder path
             if (MlcFolderExternalPath != "")
-                dataToWrite.Append($"{(char)SECTION_HEADER_CHAR}3\r\n" + MlcFolderExternalPath);   // \r\n -> CR-LF
+                dataToWrite.Append($"{(char) SECTION_HEADER_CHAR}3\r\n" + MlcFolderExternalPath);   // \r\n -> CR-LF
 
             try
             {
@@ -307,7 +310,12 @@ namespace CemuUpdateTool
             {
                 File.Delete(OptionsFilePath);
                 if (OptionsFilePath == APPDATA_FILEPATH)    // clean redundant empty folders
-                    Directory.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fs00"), true);
+                {
+                    Directory.Delete(Path.GetDirectoryName(APPDATA_FILEPATH), true);
+                    string fs00AppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fs00");
+                    if (FileUtils.DirectoryIsEmpty(fs00AppDataFolder))
+                        Directory.Delete(fs00AppDataFolder);
+                }
                 return true;
             }
             else
