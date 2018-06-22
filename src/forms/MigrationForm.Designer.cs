@@ -86,7 +86,6 @@
             // lblNewCemuVersion
             // 
             this.lblNewCemuVersion.AutoSize = true;
-            this.lblNewCemuVersion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblNewCemuVersion.Location = new System.Drawing.Point(385, 130);
             this.lblNewCemuVersion.Name = "lblNewCemuVersion";
             this.lblNewCemuVersion.Size = new System.Drawing.Size(83, 15);
@@ -97,7 +96,6 @@
             // lblOldCemuVersion
             // 
             this.lblOldCemuVersion.AutoSize = true;
-            this.lblOldCemuVersion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblOldCemuVersion.Location = new System.Drawing.Point(385, 75);
             this.lblOldCemuVersion.Name = "lblOldCemuVersion";
             this.lblOldCemuVersion.Size = new System.Drawing.Size(83, 15);
@@ -162,7 +160,6 @@
             // lblNewFolder
             // 
             this.lblNewFolder.AutoSize = true;
-            this.lblNewFolder.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblNewFolder.Location = new System.Drawing.Point(12, 130);
             this.lblNewFolder.Name = "lblNewFolder";
             this.lblNewFolder.Size = new System.Drawing.Size(136, 15);
@@ -194,7 +191,6 @@
             // lblOldFolder
             // 
             this.lblOldFolder.AutoSize = true;
-            this.lblOldFolder.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblOldFolder.Location = new System.Drawing.Point(12, 75);
             this.lblOldFolder.Name = "lblOldFolder";
             this.lblOldFolder.Size = new System.Drawing.Size(112, 15);
@@ -217,7 +213,6 @@
             // 
             // lblDetails
             // 
-            this.lblDetails.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDetails.Location = new System.Drawing.Point(14, 310);
             this.lblDetails.Name = "lblDetails";
             this.lblDetails.Size = new System.Drawing.Size(494, 15);
@@ -246,7 +241,6 @@
             // lblCurrentTask
             // 
             this.lblCurrentTask.AutoSize = true;
-            this.lblCurrentTask.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCurrentTask.Location = new System.Drawing.Point(14, 240);
             this.lblCurrentTask.Name = "lblCurrentTask";
             this.lblCurrentTask.Size = new System.Drawing.Size(174, 15);
@@ -256,7 +250,6 @@
             // btnHelp
             // 
             this.btnHelp.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.btnHelp.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnHelp.Location = new System.Drawing.Point(421, 11);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(87, 29);
@@ -268,7 +261,6 @@
             // btnBack
             // 
             this.btnBack.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.btnBack.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnBack.Location = new System.Drawing.Point(16, 10);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(87, 29);
@@ -353,8 +345,9 @@
             // 
             // MigrationForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(519, 524);
             this.Controls.Add(this.headerPanel);
@@ -377,7 +370,6 @@
             this.Controls.Add(this.lblNewFolder);
             this.Controls.Add(this.btnSelectNewFolder);
             this.Controls.Add(this.txtBoxNewFolder);
-            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
             this.MaximizeBox = false;

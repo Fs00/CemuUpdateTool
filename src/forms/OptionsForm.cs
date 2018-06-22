@@ -17,12 +17,12 @@ namespace CemuUpdateTool
             handler = classInstance;
             SetCheckboxesAccordingToOptions();
 
-            // Downscale and draw the icon in the help button
-            var iconBitmap = new Bitmap(19, 19);
+            // Draw the icon in the help button according to its size
+            var iconBitmap = new Bitmap(btnHelp.Width-6, btnHelp.Height-6);
             using (Graphics g = Graphics.FromImage(iconBitmap))
             {
                 g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                g.DrawImage(SystemIcons.Question.ToBitmap(), new Rectangle(Point.Empty, SystemInformation.SmallIconSize));
+                g.DrawImage(SystemIcons.Question.ToBitmap(), new Rectangle(Point.Empty, iconBitmap.Size));
             }
             btnHelp.Image = iconBitmap;
 

@@ -34,23 +34,29 @@
             this.lblVersion = new System.Windows.Forms.Label();
             this.lblCredit = new System.Windows.Forms.Label();
             this.lblUpdates = new System.Windows.Forms.Label();
-            this.PageLinkLbl = new System.Windows.Forms.LinkLabel();
+            this.linklblForum = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxInfo)).BeginInit();
             this.SuspendLayout();
             // 
             // pictBoxInfo
             // 
+            this.AutoSize = true;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.pictBoxInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pictBoxInfo.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictBoxInfo.BackgroundImage")));
             this.pictBoxInfo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pictBoxInfo.Location = new System.Drawing.Point(24, 20);
             this.pictBoxInfo.Name = "pictBoxInfo";
             this.pictBoxInfo.Size = new System.Drawing.Size(64, 65);
-            this.pictBoxInfo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.pictBoxInfo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictBoxInfo.TabIndex = 0;
             this.pictBoxInfo.TabStop = false;
             // 
             // lblName
             // 
+            this.lblName.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblName.AutoSize = true;
             this.lblName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblName.Location = new System.Drawing.Point(104, 16);
@@ -61,6 +67,7 @@
             // 
             // lblVersion
             // 
+            this.lblVersion.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblVersion.AutoSize = true;
             this.lblVersion.Location = new System.Drawing.Point(111, 37);
             this.lblVersion.Name = "lblVersion";
@@ -70,6 +77,7 @@
             // 
             // lblCredit
             // 
+            this.lblCredit.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCredit.AutoSize = true;
             this.lblCredit.Location = new System.Drawing.Point(111, 55);
             this.lblCredit.Name = "lblCredit";
@@ -79,6 +87,7 @@
             // 
             // lblUpdates
             // 
+            this.lblUpdates.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblUpdates.AutoSize = true;
             this.lblUpdates.Location = new System.Drawing.Point(111, 73);
             this.lblUpdates.Name = "lblUpdates";
@@ -86,24 +95,26 @@
             this.lblUpdates.TabIndex = 4;
             this.lblUpdates.Text = "For updates and news, check out the";
             // 
-            // PageLinkLbl
+            // linklblForum
             // 
-            this.PageLinkLbl.AutoSize = true;
-            this.PageLinkLbl.Location = new System.Drawing.Point(308, 73);
-            this.PageLinkLbl.Name = "PageLinkLbl";
-            this.PageLinkLbl.Size = new System.Drawing.Size(112, 15);
-            this.PageLinkLbl.TabIndex = 5;
-            this.PageLinkLbl.TabStop = true;
-            this.PageLinkLbl.Text = "Cemu forum thread";
-            this.PageLinkLbl.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelClicked);
+            this.linklblForum.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.linklblForum.AutoSize = true;
+            this.linklblForum.Location = new System.Drawing.Point(308, 73);
+            this.linklblForum.Name = "PageLinkLbl";
+            this.linklblForum.Size = new System.Drawing.Size(112, 15);
+            this.linklblForum.TabIndex = 5;
+            this.linklblForum.TabStop = true;
+            this.linklblForum.Text = "Cemu forum thread";
+            this.linklblForum.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelClicked);
             // 
             // AboutForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.AutoSize = true;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(442, 106);
-            this.Controls.Add(this.PageLinkLbl);
+            this.ClientSize = new System.Drawing.Size(442, 102);
+            this.Controls.Add(this.linklblForum);
             this.Controls.Add(this.lblUpdates);
             this.Controls.Add(this.lblCredit);
             this.Controls.Add(this.lblVersion);
@@ -127,6 +138,6 @@
         private System.Windows.Forms.Label lblVersion;
         private System.Windows.Forms.Label lblCredit;
         private System.Windows.Forms.Label lblUpdates;
-        private System.Windows.Forms.LinkLabel PageLinkLbl;
+        private System.Windows.Forms.LinkLabel linklblForum;
     }
 }

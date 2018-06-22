@@ -37,6 +37,7 @@ namespace CemuUpdateTool
             form.TopLevel = false;
             form.FormBorderStyle = FormBorderStyle.None;
             activeInstance.formContainer.Controls.Add(form);
+            form.Parent = activeInstance.formContainer;
             form.Show();
 
             // We must do these operations here otherwise the container resizing would be messed up
@@ -57,6 +58,11 @@ namespace CemuUpdateTool
                 throw new InvalidOperationException("This container has no homeForm set.");
 
             ShowForm(activeInstance.homeForm);
+        }
+
+        public static bool IsCurrentDisplayingForm(Form form)
+        {
+            return form == activeInstance.currentDisplayingForm;
         }
     }
 }

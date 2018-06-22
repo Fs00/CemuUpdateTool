@@ -101,7 +101,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.richTxtBoxHelp.BackColor = System.Drawing.Color.White;
             this.richTxtBoxHelp.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.richTxtBoxHelp.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richTxtBoxHelp.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTxtBoxHelp.Location = new System.Drawing.Point(12, 12);
             this.richTxtBoxHelp.Name = "richTxtBoxHelp";
             this.richTxtBoxHelp.ReadOnly = true;
@@ -118,8 +118,8 @@
             // 
             // HelpForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(586, 309);
             this.Controls.Add(this.richTxtBoxHelp);

@@ -15,6 +15,8 @@ namespace CemuUpdateTool
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en");
 
             #if DEBUG
+            int res = GetProcessDpiAwareness(IntPtr.Zero, out int value);
+            System.Diagnostics.Debug.WriteLine($"DpiAwareness: {(res == 0 ? value.ToString() : "ERR")}");
             Application.Run(new ContainerForm(new HomeForm()));
 
             #else
@@ -57,5 +59,10 @@ namespace CemuUpdateTool
             }
             #endif
         }
+
+        #if DEBUG
+        [System.Runtime.InteropServices.DllImport("shcore.dll")]
+        public static extern int GetProcessDpiAwareness(IntPtr proc, out int value);
+        #endif
     }
 }

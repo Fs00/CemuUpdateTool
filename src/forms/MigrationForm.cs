@@ -40,6 +40,7 @@ namespace CemuUpdateTool
             logBuffer = new StringBuilder(1000);
             progressHandler = new Progress<long>(UpdateProgressBarsAndLog);
 
+            // Set title according to the mode chosen
             if (DownloadMode)
                 lblTitle.Text = "Download & Migrate";
             else
@@ -498,7 +499,7 @@ namespace CemuUpdateTool
          */
         private void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e)
         {
-            if (ActiveForm != null)     // avoid triggering the event before the form is active
+            if (ContainerForm.IsCurrentDisplayingForm(this))     // avoid triggering the event before the form is shown
             {
                 if (txtBoxLog.Visible)
                     this.Height += txtBoxLog.Height;

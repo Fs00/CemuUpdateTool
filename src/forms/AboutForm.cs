@@ -11,7 +11,11 @@ namespace CemuUpdateTool
             Icon = SystemIcons.Information;     // set form icon
             lblVersion.Text += Application.ProductVersion;
 
-            PageLinkLbl.Links.Add(0, 17, "http://forum.cemu.info/forumdisplay.php/15-Guides-amp-modifications");    // add link to link label
+            linklblForum.Links.Add(0, 17, "http://forum.cemu.info/forumdisplay.php/15-Guides-amp-modifications");    // add link to link label
+            // Position link label according to the other label position to avoid excessive distance caused by scaling
+            var newLinkLblBounds = linklblForum.Bounds;
+            newLinkLblBounds.X = lblUpdates.Bounds.Right - 3;
+            linklblForum.Bounds = newLinkLblBounds;
         }
 
         private void LinkLabelClicked(object sender, LinkLabelLinkClickedEventArgs e)

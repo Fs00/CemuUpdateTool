@@ -47,9 +47,9 @@
             this.btnMigrate.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnMigrate.Image = ((System.Drawing.Image)(resources.GetObject("btnMigrate.Image")));
             this.btnMigrate.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.btnMigrate.Location = new System.Drawing.Point(81, 89);
+            this.btnMigrate.Location = new System.Drawing.Point(78, 86);
             this.btnMigrate.Name = "btnMigrate";
-            this.btnMigrate.Size = new System.Drawing.Size(145, 150);
+            this.btnMigrate.Size = new System.Drawing.Size(148, 153);
             this.btnMigrate.TabIndex = 1;
             this.btnMigrate.Text = "Migrate";
             this.btnMigrate.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -65,9 +65,9 @@
             this.btnDlMigrate.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnDlMigrate.Image = ((System.Drawing.Image)(resources.GetObject("btnDlMigrate.Image")));
             this.btnDlMigrate.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.btnDlMigrate.Location = new System.Drawing.Point(292, 89);
+            this.btnDlMigrate.Location = new System.Drawing.Point(289, 86);
             this.btnDlMigrate.Name = "btnDlMigrate";
-            this.btnDlMigrate.Size = new System.Drawing.Size(145, 150);
+            this.btnDlMigrate.Size = new System.Drawing.Size(148, 153);
             this.btnDlMigrate.TabIndex = 2;
             this.btnDlMigrate.Text = "Download & Migrate";
             this.btnDlMigrate.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -81,7 +81,7 @@
             this.lnklblOpts.AutoSize = true;
             this.lnklblOpts.Location = new System.Drawing.Point(281, 15);
             this.lnklblOpts.Name = "lnklblOpts";
-            this.lnklblOpts.Size = new System.Drawing.Size(49, 15);
+            this.lnklblOpts.Size = new System.Drawing.Size(43, 13);
             this.lnklblOpts.TabIndex = 3;
             this.lnklblOpts.TabStop = true;
             this.lnklblOpts.Text = "Options";
@@ -93,7 +93,7 @@
             this.lnklblAbout.AutoSize = true;
             this.lnklblAbout.Location = new System.Drawing.Point(424, 15);
             this.lnklblAbout.Name = "lnklblAbout";
-            this.lnklblAbout.Size = new System.Drawing.Size(49, 15);
+            this.lnklblAbout.Size = new System.Drawing.Size(44, 13);
             this.lnklblAbout.TabIndex = 5;
             this.lnklblAbout.TabStop = true;
             this.lnklblAbout.Text = "About...";
@@ -105,7 +105,7 @@
             this.lnkLblHelp.AutoSize = true;
             this.lnkLblHelp.Location = new System.Drawing.Point(361, 15);
             this.lnkLblHelp.Name = "lnkLblHelp";
-            this.lnkLblHelp.Size = new System.Drawing.Size(35, 15);
+            this.lnkLblHelp.Size = new System.Drawing.Size(32, 13);
             this.lnkLblHelp.TabIndex = 4;
             this.lnkLblHelp.TabStop = true;
             this.lnkLblHelp.Text = "Help!";
@@ -134,15 +134,14 @@
             // 
             // HomeForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(504, 371);
             this.Controls.Add(this.pnlBorder);
             this.Controls.Add(this.bottomPanel);
             this.Controls.Add(this.btnDlMigrate);
             this.Controls.Add(this.btnMigrate);
-            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "HomeForm";
             this.Text = "HomeForm";
             this.bottomPanel.ResumeLayout(false);

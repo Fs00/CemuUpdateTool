@@ -13,13 +13,15 @@ namespace CemuUpdateTool
             InitializeComponent();
             opts = new OptionsManager();    // load program options
 
-            // Set button icons with the correct size
+            float scaleFactor = Graphics.FromHwnd(IntPtr.Zero).DpiX / 96;
             var resourceMgr = new System.ComponentModel.ComponentResourceManager(GetType());
-            Bitmap image = (Bitmap) resourceMgr.GetObject("btnMigrate.Image");
-            btnMigrate.Image = new Bitmap(image, new Size(125, 125));
 
+            // Set button icons with the correct size according to current system DPI
+            // We must do that in the constructor because neither auto-sizing nor ScaleControl override work
+            Bitmap image = (Bitmap) resourceMgr.GetObject("btnMigrate.Image");
+            btnMigrate.Image = new Bitmap(image, new Size((int)(125 * scaleFactor), (int)(125 * scaleFactor)));
             image = (Bitmap) resourceMgr.GetObject("btnDlMigrate.Image");
-            btnDlMigrate.Image = new Bitmap(image, new Size(125, 125));
+            btnDlMigrate.Image = new Bitmap(image, new Size((int)(125 * scaleFactor), (int)(125 * scaleFactor)));
         }
 
         private void ShowMigrateForm(object sender, EventArgs e)

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // set di attributi. Modificare i valori di questi attributi per modificare le informazioni
 // associate a un assembly.
 [assembly: AssemblyTitle("Cemu Update Tool")]
-[assembly: AssemblyDescription("A simple tool to migrate between Cemu versions easier and faster")]
+[assembly: AssemblyDescription("A simple tool to update Cemu safely and fast")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Fs00")]
 [assembly: AssemblyProduct("Cemu Update Tool")]
@@ -31,6 +31,6 @@ using System.Runtime.InteropServices;
 // È possibile specificare tutti i valori oppure impostare valori predefiniti per i numeri relativi alla revisione e alla build
 // usando l'asterisco '*' come illustrato di seguito:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.0.0")]
-[assembly: AssemblyInformationalVersion("2.0")]
+[assembly: AssemblyVersion("2.1.0.0")]
+[assembly: AssemblyFileVersion("2.1.0.0")]
+[assembly: AssemblyInformationalVersion("2.1-dev")]
