@@ -77,9 +77,9 @@ namespace CemuUpdateTool
             else
             {
                 chkBoxSettingsOnFile.Checked = true;
-                if (handler.OptionsFilePath == handler.LOCAL_FILEPATH)
+                if (handler.OptionsFilePath == OptionsManager.LocalFilePath)
                     radioBtnExecFolder.Checked = true;
-                else if (handler.OptionsFilePath == handler.APPDATA_FILEPATH)
+                else if (handler.OptionsFilePath == OptionsManager.AppDataFilePath)
                     radioBtnAppDataFolder.Checked = true;
             }
 
@@ -145,9 +145,9 @@ namespace CemuUpdateTool
                         else    // apply requested setting (not needed in the first case because OptionsFileExists() does it itself)
                         {
                             if (radioBtnExecFolder.Checked)
-                                handler.OptionsFilePath = handler.LOCAL_FILEPATH;
+                                handler.OptionsFilePath = OptionsManager.LocalFilePath;
                             else if (radioBtnAppDataFolder.Checked)
-                                handler.OptionsFilePath = handler.APPDATA_FILEPATH;
+                                handler.OptionsFilePath = OptionsManager.AppDataFilePath;
                         }
                     }
                 }
@@ -237,14 +237,14 @@ namespace CemuUpdateTool
         private void CheckIfOptionsFileLocationHasChanged(object sender, EventArgs e)
         {
             // Evaluate whether settings file location has been changed looking at its current value
-            if (handler.OptionsFilePath == handler.LOCAL_FILEPATH)
+            if (handler.OptionsFilePath == OptionsManager.LocalFilePath)
             {
                 if (!radioBtnExecFolder.Checked)
                     optionsFileLocationChanged = true;
                 else
                     optionsFileLocationChanged = false;
             }
-            else if (handler.OptionsFilePath == handler.APPDATA_FILEPATH)
+            else if (handler.OptionsFilePath == OptionsManager.AppDataFilePath)
             {
                 if (!radioBtnAppDataFolder.Checked)
                     optionsFileLocationChanged = true;

@@ -12,7 +12,7 @@ namespace CemuUpdateTool
         public Dictionary<string, bool> MigrationOptions { private set; get; }   // contains a set of additional options for the migration
         public Dictionary<string, string> DownloadOptions { private set; get; }  // contains a set of options for the download of Cemu versions
         public string MlcFolderExternalPath { get; set; } = "";                  // mlc01 folder's external path for Cemu 1.10+
-        public string OptionsFilePath { set; get; }                              // the path of the settings file
+        public string OptionsFilePath { set; get; }                              // the path of the settings file (is empty string when no file is used)
 
         // Default options for every dictionary
         Dictionary<string, bool> defaultFolderOptions = new Dictionary<string, bool> {
@@ -42,8 +42,8 @@ namespace CemuUpdateTool
         };
 
         // Useful constants to make code more clean & readable
-        public readonly string LOCAL_FILEPATH = @".\settings.dat";
-        public readonly string APPDATA_FILEPATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Fs00\CemuUpdateTool\settings.dat");
+        public static readonly string LocalFilePath = @".\settings.dat";
+        public static readonly string AppDataFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Fs00\CemuUpdateTool\settings.dat");
         // Parsing constants
         const int SECTION_HEADER_CHAR = 35,    // '#'
                   CR = 13, LF = 10,
@@ -72,19 +72,36 @@ namespace CemuUpdateTool
         }
 
         /*
+         *  Overloaded constructor used to load options from a custom position.
+         *  The given path must be correct and pointing to an existing file.
+         */
+        public OptionsManager(string optionsFilePath)
+        {
+            OptionsFilePath = optionsFilePath;
+            try
+            {
+                ReadOptionsFromFile();
+            }
+            catch
+            {
+                SetDefaultOptions();
+            }
+        }
+
+        /*
          *  Looks for options file in executable and %AppData% folder and updates the property accordingly.
          *  Priority is given to the file in the local folder.
          */
         public bool OptionsFileExists()
         {
             bool localFileExists;
-            if ((localFileExists = FileUtils.FileExists(LOCAL_FILEPATH)) || FileUtils.FileExists(APPDATA_FILEPATH))
+            if ((localFileExists = FileUtils.FileExists(LocalFilePath)) || FileUtils.FileExists(AppDataFilePath))
             {
                 // Set the file path property according to the current file position
                 if (localFileExists)
-                    OptionsFilePath = LOCAL_FILEPATH;
+                    OptionsFilePath = LocalFilePath;
                 else
-                    OptionsFilePath = APPDATA_FILEPATH;
+                    OptionsFilePath = AppDataFilePath;
 
                 return true;
             }
@@ -309,9 +326,9 @@ namespace CemuUpdateTool
             if (!string.IsNullOrEmpty(OptionsFilePath) && FileUtils.FileExists(OptionsFilePath))
             {
                 File.Delete(OptionsFilePath);
-                if (OptionsFilePath == APPDATA_FILEPATH)    // clean redundant empty folders
+                if (OptionsFilePath == AppDataFilePath)    // clean redundant empty folders
                 {
-                    Directory.Delete(Path.GetDirectoryName(APPDATA_FILEPATH), true);
+                    Directory.Delete(Path.GetDirectoryName(AppDataFilePath), true);
                     string fs00AppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fs00");
                     if (FileUtils.DirectoryIsEmpty(fs00AppDataFolder))
                         Directory.Delete(fs00AppDataFolder);

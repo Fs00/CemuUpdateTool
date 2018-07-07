@@ -8,21 +8,28 @@ namespace CemuUpdateTool
     static class Program
     {
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en");
 
+            // Load options from file
+            OptionsManager opts;
+            if (args.Length > 0 && args[0].TrimStart('-', '/') == "force-appdata-config" && FileUtils.FileExists(OptionsManager.AppDataFilePath))
+                opts = new OptionsManager(OptionsManager.AppDataFilePath);
+            else
+                opts = new OptionsManager();
+
             #if DEBUG
             int res = GetProcessDpiAwareness(IntPtr.Zero, out int value);
             System.Diagnostics.Debug.WriteLine($"DpiAwareness: {(res == 0 ? value.ToString() : "ERR")}");
-            Application.Run(new ContainerForm(new HomeForm()));
+            Application.Run(new ContainerForm(new HomeForm(opts)));
 
             #else
             try
             {
-                Application.Run(new ContainerForm(new HomeForm()));
+                Application.Run(new ContainerForm(new HomeForm(opts)));
             }
             catch (Exception exc)
             {

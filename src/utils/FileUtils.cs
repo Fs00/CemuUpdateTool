@@ -243,7 +243,7 @@ namespace CemuUpdateTool
             if (!DirectoryExists(dirPath))
                 throw new DirectoryNotFoundException();
 
-            return Directory.EnumerateFileSystemEntries(dirPath).Count() == 0;
+            return !Directory.EnumerateFileSystemEntries(dirPath).Any();
         }
 
         /*

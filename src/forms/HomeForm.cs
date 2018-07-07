@@ -6,14 +6,16 @@ namespace CemuUpdateTool
 {
     public partial class HomeForm : Form
     {
-        OptionsManager opts;
+        OptionsManager options;
 
-        public HomeForm()
+        public HomeForm(OptionsManager opts)
         {
             InitializeComponent();
-            opts = new OptionsManager();    // load program options
+            options = opts;
 
-            float scaleFactor = Graphics.FromHwnd(IntPtr.Zero).DpiX / 96;
+            float scaleFactor;
+            using (var gfx = Graphics.FromHwnd(IntPtr.Zero))
+                scaleFactor = gfx.DpiX / 96;
             var resourceMgr = new System.ComponentModel.ComponentResourceManager(GetType());
 
             // Set button icons with the correct size according to current system DPI
@@ -26,17 +28,17 @@ namespace CemuUpdateTool
 
         private void ShowMigrateForm(object sender, EventArgs e)
         {
-            ContainerForm.ShowForm(new MigrationForm(opts, false));
+            ContainerForm.ShowForm(new MigrationForm(options, false));
         }
 
         private void ShowDownloadMigrateForm(object sender, EventArgs e)
         {
-            ContainerForm.ShowForm(new MigrationForm(opts, true));
+            ContainerForm.ShowForm(new MigrationForm(options, true));
         }
 
         private void ShowOptionsForm(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            new OptionsForm(opts).ShowDialog();
+            new OptionsForm(options).ShowDialog();
         }
 
         private void ShowAboutForm(object sender, LinkLabelLinkClickedEventArgs e)
