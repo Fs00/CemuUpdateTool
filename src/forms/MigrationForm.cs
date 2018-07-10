@@ -272,7 +272,7 @@ namespace CemuUpdateTool
                                                           // Refresh log textbox
                                                           UpdateLogTextbox();
                                                       })
-                    );
+                                                );
                     newCemuExeVer = await downloadTask;
                 }
 

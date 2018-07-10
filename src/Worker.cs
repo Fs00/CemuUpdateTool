@@ -30,9 +30,11 @@ namespace CemuUpdateTool
         public List<FileInfo> CreatedFiles { private set; get; }               // list of files that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
         public List<DirectoryInfo> CreatedDirectories { private set; get; }    // list of directories that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
 
+        // TODO: usare dictionary per cartelle e loro dimensioni (uguale anche per file)
         List<string> foldersToCopy;             // list of folders to be copied
         List<long> foldersSizes;                // contains the sizes (in bytes) of the folders to copy
         byte currentFolderIndex = 0;            // index of the folder which is currently being copied
+
         CancellationToken cancToken;
         MyWebClient client;
         Action<string, bool> LoggerDelegate;    // callback that writes a message on an external log (in this case MigrationForm textbox)
@@ -171,8 +173,8 @@ namespace CemuUpdateTool
             Debug.Assert(!string.IsNullOrWhiteSpace(BaseSourcePath) && !string.IsNullOrWhiteSpace(BaseDestinationPath),
                          "Source and/or destination Cemu folder are set incorrectly!");
 
-            // COPY CEMU SETTINGS FILE
-            if (migrationOptions["copyCemuSettingsFile"] == true)
+            // COPY CEMU SETTINGS FILE -- TO BE REMOVED
+            /*if (migrationOptions["copyCemuSettingsFile"] == true)
             {
                 if (FileUtils.FileExists(Path.Combine(BaseSourcePath, "settings.bin")))
                 {
@@ -200,7 +202,7 @@ namespace CemuUpdateTool
                         }
                     }
                 }
-            }
+            }*/
 
             // FOLDER OPERATIONS
             foreach (string folder in foldersToCopy)
@@ -233,6 +235,9 @@ namespace CemuUpdateTool
                 }
                 currentFolderIndex++;
             }
+
+            // FILE OPTIONS
+            // TODO
 
             // SET COMPATIBILITY OPTIONS for new Cemu executable
             if (migrationOptions["setCompatibilityOptions"] == true)

@@ -38,7 +38,7 @@ namespace CemuUpdateTool
             chkBoxControllerProfiles.Checked = handler.FolderOptions["controllerProfiles"];
             chkBoxGameProfiles.Checked = handler.FolderOptions["gameProfiles"];
             chkBoxGfxPacks.Checked = handler.FolderOptions["graphicPacks"];
-            // The program sets the saves' checkbox as indeterminate if there's only one of the two save folders (and it's set to true)
+            // The program sets the saves' checkbox as indeterminate if only one of the two save folders is set to true
             if (handler.FolderOptions[@"mlc01\emulatorSave"] == true)
                 chkBoxSavegames.CheckState = CheckState.Indeterminate;
             if (handler.FolderOptions[@"mlc01\usr\save"] == true)
@@ -52,8 +52,19 @@ namespace CemuUpdateTool
             chkBoxShaderCaches.Checked = handler.FolderOptions[@"shaderCache\transferable"];
             RefreshCustomFolderStats();
 
+            // FILE OPTIONS
+            // As above, the settings' checkbox is set as indeterminate if only one of the two options files is set to true
+            if (handler.FileOptions["settings.bin"] == true)
+                chkBoxCemuSettings.CheckState = CheckState.Indeterminate;
+            if (handler.FileOptions["settings.xml"] == true)
+            {
+                if (chkBoxCemuSettings.CheckState == CheckState.Indeterminate)
+                    chkBoxCemuSettings.CheckState = CheckState.Checked;
+                else
+                    chkBoxCemuSettings.CheckState = CheckState.Indeterminate;
+            }
+
             // MIGRATION OPTIONS
-            chkBoxCemuSettings.Checked = handler.MigrationOptions["copyCemuSettingsFile"];
             chkBoxDeletePrevContent.Checked = handler.MigrationOptions["deleteDestFolderContents"];
             chkBoxDesktopShortcut.Checked = handler.MigrationOptions["askForDesktopShortcut"];
             // Custom mlc01 folder
@@ -102,8 +113,14 @@ namespace CemuUpdateTool
             handler.FolderOptions[@"mlc01\usr\title"] = chkBoxDLCUpds.Checked;
             handler.FolderOptions[@"shaderCache\transferable"] = chkBoxShaderCaches.Checked;
 
+            // FILE OPTIONS
+            if (chkBoxCemuSettings.CheckState != CheckState.Indeterminate)
+            {
+                handler.FileOptions["settings.bin"] = chkBoxCemuSettings.Checked;
+                handler.FileOptions["settings.xml"] = chkBoxCemuSettings.Checked;
+            }
+
             // MIGRATION OPTIONS
-            handler.MigrationOptions["copyCemuSettingsFile"] = chkBoxCemuSettings.Checked;
             handler.MigrationOptions["deleteDestFolderContents"] = chkBoxDeletePrevContent.Checked;
             handler.MigrationOptions["askForDesktopShortcut"] = chkBoxDesktopShortcut.Checked;
             // Custom mlc01 path

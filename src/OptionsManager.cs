@@ -9,6 +9,7 @@ namespace CemuUpdateTool
     public class OptionsManager
     {
         public Dictionary<string, bool> FolderOptions { private set; get; }      // contains a list of Cemu subfolders and whether they have to be copied
+        public Dictionary<string, bool> FileOptions { private set; get; }        // contains a list of files included in Cemu folder and whether they have to be copied
         public Dictionary<string, bool> MigrationOptions { private set; get; }   // contains a set of additional options for the migration
         public Dictionary<string, string> DownloadOptions { private set; get; }  // contains a set of options for the download of Cemu versions
         public string MlcFolderExternalPath { get; set; } = "";                  // mlc01 folder's external path for Cemu 1.10+
@@ -21,11 +22,15 @@ namespace CemuUpdateTool
             { "graphicPacks", true },
             { @"mlc01\emulatorSave", true },       // savegame directory before 1.11
             { @"mlc01\usr\save", true },           // savegame directory since 1.11
-            { @"mlc01\usr\title", true },
+            { @"mlc01\usr\title", true },          // DLC/updates directory
             { @"shaderCache\transferable", true }
         };
+        Dictionary<string, bool> defaultFileOptions = new Dictionary<string, bool> {
+            { "settings.bin", true },       // Cemu settings file
+            { "settings.xml", true },       // file containing game list data
+            { "cemuhook.ini", true }        // Cemuhook settings file
+        };
         Dictionary<string, bool> defaultMigrationOptions = new Dictionary<string, bool> {
-            { "copyCemuSettingsFile", true },
             { "deleteDestFolderContents", false },
             { "dontCopyMlcFolderFor1.10+", false },
             { "askForDesktopShortcut", true },
@@ -121,6 +126,7 @@ namespace CemuUpdateTool
         {
             // Dictionaries must be initialized here
             FolderOptions = new Dictionary<string, bool>();
+            FileOptions = new Dictionary<string, bool>();
             MigrationOptions = new Dictionary<string, bool>();
             DownloadOptions = new Dictionary<string, string>();
 
@@ -182,21 +188,31 @@ namespace CemuUpdateTool
          *      1: migrationOptions
          *      2: downloadOptions
          *      3: mlcFolderExternalPath (only one line is read)
+         *      4: fileOptions
          */
         private void ReadFileSection(StreamReader fileStream, byte sectionId)
         {
             // Check if the sectionId is valid
-            if (sectionId < 0 || sectionId > 3)
+            if (sectionId < 0 || sectionId > 4)
                 throw new ArgumentOutOfRangeException("Section ID is not valid");
 
             // Set up the dynamic dictionary "pointer" according to the sectionId
             dynamic dictionary = null;
-            if (sectionId == 0)
-                dictionary = FolderOptions;
-            else if (sectionId == 1)
-                dictionary = MigrationOptions;
-            else if (sectionId == 2)
-                dictionary = DownloadOptions;
+            switch (sectionId)
+            {
+                case 0:
+                    dictionary = FolderOptions;
+                    break;
+                case 1:
+                    dictionary = MigrationOptions;
+                    break;
+                case 2:
+                    dictionary = DownloadOptions;
+                    break;
+                case 4:
+                    dictionary = FileOptions;
+                    break;
+            }
 
             int startingChar;       // first char code of the current reading line
             string[] parsedLine;    // the "splitted" line
@@ -209,18 +225,7 @@ namespace CemuUpdateTool
                     fileStream.ReadLine();
                 else
                 {
-                    if (sectionId <= 2)     // if I'm handling a dictionary
-                    {
-                        parsedLine = fileStream.ReadLine().Split(',');
-                        if (parsedLine.Length != 2)
-                            throw new FormatException("Not a \"key, value\" option");
-
-                        if (sectionId <= 1)     // if I'm handling a <string, bool> dictionary (folderOptions, migrationOptions)
-                            dictionary.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
-                        else                    // if I'm handling a <string, string> dictionary (downloadOptions)
-                            dictionary.Add(parsedLine[0], parsedLine[1]);
-                    }
-                    else                    // section 3
+                    if (sectionId == 3)
                     {
                         string tmpPath = fileStream.ReadLine();
                         if (tmpPath.IndexOfAny(Path.GetInvalidPathChars()) == -1)
@@ -230,6 +235,24 @@ namespace CemuUpdateTool
                         }
                         else
                             throw new FormatException("Mlc01 external folder path is malformed");
+                    }
+                    else     // if I'm handling a dictionary
+                    {
+                        parsedLine = fileStream.ReadLine().Split(',');
+                        if (parsedLine.Length != 2)
+                            throw new FormatException("Not a \"key, value\" option");
+
+                        switch (sectionId)
+                        {
+                            // <string, bool> dictionary (folderOptions, migrationOptions, fileOptions)
+                            case 0: case 1: case 4:
+                                dictionary.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
+                                break;
+                            // <string, string> dictionary (downloadOptions)
+                            case 2:
+                                dictionary.Add(parsedLine[0], parsedLine[1]);
+                                break;
+                        }
                     }
                 }
             }
@@ -246,6 +269,12 @@ namespace CemuUpdateTool
             {
                 if (!FolderOptions.ContainsKey(key))
                     FolderOptions.Add(key, false);    // if a folder was not found, it means that it shouldn't be copied
+            }
+
+            foreach (string key in defaultFileOptions.Keys)
+            {
+                if (!FileOptions.ContainsKey(key))
+                    FileOptions.Add(key, false);    // if a file was not found, it means that it shouldn't be copied
             }
 
             foreach (string key in defaultMigrationOptions.Keys)
@@ -268,6 +297,7 @@ namespace CemuUpdateTool
         public void SetDefaultOptions()
         {
             FolderOptions = new Dictionary<string, bool>(defaultFolderOptions);
+            FileOptions = new Dictionary<string, bool>(defaultFileOptions);
             MigrationOptions = new Dictionary<string, bool>(defaultMigrationOptions);
             DownloadOptions = new Dictionary<string, string>(defaultDownloadOptions);
             MlcFolderExternalPath = "";
@@ -299,7 +329,12 @@ namespace CemuUpdateTool
 
             // Write mlc01 custom folder path
             if (MlcFolderExternalPath != "")
-                dataToWrite.Append($"{(char) SECTION_HEADER_CHAR}3\r\n" + MlcFolderExternalPath);   // \r\n -> CR-LF
+                dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}3\r\n" + MlcFolderExternalPath);   // \r\n -> CR-LF
+
+            // Write file options
+            dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}4");
+            foreach (KeyValuePair<string, bool> option in FileOptions)
+                dataToWrite.AppendLine($"{option.Key},{option.Value}");
 
             try
             {
@@ -341,7 +376,7 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Method that returns a list containing the paths of the folders which have to be copied
+         *  Returns a list containing the relative paths of the folders which have to be copied
          */
         public List<string> GetFoldersToCopy(bool cemuVersionIsAtLeast110)
         {
@@ -350,7 +385,7 @@ namespace CemuUpdateTool
             // Ignore mlc01 subfolders if source Cemu version is at least 1.10 and custom mlc folder option is selected
             if (cemuVersionIsAtLeast110 && MigrationOptions["dontCopyMlcFolderFor1.10+"] == true)
             {
-                foreach (string folder in SelectedFolders())
+                foreach (string folder in SelectedEntries(FolderOptions))
                 {
                     if (!folder.StartsWith(@"mlc01\"))
                         foldersToCopy.Add(folder);
@@ -358,7 +393,7 @@ namespace CemuUpdateTool
             }
             else    // otherwise append folders without any extra check 
             {
-                foreach (string folder in SelectedFolders())
+                foreach (string folder in SelectedEntries(FolderOptions))
                     foldersToCopy.Add(folder);
             }
             
@@ -366,11 +401,24 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Iterator method that returns a folder path every iteration only if the corresponding option is selected
+         *  Returns a list containing the relative paths of the files which have to be copied
          */
-        public IEnumerable<string> SelectedFolders()
+        public List<string> GetFilesToCopy()
         {
-            foreach(KeyValuePair<string, bool> option in FolderOptions)
+            List<string> filesToCopy = new List<string>();
+
+            foreach (string file in SelectedEntries(FileOptions))
+                filesToCopy.Add(file);
+
+            return filesToCopy;
+        }
+
+        /*
+         *  Iterator method that returns only the selected keys in the given options dictionary
+         */
+        private IEnumerable<string> SelectedEntries(Dictionary<string, bool> optsDictionary)
+        {
+            foreach(KeyValuePair<string, bool> option in optsDictionary)
             {
                 if (option.Value == true)
                     yield return option.Key;
@@ -385,6 +433,18 @@ namespace CemuUpdateTool
             foreach (KeyValuePair<string, bool> option in FolderOptions)
             {
                 if (!defaultFolderOptions.ContainsKey(option.Key))
+                    yield return option.Key;
+            }
+        }
+
+        /*
+         *  Iterator method that returns only custom user files (the ones that aren't in default dictionary)
+         */
+        public IEnumerable<string> CustomFiles()
+        {
+            foreach (KeyValuePair<string, bool> option in FileOptions)
+            {
+                if (!defaultFileOptions.ContainsKey(option.Key))
                     yield return option.Key;
             }
         }
