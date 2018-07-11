@@ -14,7 +14,7 @@ namespace CemuUpdateTool
     public static class FileUtils
     {
         /*
-         *  Method that calculates the size of all the files contained in the passed directory and its subdirectories, then returns it
+         *  Calculates the size of all the files contained in the given directory and its subdirectories
          */
         public static long CalculateDirSize(string folderPath, LogMessageHandler LogMessage)
         {
@@ -27,31 +27,26 @@ namespace CemuUpdateTool
                 return 0;
             }
 
-            // Retrieve informations for files and subdirectories
-            DirectoryInfo dirToCompute = new DirectoryInfo(folderPath);
-            DirectoryInfo[] subdirsArray = dirToCompute.GetDirectories();
-            FileInfo[] filesArray = dirToCompute.GetFiles();
+            var directory = new DirectoryInfo(folderPath);
 
-            foreach (FileInfo file in filesArray)               // calculate files sizes
+            // Calculate files sizes
+            foreach (FileInfo file in directory.GetFiles())
                 dirSize += file.Length;
-
-            foreach (DirectoryInfo subdir in subdirsArray)      // calculate subdirs sizes recursively
+            // Calculate subdirectories sizes recursively
+            foreach (DirectoryInfo subdir in directory.GetDirectories())
                 dirSize += CalculateDirSize(Path.Combine(folderPath, subdir.Name), LogMessage);
 
             return dirSize;
         }
 
         /*
-         *  Method that copies a Cemu subdir from old installation to new one.
-         *  Sends callbacks to MigrationForm in order to update progress bars.
+         *  Copies a directory recursively to a destination folder (can be unexisting)
+         *  Reports progress and keeps track of the created files and directories.
          */
         public static void CopyDir(string srcFolderPath, string destFolderPath, LogMessageHandler LogMessage, CancellationToken? cToken = null,
                                    IProgress<long> progressHandler = null, List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
-            // Retrieve informations for files and subdirectories
             DirectoryInfo sourceDir = new DirectoryInfo(srcFolderPath);
-            DirectoryInfo[] srcSubdirsArray = sourceDir.GetDirectories();
-            FileInfo[] srcFilesArray = sourceDir.GetFiles();
 
             // Check if destination folder exists, if not create it
             if (!DirectoryExists(destFolderPath))
@@ -61,44 +56,49 @@ namespace CemuUpdateTool
             }
 
             // Copy files
-            foreach (FileInfo file in srcFilesArray)
+            foreach (FileInfo file in sourceDir.GetFiles())
             {
                 cToken?.ThrowIfCancellationRequested();
-                bool copySuccessful = false;
-                FileInfo destinationFile;
-
-                LogMessage($"Copying {file.FullName}... ", EventLogEntryType.Information, false);
-                string destFilePath = Path.Combine(destFolderPath, file.Name);
-                while (!copySuccessful)
-                {
-                    try
-                    {
-                        destinationFile = file.CopyTo(destFilePath, true);
-                        copySuccessful = true;
-                        createdFiles?.Add(destinationFile);    // add to the list of copied files the destination file
-                    }
-                    catch(Exception exc)
-                    {
-                        DialogResult choice = MessageBox.Show($"Unexpected error when copying file {file.Name}: {exc.Message} What do you want to do?",
-                            "Error during file copy", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
-
-                        if (choice == DialogResult.Abort)
-                            throw;
-                        else if (choice == DialogResult.Ignore)
-                        {
-                            LogMessage($"{file.Name} not copied: {exc.Message}", EventLogEntryType.Error);
-                            break;
-                        }
-                    }
-                }
-                progressHandler?.Report(file.Length);    // notify to the form that the current file has been copied
-                if (copySuccessful)
-                    LogMessage("Done!", EventLogEntryType.Information);
+                file.CopyToCustom(Path.Combine(destFolderPath, file.Name), LogMessage, progressHandler, createdFiles);
             }
 
             // Copy subdirs recursively
-            foreach (DirectoryInfo subdir in srcSubdirsArray)
+            foreach (DirectoryInfo subdir in sourceDir.GetDirectories())
                 CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), LogMessage, cToken, progressHandler, createdFiles, createdDirectories);
+        }
+
+        /*
+         *  Extension method to reuse advanced file copy logic in different parts of the program
+         */
+        public static void CopyToCustom(this FileInfo srcFile, string destFilePath, LogMessageHandler LogMessage, IProgress<long> progressHandler = null, List<FileInfo> createdFiles = null)
+        {
+            LogMessage($"Copying {srcFile.FullName}... ", EventLogEntryType.Information, false);
+            bool copySuccessful = false;
+            while (!copySuccessful)
+            {
+                try
+                {
+                    FileInfo destinationFile = srcFile.CopyTo(destFilePath, true);
+                    copySuccessful = true;
+                    createdFiles?.Add(destinationFile);    // add to the list of copied files the destination file
+                }
+                catch (Exception exc)
+                {
+                    DialogResult choice = MessageBox.Show($"Unexpected error when copying file {srcFile.Name}: {exc.Message} What do you want to do?",
+                        "Error during file copy", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
+
+                    if (choice == DialogResult.Abort)
+                        throw;
+                    else if (choice == DialogResult.Ignore)
+                    {
+                        LogMessage($"{srcFile.Name} not copied: {exc.Message}", EventLogEntryType.Error);
+                        break;
+                    }
+                }
+            }
+            progressHandler?.Report(srcFile.Length);    // notify to the form that the current file has been copied
+            if (copySuccessful)
+                LogMessage("Done!", EventLogEntryType.Information);
         }
 
         /*
@@ -107,17 +107,14 @@ namespace CemuUpdateTool
          */
         public static DirectoryInfo RemoveDirContents(string folderPath, LogMessageHandler LogMessage, CancellationToken? cToken = null)
         {
-            // Retrieve informations for files and subdirectories
             DirectoryInfo directory = new DirectoryInfo(folderPath);
-            DirectoryInfo[] subdirsArray = directory.GetDirectories();
-            FileInfo[] filesArray = directory.GetFiles();
 
             // Check if destination folder exists, if not throw exception
             if (!DirectoryExists(folderPath))
                 throw new DirectoryNotFoundException("Directory doesn't exist!");
 
             // Delete files
-            foreach (FileInfo file in filesArray)
+            foreach (FileInfo file in directory.GetFiles())
             {
                 cToken?.ThrowIfCancellationRequested();     // check for cancellation
 
@@ -148,7 +145,7 @@ namespace CemuUpdateTool
             LogMessage($"Contents of directory {folderPath} removed successfully.", EventLogEntryType.Information);
 
             // Delete subdirs recursively
-            foreach (DirectoryInfo subdir in subdirsArray)
+            foreach (DirectoryInfo subdir in directory.GetDirectories())
             {
                 var emptiedFolder = RemoveDirContents(Path.Combine(folderPath, subdir.Name), LogMessage, cToken);
                 emptiedFolder.Delete();

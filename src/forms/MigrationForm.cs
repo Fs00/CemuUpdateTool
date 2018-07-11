@@ -226,14 +226,15 @@ namespace CemuUpdateTool
                 }
             }
 
-            // Get the list of folders to copy telling the method if source Cemu version is >= 1.10..
+            // Get the list of folders and files to copy telling the method if source Cemu version is >= 1.10..
             List<string> foldersToCopy = opts.GetFoldersToCopy(oldCemuExeVer.Major > 1 || oldCemuExeVer.Minor >= 10);
+            List<string> filesToCopy = opts.GetFilesToCopy();
 
-            // ... and check if it's is empty (no folders to copy)
-            if (foldersToCopy.Count == 0)
+            // ... and check if both lists are empty (no folders and files to copy)
+            if (foldersToCopy.Count == 0 && filesToCopy.Count == 0)
             {
-                MessageBox.Show("It seems that there are no folders to copy. Probably you set up options incorrectly.",
-                    "Empty folders list", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("It seems that there are neither folders nor single files to copy. Probably you set up options incorrectly.",
+                    "Empty folders and files lists", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -248,7 +249,7 @@ namespace CemuUpdateTool
 
             // Create a new Worker instance and pass it all needed data
             ctSource = new CancellationTokenSource();
-            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, ctSource.Token, AppendLogMessage);
+            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, filesToCopy, ctSource.Token, AppendLogMessage);
 
             // Starting from now, we can safely cancel operations without having problems
             btnCancel.Enabled = true;
