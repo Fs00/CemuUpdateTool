@@ -46,11 +46,11 @@ namespace CemuUpdateTool
             this.LoggerDelegate = LoggerDelegate;
 
             // Populate folders/file tuple arrays and calculate their sizes
-            this.foldersToCopy = new (string Name, long Size)[foldersToCopy.Count];
+            this.foldersToCopy = new (string, long)[foldersToCopy.Count];
             for (int i = 0; i < foldersToCopy.Count; i++)
                 this.foldersToCopy[i] = (foldersToCopy[i], 0L);
 
-            this.filesToCopy = new (string Name, long Size)[filesToCopy.Count];
+            this.filesToCopy = new (string, long)[filesToCopy.Count];
             for (int i = 0; i < filesToCopy.Count; i++)
                 this.filesToCopy[i] = (filesToCopy[i], 0L);
             CalculateSizes();
@@ -181,15 +181,15 @@ namespace CemuUpdateTool
                          "Source and/or destination Cemu folder are set incorrectly!");
 
             // FOLDER OPERATIONS
-            foreach ((string folderName, long folderSize) in foldersToCopy)
+            foreach (var folder in foldersToCopy)
             {
                 // Destination folder contents removal
                 if (migrationOptions["deleteDestFolderContents"] == true)
                 {
-                    string destFolderPath = Path.Combine(BaseDestinationPath, folderName);
+                    string destFolderPath = Path.Combine(BaseDestinationPath, folder.Name);
                     if (FileUtils.DirectoryExists(destFolderPath))
                     {
-                        PerformingWork($"Removing destination {folderName} folder previous contents");
+                        PerformingWork($"Removing destination {folder.Name} folder previous contents");
                         try
                         {
                             FileUtils.RemoveDirContents(destFolderPath, HandleLogMessage, cancToken);
@@ -197,32 +197,32 @@ namespace CemuUpdateTool
                         // Catch errors here since we don't want to abort the entire work if content deletion fails
                         catch (Exception exc) when (!(exc is OperationCanceledException))
                         {
-                            HandleLogMessage($"Unable to complete folder {folderName} contents removal: {exc.Message}", EventLogEntryType.Error);
+                            HandleLogMessage($"Unable to complete folder {folder.Name} contents removal: {exc.Message}", EventLogEntryType.Error);
                         }
                     }
                 }
 
                 // Folder copy
-                if (folderSize > 0)     // avoiding to copy empty/unexisting folders
+                if (folder.Size > 0)     // avoiding to copy empty/unexisting folders
                 {
-                    PerformingWork($"Copying {folderName}");      // tell the form which folder I'm about to copy
-                    FileUtils.CopyDir(Path.Combine(BaseSourcePath, folderName), Path.Combine(BaseDestinationPath, folderName), HandleLogMessage,
+                    PerformingWork($"Copying {folder.Name}");      // tell the form which folder I'm about to copy
+                    FileUtils.CopyDir(Path.Combine(BaseSourcePath, folder.Name), Path.Combine(BaseDestinationPath, folder.Name), HandleLogMessage,
                                       cancToken, progressHandler, CreatedFiles, CreatedDirectories);
                 }
             }
 
             // FILE COPY
             PerformingWork("Copying files");
-            foreach ((string fileName, long fileSize) in filesToCopy)
+            foreach (var file in filesToCopy)
             {
                 cancToken.ThrowIfCancellationRequested();
-                if (fileSize > 0)
+                if (file.Size > 0)
                 {
-                    var fileObj = new FileInfo(Path.Combine(BaseSourcePath, fileName));
-                    fileObj.CopyToCustom(Path.Combine(BaseDestinationPath, fileName), HandleLogMessage, progressHandler, CreatedFiles);
+                    var fileObj = new FileInfo(Path.Combine(BaseSourcePath, file.Name));
+                    fileObj.CopyToCustom(Path.Combine(BaseDestinationPath, file.Name), HandleLogMessage, progressHandler, CreatedFiles);
                 }
                 else
-                    HandleLogMessage($"File {fileName} empty or unexisting: skipped.", EventLogEntryType.Warning);
+                    HandleLogMessage($"File {file.Name} empty or unexisting: skipped.", EventLogEntryType.Warning);
             }
 
             // SET COMPATIBILITY OPTIONS for new Cemu executable
