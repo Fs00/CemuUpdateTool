@@ -376,7 +376,7 @@
             this.Name = "MigrationForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Cemu Update Tool";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ShutdownDispatcherOnFormClosing);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PreventClosingIfOperationInProgress);
             ((System.ComponentModel.ISupportInitialize)(this.errProviderNewFolder)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).EndInit();
             this.bottomPanel.ResumeLayout(false);

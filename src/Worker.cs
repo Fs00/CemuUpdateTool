@@ -12,6 +12,7 @@ using IWshRuntimeLibrary;
 namespace CemuUpdateTool
 {
     public delegate void LogMessageHandler(string message, EventLogEntryType type, bool newLine = true);
+
     public enum WorkOutcome
     {
         Success,
@@ -25,7 +26,7 @@ namespace CemuUpdateTool
         public string BaseSourcePath { get; }              // older Cemu folder
         public string BaseDestinationPath { get; }         // new Cemu folder
 
-        public bool ErrorsEncountered { private set; get; } = false;
+        public int ErrorsEncountered { private set; get; }
               
         public List<FileInfo> CreatedFiles { private set; get; }               // list of files that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
         public List<DirectoryInfo> CreatedDirectories { private set; get; }    // list of directories that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
@@ -122,10 +123,20 @@ namespace CemuUpdateTool
                 {
                     client.DownloadFileTaskAsync(client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix, destinationFile).Wait();
                     fileDownloaded = true;
-                    HandleLogMessage("Done!", EventLogEntryType.Information);
                 }
                 catch (AggregateException exc)    // DownloadFileTaskAsync wraps all its exceptions in an AggregateException
                 {
+                    // Delete temporary download file if present, since it won't be used
+                    try
+                    {
+                        if (FileUtils.FileExists(destinationFile))
+                            System.IO.File.Delete(destinationFile);
+                    }
+                    catch (Exception deletionExc)
+                    {
+                        HandleLogMessage($"Unable to delete temporary download file: {deletionExc.Message}", EventLogEntryType.Error);
+                    }
+
                     // Handle web request cancellation
                     if ((exc.InnerException as WebException)?.Status == WebExceptionStatus.RequestCanceled)
                         throw new OperationCanceledException();
@@ -148,6 +159,7 @@ namespace CemuUpdateTool
                         throw exc.InnerException;
                 }
             }
+            HandleLogMessage("Done!", EventLogEntryType.Information);
 
             // EXTRACT CONTENTS
             PerformingWork("Extracting downloaded Cemu version");
@@ -311,19 +323,16 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Deletes folders and directories created by the Worker (only used when the user cancels the task)
+         *  Deletes folders and directories created by the Worker (only used when the user cancels the task or it fails)
          */
-        public void PerformCleanup()
+        public void DeleteCreatedFiles()
         {
             foreach (FileInfo copiedFile in CreatedFiles)
                 copiedFile.Delete();
             foreach (DirectoryInfo copiedDir in Enumerable.Reverse(CreatedDirectories))
                 copiedDir.Delete();
 
-            // Delete temporary download file if present
-            string tmpDownloadFile = Path.Combine(BaseDestinationPath, "cemu_dl.tmp.zip");
-            if (FileUtils.FileExists(tmpDownloadFile))
-                System.IO.File.Delete(tmpDownloadFile);
+            HandleLogMessage("Created files and directories deleted successfully.", EventLogEntryType.Information);
         }
 
         /*
@@ -346,7 +355,7 @@ namespace CemuUpdateTool
             if (type == EventLogEntryType.Error || type == EventLogEntryType.FailureAudit)
             {
                 // if it's an error message, update errors encountered flag
-                ErrorsEncountered = true;
+                ErrorsEncountered++;
                 logMessage += "ERROR: ";
             }
             else if (type == EventLogEntryType.Warning)

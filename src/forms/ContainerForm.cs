@@ -64,5 +64,16 @@ namespace CemuUpdateTool
         {
             return form == activeInstance.currentDisplayingForm;
         }
+
+        private void CloseDisplayingFormOnClosing(object sender, FormClosingEventArgs e)
+        {
+            if (activeInstance.currentDisplayingForm != null)
+            {
+                activeInstance.currentDisplayingForm.Close();
+                // If currentDisplayingForm has cancelled the closing event, we must not close the container
+                if (!activeInstance.currentDisplayingForm.IsDisposed)
+                    e.Cancel = true;
+            }
+        }
     }
 }

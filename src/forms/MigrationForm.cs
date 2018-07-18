@@ -245,6 +245,7 @@ namespace CemuUpdateTool
             txtBoxLog.Clear();
             ChangeProgressLabelText("Preparing");
             btnStart.Enabled = false;
+            btnBack.Enabled = false;
             WorkOutcome result = WorkOutcome.Success;
 
             // Create a new Worker instance and pass it all needed data
@@ -294,7 +295,7 @@ namespace CemuUpdateTool
                 stopwatch.Stop();
 
                 // If there have been errors during operations, update result
-                if (worker.ErrorsEncountered)
+                if (worker.ErrorsEncountered > 0)
                     result = WorkOutcome.CompletedWithErrors;
             }
             catch (Exception taskExc)   // task cancelled or aborted due to an error
@@ -302,10 +303,13 @@ namespace CemuUpdateTool
                 stopwatch.Stop();
                 try
                 {
-                    // Ask if the user wants to remove files that have been created
-                    DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
-                    if (choice == DialogResult.Yes)
-                        worker.PerformCleanup();
+                    if (worker.CreatedFiles.Count > 0 || worker.CreatedDirectories.Count > 0)
+                    {
+                        // Ask if the user wants to remove files that have been created
+                        DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
+                        if (choice == DialogResult.Yes)
+                            worker.DeleteCreatedFiles();
+                    }
                 }
                 catch (Exception cleanupExc)
                 {
@@ -322,7 +326,7 @@ namespace CemuUpdateTool
                 }
             }
 
-            // Once work has completed, ask if user wants to create Cemu desktop shortcut...
+            // Ask if user wants to create Cemu desktop shortcut
             if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.MigrationOptions["askForDesktopShortcut"] == true)
             {
                 DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -332,34 +336,35 @@ namespace CemuUpdateTool
                       (isNewCemuVersionAtLeast110 && opts.MigrationOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.MlcFolderExternalPath : null);
             }
 
-            AppendLogMessage($"\r\nOperations terminated after {(float) stopwatch.ElapsedMilliseconds / 1000} seconds.");
-
-            // ... and reset form controls to their original state
-            ResetEverything(result);
-        }
-
-        /*
-         *  Resets the GUI and all Worker-related variables in order for the form to be ready for another task
-         */
-        private async void ResetEverything(WorkOutcome outcome)
-        {
             // Show a MessageBox with the final result of the task
-            switch (outcome)
+            switch (result)
             {
                 case WorkOutcome.Success:
                     MessageBox.Show("Operation successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     break;
                 case WorkOutcome.Aborted:
                     MessageBox.Show("Operation aborted due to an unexpected error.", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     break;
                 case WorkOutcome.CancelledByUser:
                     MessageBox.Show("Operation cancelled by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    AppendLogMessage($"\r\nOperations cancelled due to user request.", false);
                     break;
                 case WorkOutcome.CompletedWithErrors:
                     MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    AppendLogMessage($"\r\nOperations terminated with {worker.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     break;
             }
 
+            // Reset form controls to their original state
+            ResetEverything();
+        }
+
+        /*
+         *  Resets the GUI and all Worker-related variables in order for the form to be ready for another task
+         */
+        private void ResetEverything()
+        {
             // Tell the log textbox dispatcher to stop after printing all queued messages
             var dispatcherShutdown = logUpdater.InvokeAsync(() => Dispatcher.CurrentDispatcher.InvokeShutdown());
 
@@ -374,7 +379,7 @@ namespace CemuUpdateTool
             lblOldVersionNr.Text = "";
             lblNewVersionNr.Text = "";
 
-            // Reset textboxes (I need to detach & reattach event handlers otherwise errorProviders will be triggered) and Cancel button
+            // Reset textboxes (I need to detach & reattach event handlers otherwise errorProviders will be triggered) and buttons
             txtBoxOldFolder.TextChanged -= CheckOldFolderTextboxContent;
             txtBoxOldFolder.Text = "";
             txtBoxOldFolder.TextChanged += CheckOldFolderTextboxContent;
@@ -382,6 +387,7 @@ namespace CemuUpdateTool
             txtBoxNewFolder.Text = "";
             txtBoxNewFolder.TextChanged += CheckNewFolderTextboxContent;
             btnCancel.Enabled = false;
+            btnBack.Enabled = true;
 
             // Reset textboxes' validated state
             srcFolderTxtBoxValidated = false;
@@ -391,17 +397,15 @@ namespace CemuUpdateTool
             stopwatch.Reset();
 
             // Once the log dispatcher has been shut down, print all buffer content before it gets deleted
-            await dispatcherShutdown;
-            if (logBuffer.Length > 0)
-                txtBoxLog.AppendText(logBuffer.ToString());
+            dispatcherShutdown.Wait();
+            txtBoxLog.AppendText(logBuffer.ToString());
             logBuffer.Clear();
         }
 
-        private void CancelOperations(object sender, EventArgs e)
+        private void CancelOperations(object sender = null, EventArgs e = null)
         {
             lblCurrentTask.Text = "Cancelling...";
             ctSource.Cancel();
-            AppendLogMessage("\r\nUser requested cancellation.");
         }
         
         /*
@@ -541,10 +545,16 @@ namespace CemuUpdateTool
          *  Shutdown synchronously the log dispatcher if it's running when the form is closing.
          *  It avoids exception caused by disposing the control during re-rendering.
          */
-        private void ShutdownDispatcherOnFormClosing(object sender, FormClosingEventArgs e)
+        private void PreventClosingIfOperationInProgress(object sender, FormClosingEventArgs e)
         {
             if (!(logUpdater == null || logUpdater.HasShutdownStarted))
-                logUpdater.Invoke(() => Dispatcher.CurrentDispatcher.InvokeShutdown());
+            {
+                e.Cancel = true;
+                DialogResult choice = MessageBox.Show("You can't close this window while an operation is in progress. Do you want to cancel the job?",
+                                                      "Exit not allowed", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (choice == DialogResult.Yes)
+                    CancelOperations();
+            }
         }
     }
 }
