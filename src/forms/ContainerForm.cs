@@ -69,6 +69,10 @@ namespace CemuUpdateTool
         {
             if (activeInstance.currentDisplayingForm != null)
             {
+                // Add this event handler so that this form will be hidden as soon as we know that currentDisplayingForm closing won't certainly be cancelled.
+                // This prevents ContainerForm being resized to the minimum size just before its closing
+                activeInstance.currentDisplayingForm.FormClosing += (o, evt) => { if (!evt.Cancel) this.Hide(); };
+
                 activeInstance.currentDisplayingForm.Close();
                 // If currentDisplayingForm has cancelled the closing event, we must not close the container
                 if (!activeInstance.currentDisplayingForm.IsDisposed)
