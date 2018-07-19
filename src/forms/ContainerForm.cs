@@ -5,9 +5,9 @@ namespace CemuUpdateTool
 {
     public partial class ContainerForm : Form
     {
-        public static ContainerForm activeInstance;  // this class will only have one instance at a time
-        private Form homeForm;                       // the default form for this "container", it must be never disposed
-        private Form currentDisplayingForm;          // the form this "container" is currently displaying
+        private static ContainerForm activeInstance;  // this class will only have one instance at a time
+        private Form homeForm;                        // the default form for this "container", it must be never disposed
+        private Form currentDisplayingForm;           // the form this "container" is currently displaying
 
         public ContainerForm()
         {
@@ -65,18 +65,28 @@ namespace CemuUpdateTool
             return form == activeInstance.currentDisplayingForm;
         }
 
-        private void CloseDisplayingFormOnClosing(object sender, FormClosingEventArgs e)
+        /*
+         *  Propagates container closing to the current displaying form, so that we can eventually cancel the event in the latter
+         */
+        private void PropagateContainerFormClosing(object sender, FormClosingEventArgs containerEvt)
         {
-            if (activeInstance.currentDisplayingForm != null)
+            if (currentDisplayingForm != null)
             {
-                // Add this event handler so that this form will be hidden as soon as we know that currentDisplayingForm closing won't certainly be cancelled.
-                // This prevents ContainerForm being resized to the minimum size just before its closing
-                activeInstance.currentDisplayingForm.FormClosing += (o, evt) => { if (!evt.Cancel) this.Hide(); };
+                /* Add this event handler so that this form will be hidden as soon as we know that currentDisplayingForm closing won't certainly be cancelled.
+                   This prevents ContainerForm being resized to the minimum size just before its closing (not good looking).
+                   Otherwise, if currentDisplayingForm has cancelled the closing event, we must not close the container. */
+                FormClosingEventHandler evtHandler = (o, formEvt) => {
+                    if (formEvt.Cancel)
+                        containerEvt.Cancel = true;
+                    else
+                        this.Hide();
+                };
+                currentDisplayingForm.FormClosing += evtHandler;
 
-                activeInstance.currentDisplayingForm.Close();
-                // If currentDisplayingForm has cancelled the closing event, we must not close the container
-                if (!activeInstance.currentDisplayingForm.IsDisposed)
-                    e.Cancel = true;
+                currentDisplayingForm.Close();
+                // Remove the event handler to avoid duplicates if currentDisplayingForm cancels the closing event
+                if (!currentDisplayingForm.IsDisposed)
+                    currentDisplayingForm.FormClosing -= evtHandler;
             }
         }
     }
