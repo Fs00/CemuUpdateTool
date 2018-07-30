@@ -27,8 +27,7 @@ namespace CemuUpdateTool
         };
         Dictionary<string, bool> defaultFileOptions = new Dictionary<string, bool> {
             { "settings.bin", true },       // Cemu settings file
-            { "settings.xml", true },       // file containing game list data
-            { "cemuhook.ini", true }        // Cemuhook settings file
+            { "settings.xml", true }        // file containing game list data
         };
         Dictionary<string, bool> defaultMigrationOptions = new Dictionary<string, bool> {
             { "deleteDestFolderContents", false },
@@ -336,21 +335,13 @@ namespace CemuUpdateTool
             foreach (KeyValuePair<string, bool> option in FileOptions)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
 
-            try
-            {
-                // Create destination directory if it doesn't exist
-                string optionsFileDir = Path.GetDirectoryName(OptionsFilePath);
-                if (!FileUtils.DirectoryExists(optionsFileDir))
-                    Directory.CreateDirectory(optionsFileDir);
+            // Create destination directory if it doesn't exist
+            string optionsFileDir = Path.GetDirectoryName(OptionsFilePath);
+            if (!FileUtils.DirectoryExists(optionsFileDir))
+                Directory.CreateDirectory(optionsFileDir);
 
-                // Write string on file overwriting any existing content
-                File.WriteAllText(OptionsFilePath, dataToWrite.ToString());
-            }
-            catch(Exception exc)
-            {
-                MessageBox.Show("An unexpected error occurred when saving options file: " + exc.Message +
-                        "\r\nOptions won't be preserved after closing the program.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            // Write string on file overwriting any existing content
+            File.WriteAllText(OptionsFilePath, dataToWrite.ToString());
         }
 
         /*
