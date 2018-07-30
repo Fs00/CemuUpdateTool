@@ -8,38 +8,38 @@ namespace CemuUpdateTool
     #pragma warning disable CS0661
     public class VersionNumber : IEquatable<VersionNumber>, IComparable<VersionNumber>
     {
-        private List<int> fields;           // list that contains each of the "sub-numbers"
-        public int Depth => fields.Count;   // returns the "depth" of the version number (e.g. 1.6.4 has depth 3)
-
+        private List<int> segments;            // list that contains each of the version segments
+        public int Length => segments.Count;   // returns the number of segments of the version number (e.g. 1.6.4 has length 3)
+        
         /*
-         *  Indexer for fields list
-         *  Input values are checked only here, so every value assignation to fields MUST BE DONE FROM HERE
+         *  Indexer for segments list
+         *  Input values are checked only here, so every value assignation to segments MUST BE DONE FROM HERE
          */
         public int this[int i]
         {
-            get => fields[i];
+            get => segments[i];
             set
             {
                 if (value < 0)
-                    throw new ArgumentException("Field values must not be negative.");
-                fields[i] = value;
+                    throw new ArgumentException("Segment values must not be negative.");
+                segments[i] = value;
             }
         }
 
         /*
-         *  "Alias" properties for first, second, third and fourth field, like Microsoft does in Version and FileVersionInfo class
+         *  "Alias" properties for first, second, third and fourth segment, like Microsoft does in Version class
          */
         public int Major {
             get
             {
-                if (Depth < 1)
-                    throw new InvalidOperationException("Field \"Major\" does not exist: Depth is 0.");
-                return fields[0];
+                if (Length < 1)
+                    throw new InvalidOperationException("Major segment does not exist: Length is 0.");
+                return segments[0];
             }
             set
             {
-                if (Depth < 1)
-                    throw new InvalidOperationException("Field \"Major\" does not exist: Depth is 0.");
+                if (Length < 1)
+                    throw new InvalidOperationException("Major segment does not exist: Length is 0.");
                 this[0] = value;
             }
         }
@@ -47,14 +47,14 @@ namespace CemuUpdateTool
         public int Minor {
             get
             {
-                if (Depth < 2)
-                    throw new InvalidOperationException("Field \"Minor\" does not exist: Depth is less than 2.");
-                return fields[1];
+                if (Length < 2)
+                    throw new InvalidOperationException("Minor segment does not exist: Length is less than 2.");
+                return segments[1];
             }
             set
             {
-                if (Depth < 2)
-                    throw new InvalidOperationException("Field \"Minor\" does not exist: Depth is less than 2.");
+                if (Length < 2)
+                    throw new InvalidOperationException("Minor segment does not exist: Length is less than 2.");
                 this[1] = value;
             }
         }
@@ -62,45 +62,48 @@ namespace CemuUpdateTool
         public int Build {
             get
             {
-                if (Depth < 3)
-                    throw new InvalidOperationException("Field \"Build\" does not exist: Depth is less than 3.");
-                return fields[2];
+                if (Length < 3)
+                    throw new InvalidOperationException("Build segment does not exist: Length is less than 3.");
+                return segments[2];
             }
             set
             {
-                if (Depth < 3)
-                    throw new InvalidOperationException("Field \"Build\" does not exist: Depth is less than 3.");
+                if (Length < 3)
+                    throw new InvalidOperationException("Build segment does not exist: Length is less than 3.");
                 this[2] = value;
             }
         }
 
-        public int Private {
+        public int Revision {
             get
             {
-                if (Depth < 4)
-                    throw new InvalidOperationException("Field \"Private\" does not exist: Depth is less than 4.");
-                return fields[3];
+                if (Length < 4)
+                    throw new InvalidOperationException("Revision segment does not exist: Length is less than 4.");
+                return segments[3];
             }
             set
             {
-                if (Depth < 4)
-                    throw new InvalidOperationException("Field \"Private\" does not exist: Depth is less than 4.");
+                if (Length < 4)
+                    throw new InvalidOperationException("Revision segment does not exist: Length is less than 4.");
                 this[3] = value;
             }
         }
 
-        // Default constructor
-        public VersionNumber()
+        // Default constructor (used only internally)
+        private VersionNumber()
         {
-            fields = new List<int>();
+            segments = new List<int>();
         }
+
+        // Calls default private constructor to get an instance with 0 segments
+        public static VersionNumber Empty { get => new VersionNumber(); }
 
         // Copy constructor
         public VersionNumber(VersionNumber copy)
         {
-            fields = new List<int>(copy.Depth);
-            for (int i = 0; i < copy.Depth; i++)
-                fields.Add(copy[i]);
+            segments = new List<int>(copy.Length);
+            for (int i = 0; i < copy.Length; i++)
+                segments.Add(copy[i]);
         }
 
         // Constructor that takes in input a string like "1.5.2" (only allowed separator is '.')
@@ -110,91 +113,91 @@ namespace CemuUpdateTool
                 throw new ArgumentException("Invalid string passed as argument.");
 
             string[] splittedVersionNr = version.Split('.');
-            fields = new List<int>(splittedVersionNr.Length);
-            foreach (string field in splittedVersionNr)
-                AddNumber(Convert.ToInt32(field));
+            segments = new List<int>(splittedVersionNr.Length);
+            foreach (string segment in splittedVersionNr)
+                AppendSegment(Convert.ToInt32(segment));
         }
 
         /*
          *  Constructor that takes in input a FileVersionInfo object
-         *  The optional parameter specifies the depth of the new VersionNumber instance.
-         *  Input checking using indexer/AddNumber is not needed since a FileVersionInfo object can't have negative fields
+         *  The optional parameter specifies the length of the new VersionNumber instance.
+         *  Input checking using indexer/AppendSegment is not needed since a FileVersionInfo object can't have negative fields
          */
-        public VersionNumber(FileVersionInfo versionInfo, int depth = 4)
+        public VersionNumber(FileVersionInfo versionInfo, int length = 4)
         {
-            if (depth < 1 || depth > 4)
-                throw new ArgumentOutOfRangeException("Depth value is not valid.");
+            if (length < 1 || length > 4)
+                throw new ArgumentOutOfRangeException("Length value is not valid.");
 
-            fields = new List<int>(depth);
-            fields.Add(versionInfo.FileMajorPart);
-            if (depth > 1)
+            segments = new List<int>(length);
+            segments.Add(versionInfo.FileMajorPart);
+            if (length > 1)
             {
-                fields.Add(versionInfo.FileMinorPart);
-                if (depth > 2)
+                segments.Add(versionInfo.FileMinorPart);
+                if (length > 2)
                 {
-                    fields.Add(versionInfo.FileBuildPart);
-                    if (depth > 3)
-                        fields.Add(versionInfo.FilePrivatePart);
+                    segments.Add(versionInfo.FileBuildPart);
+                    if (length > 3)
+                        segments.Add(versionInfo.FilePrivatePart);
                 }
             }
         }
 
         // Constructor that takes in input an arbitrary number of ints
-        public VersionNumber(params int[] fields)
+        public VersionNumber(params int[] segments)
         {
-            if (fields == null)
-                throw new ArgumentNullException("Fields array is null.");
+            if (segments == null)
+                throw new ArgumentNullException("Segments array is null.");
 
-            this.fields = new List<int>(fields.Length);
-            foreach (int number in fields)
-                AddNumber(number);
+            this.segments = new List<int>(segments.Length);
+            foreach (int number in segments)
+                AppendSegment(number);
         }
 
         /*
          *  ToString() methods
-         *  Custom ToString(char) method allows to supply a custom separator between fields (even '' if you want).
-         *  Custom ToString(int[, char]) allows to supply a custom depth in order to print only a part of the version number (e.g. 1.6 for 1.6.2)
+         *  Custom ToString(char) method allows to supply a custom separator between segments (even '' if you want).
+         *  Custom ToString(int[, char]) allows to supply a custom length in order to print only a part of the version number (e.g. 1.6 for 1.6.2)
          *    or an arbitrary number of ".0"s after the version number (e.g. 1.0.0 for 1.0)
          *  Overridden ToString() uses ToString(char) with default separator (which is '.')
          */
         public string ToString(char separator)
         {
-            if (Depth == 0)
-                return "x";
+            if (Length == 0)
+                return "[empty]";
 
             string output = "";
-            for (int i = 0; i < Depth; i++)
+            for (int i = 0; i < Length; i++)
             {
-                output += fields[i];
-                if (i < Depth-1)
+                output += segments[i];
+                if (i < Length-1)
                     output += separator;
             }
             return output;
         }
 
-        public string ToString(int customDepth, char separator = '.')
+        public string ToString(int customLength, char separator = '.')
         {
             string output = "";
-            if (customDepth == Depth)
+            if (customLength == Length)
                 return ToString(separator);
-            else if (customDepth > Depth)
+            else if (customLength > Length)
             {
-                // adds an extra number of ".0"s until i reaches customDepth
+                // adds an extra number of ".0"s until i reaches customLength
                 output += ToString(separator) + separator;
-                for (int i = Depth; i < customDepth; i++)
+                for (int i = Length; i < customLength; i++)
                 {
                     output += "0";
-                    if (i < customDepth-1)
+                    if (i < customLength-1)
                         output += separator;
                 }
             }
             else
             {
-                // like ToString(char), but it stops at customDepth index
-                for (int i = 0; i < customDepth; i++)
+                // like ToString(char), but it stops at customLength index
+                for (int i = 0; i < customLength; i++)
                 {
-                    output += fields[i];
-                    if (i < customDepth - 1)
+                    output += segments[i];
+                    if (i < customLength - 1)
                         output += separator;
                 }
             }
@@ -207,62 +210,62 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Methods for increasing/decreasing depth
+         *  Methods for increasing/decreasing length
          */
-        public void AddNumber(int number)
+        public void AppendSegment(int number)
         {
             if (number < 0)
-                throw new ArgumentException("Field values must not be negative.");
-            fields.Add(number);
+                throw new ArgumentException("Segment values must not be negative.");
+            segments.Add(number);
         }
 
-        public void RemoveLastNumber()
+        public void RemoveLastSegment()
         {
-            if (Depth == 0)
-                throw new InvalidOperationException("There are no more fields in this instance.");
-            fields.RemoveAt(Depth-1);
+            if (Length == 0)
+                throw new InvalidOperationException("There are no segments in this instance.");
+            segments.RemoveAt(Length-1);
         }
 
         /*
          *  Methods for bumping up/down version number
          *  You can also do major version bumps (e.g. 1.1.5 => 1.2.0)
          */
-        public void BumpNumber(int fieldIndex)
+        public void Bump(int segmentIndex)
         {
-            if (fieldIndex < 0 || fieldIndex >= Depth)
-                throw new ArgumentOutOfRangeException($"Field index {fieldIndex} doesn't exist.");
+            if (segmentIndex < 0 || segmentIndex >= Length)
+                throw new ArgumentOutOfRangeException($"Segment at index {segmentIndex} doesn't exist.");
 
-            fields[fieldIndex]++;
-            if (fieldIndex < Depth-1)   // if you're doing a major version bump
+            segments[segmentIndex]++;
+            if (segmentIndex < Length-1)   // if you're doing a major version bump
             {
-                for (int i = fieldIndex+1; i < Depth; i++)
-                    fields[i] = 0;
+                for (int i = segmentIndex+1; i < Length; i++)
+                    segments[i] = 0;
             }
         }
 
-        public void BumpNumber()
+        public void Bump()
         {
-            BumpNumber(Depth-1);
+            Bump(Length-1);
         }
 
-        public void BumpDownNumber()
+        public void BumpDown()
         {
-            this[Depth-1] -= 1;
+            this[Length-1] -= 1;
         }
 
         /*
          *  Method used to check if a version is a sub-version of another (e.g. 1.5.3 is a subversion of 1 and 1.5)
-         *  Take note that a version is not a sub-version of itself and that every version is a sub-version of x (Depth == 0)
+         *  Take note that a version is not a sub-version of itself and that every version is a sub-version of an empty instance
          */
         public bool IsSubVersionOf(VersionNumber other)
         {
-            if (other == null)
+            if (other is null)
                 return false;
-            if (this.Depth <= other.Depth)
+            if (this.Length <= other.Length)
                 return false;
 
-            // Check if the common fields of both instances contain the same values
-            for (int i = 0; i < other.Depth; i++)
+            // Check if the common segments of both instances contain the same values
+            for (int i = 0; i < other.Length; i++)
             {
                 if (this[i] != other[i])
                     return false;
@@ -276,14 +279,31 @@ namespace CemuUpdateTool
          */
         public static VersionNumber operator ++(VersionNumber instance)
         {
-            instance.BumpNumber();
+            instance.Bump();
             return instance;
         }
 
         public static VersionNumber operator --(VersionNumber instance)
         {
-            instance.BumpDownNumber();
+            instance.BumpDown();
             return instance;
+        }
+
+        /*
+         *  TryParse method to safely check if a string is a valid VersionNumber
+         */
+        public static bool TryParse(string input, out VersionNumber result)
+        {
+            try
+            {
+                result = new VersionNumber(input);
+                return true;
+            }
+            catch
+            {
+                result = null;
+                return false;
+            }
         }
 
         /*
@@ -300,25 +320,25 @@ namespace CemuUpdateTool
             if (other is null)
                 return 1;
 
-            int commonDepth = Depth;
-            // See if both VersionNumber objects have the same depth, if not set as common depth the lesser between the two
-            bool differentDepths = (this.Depth != other.Depth);
-            if (differentDepths)
-                commonDepth = (this.Depth > other.Depth) ? other.Depth : this.Depth;
+            int commonLength = Length;
+            // See if both VersionNumber objects have the same length, if not set as common length the lesser between the two
+            bool differentLengths = (this.Length != other.Length);
+            if (differentLengths)
+                commonLength = (this.Length > other.Length) ? other.Length : this.Length;
 
-            // Compare the common fields. If a pair of fields is different, their difference will be the return value
-            for (int i = 0; i < commonDepth; i++)
+            // Compare the common segments. If a pair of segments is different, their difference will be the return value
+            for (int i = 0; i < commonLength; i++)
             {
                 if (this[i] != other[i])
                     return this[i] - other[i];
             }
 
-            // See if the extra fields in the object with the higher depth are equal to 0, if not it will mean that the object is > than the other
-            if (differentDepths)
+            // See if the extra segments in the object with the higher length are equal to 0, if not it will mean that the instance is > than the other
+            if (differentLengths)
             {
-                if (this.Depth > other.Depth)
+                if (this.Length > other.Length)
                 {
-                    for (int i = commonDepth; i < this.Depth; i++)
+                    for (int i = commonLength; i < this.Length; i++)
                     {
                         if (this[i] > 0)
                             return 1;
@@ -326,14 +346,14 @@ namespace CemuUpdateTool
                 }
                 else
                 {
-                    for (int i = commonDepth; i < other.Depth; i++)
+                    for (int i = commonLength; i < other.Length; i++)
                     {
                         if (other[i] > 0)
                             return -1;
                     }
                 }
             }
-            // If both objects have same depth or the extra fields are equal to 0, it means that they're equal
+            // If both objects have same length or the extra segments are equal to 0, it means that they're equal
             return 0;
         }
 
@@ -344,10 +364,7 @@ namespace CemuUpdateTool
          */
         public bool Equals(VersionNumber other)
         {
-            if (this.CompareTo(other) == 0)
-                return true;
-            else
-                return false;
+            return this.CompareTo(other) == 0;
         }
 
         /*
@@ -364,38 +381,48 @@ namespace CemuUpdateTool
 
         /*
          *  Comparison operators overloads
-         *  They use CompareTo and Equals to do their work
+         *  In case the left term is null, there's only a simple rule: null is minor than any VersionNumber instance
          */
         public static bool operator >(VersionNumber left, VersionNumber right)
         {
-            if (left.CompareTo(right) > 0)
-                return true;
-            else
+            if (left is null)
                 return false;
+
+            return left.CompareTo(right) > 0;
         }
 
         public static bool operator <(VersionNumber left, VersionNumber right)
         {
-            if (left.CompareTo(right) < 0)
-                return true;
-            else
-                return false;
+            if (left is null)
+            {
+                if (!(right is null))
+                    return true;
+                else
+                    return false;
+            }
+
+            return left.CompareTo(right) < 0;
         }
 
         public static bool operator >=(VersionNumber left, VersionNumber right)
         {
-            if (left.CompareTo(right) >= 0)
-                return true;
-            else
-                return false;
+            if (left is null)
+            {
+                if (right is null)
+                    return true;
+                else
+                    return false;
+            }
+
+            return left.CompareTo(right) >= 0;
         }
 
         public static bool operator <=(VersionNumber left, VersionNumber right)
         {
-            if (left.CompareTo(right) <= 0)
+            if (left is null)
                 return true;
-            else
-                return false;
+
+            return left.CompareTo(right) <= 0;
         }
 
         public static bool operator ==(VersionNumber left, VersionNumber right)

@@ -12,7 +12,7 @@ namespace CemuUpdateTool.Tests
         {
             string vNumber = "1.5.2";
             VersionNumber version = new VersionNumber(vNumber);
-            Assert.AreEqual(version.Depth, 3);
+            Assert.AreEqual(version.Length, 3);
             Assert.AreEqual(version.Major, 1);
             Assert.AreEqual(version.Minor, 5);
             Assert.AreEqual(version.Build, 2);
@@ -28,7 +28,7 @@ namespace CemuUpdateTool.Tests
         }
 
         [TestMethod]
-        public void ValidFileVersionInfoConstructor_StandardDepth()
+        public void ValidFileVersionInfoConstructor_StandardLength()
         {
             FileVersionInfo testFile = null;
             try
@@ -41,15 +41,15 @@ namespace CemuUpdateTool.Tests
             }
 
             VersionNumber version = new VersionNumber(testFile);
-            Assert.AreEqual(version.Depth, 4);
+            Assert.AreEqual(version.Length, 4);
             Assert.AreEqual(version.Major, 1);
             Assert.AreEqual(version.Minor, 11);
             Assert.AreEqual(version.Build, 2);
-            Assert.AreEqual(version.Private, 0);
+            Assert.AreEqual(version.Revision, 0);
         }
 
         [TestMethod]
-        public void ValidFileVersionInfoConstructor_CustomDepth()
+        public void ValidFileVersionInfoConstructor_CustomLength()
         {
             FileVersionInfo testFile = null;
             try
@@ -62,7 +62,7 @@ namespace CemuUpdateTool.Tests
             }
 
             VersionNumber version = new VersionNumber(testFile, 2);
-            Assert.AreEqual(version.Depth, 2);
+            Assert.AreEqual(version.Length, 2);
             Assert.AreEqual(version.Major, 1);
             Assert.AreEqual(version.Minor, 11);
         }
@@ -88,7 +88,7 @@ namespace CemuUpdateTool.Tests
         }
 
         [TestMethod()]
-        public void ToStringCustomDepth()
+        public void ToStringCustomLength()
         {
             VersionNumber version = new VersionNumber(1,7,1);
 
@@ -115,7 +115,7 @@ namespace CemuUpdateTool.Tests
         {
             VersionNumber version = new VersionNumber(1, 1, 5, 6);
 
-            version.BumpNumber(1);
+            version.Bump(1);
 
             Assert.AreEqual(version.ToString(), "1.2.0.0");
         }
@@ -123,37 +123,37 @@ namespace CemuUpdateTool.Tests
         [TestMethod()]
         public void CompareToTest()
         {
-            // Same depth
+            // Same length
             VersionNumber version1 = new VersionNumber(1,5,4);
             VersionNumber version2 = new VersionNumber(1,8,3);
-            // Different depth, same value
+            // Different length, same value
             VersionNumber version3 = new VersionNumber(1,3);
             VersionNumber version4 = new VersionNumber(1,3,0,0);
-            // Different depth, same common fields
+            // Different length, same common fields
             VersionNumber version5 = new VersionNumber(1,7,0,1);
             VersionNumber version6 = new VersionNumber(1,7);
 
-            int sameDepthResult = version1.CompareTo(version2);
-            int diffDepthSameValueResult = version3.CompareTo(version4);
-            int diffDepthDiffValueResult = version5.CompareTo(version6);
+            int sameLengthResult = version1.CompareTo(version2);
+            int diffLengthSameValueResult = version3.CompareTo(version4);
+            int diffLengthDiffValueResult = version5.CompareTo(version6);
             int equalsResult = version1.CompareTo(version1);
 
-            Assert.AreEqual(-3, sameDepthResult);
-            Assert.AreEqual(0, diffDepthSameValueResult);
-            Assert.AreEqual(1, diffDepthDiffValueResult);
+            Assert.AreEqual(-3, sameLengthResult);
+            Assert.AreEqual(0, diffLengthSameValueResult);
+            Assert.AreEqual(1, diffLengthDiffValueResult);
             Assert.AreEqual(0, equalsResult);
         }
 
         [TestMethod()]
         public void ComparisonOperatorsTest()
         {
-            // Same depth
+            // Same length
             VersionNumber version1 = new VersionNumber(1, 5, 4);
             VersionNumber version2 = new VersionNumber(1, 8, 3);
-            // Different depth, same value
+            // Different length, same value
             VersionNumber version3 = new VersionNumber(1, 3);
             VersionNumber version4 = new VersionNumber(1, 3, 0, 0);
-            // Different depth, same common fields
+            // Different length, same common fields
             VersionNumber version5 = new VersionNumber(1, 7, 0, 1);
             VersionNumber version6 = new VersionNumber(1, 7);
 

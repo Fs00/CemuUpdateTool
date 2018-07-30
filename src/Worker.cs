@@ -82,8 +82,8 @@ namespace CemuUpdateTool
             {
                 try
                 {
-                    latestCemuVersion = WebUtils.GetLatestRemoteVersionInBranch(new VersionNumber(), client, cemuUrlSuffix,
-                                                                                maxDepth: 3, lastKnownCemuVersion, cancToken);
+                    latestCemuVersion = WebUtils.GetLatestRemoteVersionInBranch(VersionNumber.Empty, client, cemuUrlSuffix,
+                                                                                maxVersionLength: 3, lastKnownCemuVersion, cancToken);
                     versionObtained = true;
                 }
                 // Handle web request cancellation

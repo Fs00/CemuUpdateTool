@@ -28,13 +28,13 @@ namespace CemuUpdateTool
          *   - branch: the VersionNumber representing the branch you want to find the latest version of
          *   - client: the MyWebClient used for web requests. Its BaseAddress MUST contain the URL prefix inclusive of file name prefix (see above)
          *   - urlSuffix: the part of the URL which comes after the version number (see above)
-         *   - maxDepth: the maximum branch' Depth that must be reached at the latest recursive call (in a few words, where the function must stop)
-         *   - startingVersion: the VersionNumber you can use to start the version scanning from a version you know that exists
+         *   - maxVersionLength: the maximum branch Length that must be reached at the latest recursive call (in a few words, where the function must stop)
+         *   - startingVersion: the VersionNumber you can use to start the version scanning from a version you know that exists to avoid useless scanning
          *   - cToken: the CancellationToken used to check if work has been cancelled (can be null)
          *   - currentRecursiveCall: name is self-explanatory
          */
-        public static VersionNumber GetLatestRemoteVersionInBranch(VersionNumber branch, MyWebClient client, string urlSuffix, int maxDepth,
-                                                                   VersionNumber startingVersion, CancellationToken? cToken = null, int currentRecursiveCall = 0)
+        public static VersionNumber GetLatestRemoteVersionInBranch(VersionNumber branch, MyWebClient client, string urlSuffix, int maxVersionLength,
+                                                                   VersionNumber startingVersion = null, CancellationToken? cToken = null, int currentRecursiveCall = 0)
         {
             // Check startingVersion validity
             if (startingVersion != null)
@@ -42,37 +42,37 @@ namespace CemuUpdateTool
                 // If this is the first recursive call, make sure that the starting version exists (since it's user-editable)
                 if (currentRecursiveCall == 0)
                 {
-                    if (!startingVersion.IsSubVersionOf(branch) || !RemoteFileExists(startingVersion.ToString(maxDepth) + urlSuffix, client))
+                    if (!startingVersion.IsSubVersionOf(branch) || !RemoteFileExists(startingVersion.ToString(maxVersionLength) + urlSuffix, client))
                         startingVersion = null;
                 }
                 // Otherwise, make sure that startingVersion is still useful (e.g. if startingVersion is 1.10.3 and at the third recursive call branch is 1.11,
                 // the number '3' must not be used given that we are in an other branch (1.11.x vs 1.10.x))
                 else
                 {
-                    if (startingVersion[branch.Depth-1] != branch[branch.Depth-1])
+                    if (startingVersion[branch.Length-1] != branch[branch.Length-1])
                         startingVersion = null;
                 }
             }
 
-            // Set the index from which start the loop
-            int startingVersionIndex;
+            // Set the value of the last version segment from which start the loop (that's the value of x in 1.5.x for example)
+            int startingSegmentValue;
             if (startingVersion != null)
-                startingVersionIndex = startingVersion[branch.Depth];
-            else if (branch.Depth == 0)     // here we assume that the program doesn't have a 0.x branch (in our case Cemu)
-                startingVersionIndex = 1;
+                startingSegmentValue = startingVersion[branch.Length];
+            else if (branch.Length == 0)     // here we assume that the program doesn't have a 0.x branch (in our case Cemu)
+                startingSegmentValue = 1;
             else
-                startingVersionIndex = 0;
+                startingSegmentValue = 0;
 
             // Start version scanning
             bool lastCheckedVersionExists = true;
             int iterationsCompleted = 0;
             VersionNumber lastCheckedVersion = new VersionNumber(branch);
-            lastCheckedVersion.AddNumber(startingVersionIndex);
+            lastCheckedVersion.AppendSegment(startingSegmentValue);
 
             while (lastCheckedVersionExists)
             {
                 cToken?.ThrowIfCancellationRequested();
-                if (RemoteFileExists(lastCheckedVersion.ToString(maxDepth) + urlSuffix, client))
+                if (RemoteFileExists(lastCheckedVersion.ToString(maxVersionLength) + urlSuffix, client))
                     lastCheckedVersion++;
                 else
                 {
@@ -87,11 +87,11 @@ namespace CemuUpdateTool
             }
 
             // Decide what to return
-            if (lastCheckedVersion == null)                 // no versions have been found in this branch (probable wrong parameter/s)
+            if (lastCheckedVersion == null)                    // no versions have been found in this branch (probable wrong parameter/s)
                 return null;
-            if (lastCheckedVersion.Depth < maxDepth)        // maximum depth has not been reached yet
-                return GetLatestRemoteVersionInBranch(lastCheckedVersion, client, urlSuffix, maxDepth, startingVersion, cToken, currentRecursiveCall + 1);
-            else                                            // finished scanning: return the latest version you found
+            if (lastCheckedVersion.Length < maxVersionLength)  // maximum version length has not been reached yet
+                return GetLatestRemoteVersionInBranch(lastCheckedVersion, client, urlSuffix, maxVersionLength, startingVersion, cToken, currentRecursiveCall + 1);
+            else                                               // finished scanning: return the latest version you found
                 return lastCheckedVersion;
         }
     }
