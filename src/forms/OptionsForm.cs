@@ -340,11 +340,13 @@ namespace CemuUpdateTool
                 if (chkBoxSettingsOnFile.Checked)
                     handler.WriteOptionsToFile();
                 else
-                    MessageBox.Show("Please take note that if you don't store options in a file, they'll be lost as soon as you exit the application.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Please take note that if you don't store options in a file, they'll be lost as soon as you exit the application.",
+                                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception exc)
             {
-                MessageBox.Show($"Unexpected error when saving options on file: {exc.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Unexpected error when saving options on file: {exc.Message} Changes won't be preserved after closing the program.",
+                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             Close();

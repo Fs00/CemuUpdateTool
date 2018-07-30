@@ -276,6 +276,21 @@ namespace CemuUpdateTool
                                                       })
                                                 );
                     newCemuExeVer = await downloadTask;
+
+                    // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
+                    VersionNumber.TryParse(opts.DownloadOptions["lastKnownCemuVersion"], out VersionNumber previousLastKnownCemuVersion);
+                    if (previousLastKnownCemuVersion != newCemuExeVer)
+                    {
+                        opts.DownloadOptions["lastKnownCemuVersion"] = newCemuExeVer.ToString();
+                        try
+                        {
+                            opts.WriteOptionsToFile();
+                        }
+                        catch (Exception optionsUpdateExc)
+                        {
+                            AppendLogMessage($"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
+                        }
+                    }
                 }
 
                 // Set maximum progress bar value according to overall size to copy

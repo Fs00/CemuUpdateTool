@@ -74,7 +74,7 @@ namespace CemuUpdateTool
             PerformingWork("Downloading latest Cemu version");
             client.BaseAddress = downloadOptions["cemuBaseUrl"];
             string cemuUrlSuffix = downloadOptions["cemuUrlSuffix"];
-            VersionNumber lastKnownCemuVersion = new VersionNumber(downloadOptions["lastKnownCemuVersion"]);
+            VersionNumber.TryParse(downloadOptions["lastKnownCemuVersion"], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in downloadOptions is malformed
 
             // FIND OUT WHICH IS THE LATEST CEMU VERSION
             bool versionObtained = false;
@@ -108,7 +108,6 @@ namespace CemuUpdateTool
                 throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");
 
             HandleLogMessage($"Latest Cemu version found is {latestCemuVersion.ToString()}.", EventLogEntryType.Information);
-            downloadOptions["lastKnownCemuVersion"] = latestCemuVersion.ToString();     // update dictionary with latest version found
 
             // Add the DownloadProgressChanged event handler
             client.DownloadProgressChanged += progressHandler;
