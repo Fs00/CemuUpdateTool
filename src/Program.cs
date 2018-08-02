@@ -14,13 +14,25 @@ namespace CemuUpdateTool
             Application.SetCompatibleTextRenderingDefault(false);
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en");
 
-            // Load options from file
-            // If the application is launched with the 'force-appdata-config' parameter, options are loaded from %AppData% even if local file exists
+            // LOAD OPTIONS
             OptionsManager opts;
-            if (args.Length > 0 && args[0].TrimStart('-', '/') == "force-appdata-config" && FileUtils.FileExists(OptionsManager.AppDataFilePath))
-                opts = new OptionsManager(OptionsManager.AppDataFilePath);
-            else
+            try
+            {
+                // If the application is launched with the 'force-appdata-config' parameter, options are loaded from %AppData% even if local file exists
+                string optionsFilePath = OptionsManager.LookForOptionsFile(args.Length > 0 && args[0].TrimStart('-', '/') == "force-appdata-config");
+                opts = new OptionsManager(optionsFilePath);
+            }
+            catch (Exception exc)
+            {
+                string message;
+                if (exc is OptionsParsingException parsingExc)
+                    message = $"An unexpected error occurred when parsing options file: {parsingExc.Message.TrimEnd('.')} at line {parsingExc.CurrentLine}.";
+                else
+                    message = exc.Message;
+
+                MessageBox.Show(message + "\r\nDefault settings will be loaded instead.", "Error in settings.dat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 opts = new OptionsManager();
+            }
 
             #if DEBUG
             int res = GetProcessDpiAwareness(IntPtr.Zero, out int value);

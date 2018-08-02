@@ -143,7 +143,15 @@ namespace CemuUpdateTool
                     if (optionsFileLocationChanged)
                     {
                         handler.DeleteOptionsFile();        // delete current settings file
-                        if (handler.OptionsFileExists())    // if another settings file has been found in the selected directory, ask if the user wants to load it
+
+                        // Apply requested setting
+                        if (radioBtnExecFolder.Checked)
+                            handler.OptionsFilePath = OptionsManager.LocalFilePath;
+                        else if (radioBtnAppDataFolder.Checked)
+                            handler.OptionsFilePath = OptionsManager.AppDataFilePath;
+
+                        // If another settings file has been found in the selected directory, ask if the user wants to load it
+                        if (FileUtils.FileExists(handler.OptionsFilePath))
                         {
                             DialogResult choice = MessageBox.Show("Another options file has been found in the folder you selected. Do you want to load it?",
                                                                   "Settings file found", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
@@ -155,16 +163,9 @@ namespace CemuUpdateTool
                                 }
                                 catch
                                 {
-                                    handler.SetDefaultOptions();
+                                    MessageBox.Show("An error occurred when parsing options file. Previous settings will be kept.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 }
                             }
-                        }
-                        else    // apply requested setting (not needed in the first case because OptionsFileExists() does it itself)
-                        {
-                            if (radioBtnExecFolder.Checked)
-                                handler.OptionsFilePath = OptionsManager.LocalFilePath;
-                            else if (radioBtnAppDataFolder.Checked)
-                                handler.OptionsFilePath = OptionsManager.AppDataFilePath;
                         }
                     }
                 }

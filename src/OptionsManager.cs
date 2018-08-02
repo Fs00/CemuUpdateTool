@@ -2,7 +2,6 @@
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
@@ -54,26 +53,10 @@ namespace CemuUpdateTool
                   EOF = -1;
 
         /*
-         *  Executed at application startup.
-         *  Looks for options file and if it's found, options are read from it.
-         *  Default options are applied if file is not found or an error occurs during parsing.
+         *  Default constructor.
+         *  Creates a new instance with default options
          */
-        public OptionsManager()
-        {
-            if (OptionsFileExists())
-            {
-                try
-                {
-                    ReadOptionsFromFile();
-                }
-                catch
-                {
-                    SetDefaultOptions();
-                }
-            }
-            else
-                SetDefaultOptions();
-        }
+        public OptionsManager() : this("") { }
 
         /*
          *  Overloaded constructor used to load options from a custom position.
@@ -82,178 +65,165 @@ namespace CemuUpdateTool
         public OptionsManager(string optionsFilePath)
         {
             OptionsFilePath = optionsFilePath;
-            try
-            {
-                ReadOptionsFromFile();
-            }
-            catch
-            {
+            if (string.IsNullOrEmpty(optionsFilePath))
                 SetDefaultOptions();
-            }
-        }
-
-        /*
-         *  Looks for options file in executable and %AppData% folder and updates the property accordingly.
-         *  Priority is given to the file in the local folder.
-         */
-        public bool OptionsFileExists()
-        {
-            bool localFileExists;
-            if ((localFileExists = FileUtils.FileExists(LocalFilePath)) || FileUtils.FileExists(AppDataFilePath))
-            {
-                // Set the file path property according to the current file position
-                if (localFileExists)
-                    OptionsFilePath = LocalFilePath;
-                else
-                    OptionsFilePath = AppDataFilePath;
-
-                return true;
-            }
             else
-            {
-                OptionsFilePath = "";
-                return false;
-            }
+                ReadOptionsFromFile();
         }
 
         /*
-         *  Method that creates and populates options dictionaries reading settings file.
-         *  Options file path must be set correctly before calling this method.
+         *  Looks for options file in executable and in %AppData% folder and returns the path to the chosen file
+         *  Priority is given to the file in the local folder, unless preferAppDataFile is set to true
+         */
+        public static string LookForOptionsFile(bool preferAppDataFile = false)
+        {
+            bool localFileExists = FileUtils.FileExists(LocalFilePath);
+            bool appDataFileExists = FileUtils.FileExists(AppDataFilePath);
+            if (localFileExists || appDataFileExists)
+            {
+                if (preferAppDataFile)
+                {
+                    if (appDataFileExists)
+                        return AppDataFilePath;
+                    else
+                        return LocalFilePath;
+                }
+                else
+                {
+                    if (localFileExists)
+                        return LocalFilePath;
+                    else
+                        return AppDataFilePath;
+                }
+            }
+            return "";
+        }
+
+        /*
+         *  Reads options from the file specified in optionsFilePath
+         *  Parsed options are saved in local variables before being copied into properties
          *  After parsing, dictionaries are checked to avoid missing entries.
          */
         public void ReadOptionsFromFile()
         {
-            // Dictionaries must be initialized here
-            FolderOptions = new Dictionary<string, bool>();
-            FileOptions = new Dictionary<string, bool>();
-            MigrationOptions = new Dictionary<string, bool>();
-            DownloadOptions = new Dictionary<string, string>();
+            // Parsed options will be put in this local variables and copied into properties only if they're correct
+            var folderOptions = new Dictionary<string, bool>();
+            var fileOptions = new Dictionary<string, bool>();
+            var migrationOptions = new Dictionary<string, bool>();
+            var downloadOptions = new Dictionary<string, string>();
+            string mlcFolderExternalPath = "";
 
             if (string.IsNullOrEmpty(OptionsFilePath))      // should never happen
                 throw new InvalidOperationException("Options file path is not specified.");
             
-            MyStreamReader optionsFile = new MyStreamReader(OptionsFilePath);
-            try
+            using (MyStreamReader optionsFile = new MyStreamReader(OptionsFilePath))
             {
                 // Check if the file is empty
                 if (optionsFile.BaseStream.Length == 0)
                     throw new InvalidDataException("Options file is empty.");
 
-                // Start reading
                 string sectionHeaderLine = null;
-                while (!optionsFile.EndOfStream)
+                try
                 {
-                    if (optionsFile.Peek() == SECTION_HEADER_CHAR)   // if the next char is '#'
+                    // Start reading
+                    while (!optionsFile.EndOfStream)
                     {
-                        sectionHeaderLine = optionsFile.ReadLine();
-                        // Check if the sectionId is a number
-                        if (!byte.TryParse(sectionHeaderLine.TrimStart('#'), out byte sectionId))
-                            throw new FormatException("Section ID is not a number");
+                        if (optionsFile.Peek() == SECTION_HEADER_CHAR)
+                        {
+                            sectionHeaderLine = optionsFile.ReadLine();
+                            // Check if the sectionId is a number
+                            if (!byte.TryParse(sectionHeaderLine.TrimStart('#'), out byte sectionId))
+                                throw new OptionsParsingException("Section ID is not a number", optionsFile.CurrentLine);
+                            else
+                            {
+                                /*
+                                 *  PARSE FILE SECTION
+                                 *  It reads until it finds the end of file or another section header. The StreamReader must be positioned in the line under the section header.
+                                 *  These are the sections ids:
+                                 *      0: folderOptions
+                                 *      1: migrationOptions
+                                 *      2: downloadOptions
+                                 *      3: mlcFolderExternalPath (only one line is read)
+                                 *      4: fileOptions
+                                 */
+
+                                // Check if the sectionId is valid
+                                if (sectionId < 0 || sectionId > 4)
+                                    throw new OptionsParsingException("Section ID is not valid", optionsFile.CurrentLine);
+
+                                int startingChar;       // first char code of the current reading line
+                                string[] parsedLine;    // the "splitted" line
+
+                                // Continue reading until you find a '#' or the EOF
+                                while ((startingChar = optionsFile.Peek()) != SECTION_HEADER_CHAR && startingChar != EOF)
+                                {
+                                    // If there's an empty line, just skip to the next one
+                                    if (startingChar == CR || startingChar == LF)
+                                        optionsFile.ReadLine();
+                                    else
+                                    {
+                                        if (sectionId == 3)
+                                        {
+                                            string tmpPath = optionsFile.ReadLine();
+                                            if (tmpPath.IndexOfAny(Path.GetInvalidPathChars()) == -1)
+                                            {
+                                                mlcFolderExternalPath = tmpPath;
+                                                break;     // for this section there aren't any other things to read
+                                            }
+                                            else
+                                                throw new OptionsParsingException("Mlc01 external folder path is malformed", optionsFile.CurrentLine);
+                                        }
+                                        else     // I'm handling a dictionary
+                                        {
+                                            parsedLine = optionsFile.ReadLine().Split(',');
+                                            if (parsedLine.Length != 2)
+                                                throw new OptionsParsingException("Not a \"key, value\" option", optionsFile.CurrentLine);
+
+                                            switch (sectionId)
+                                            {
+                                                // <string, bool> dictionaries (folderOptions, migrationOptions, fileOptions)
+                                                case 0:
+                                                    folderOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
+                                                    break;
+                                                case 1:
+                                                    migrationOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
+                                                    break;
+                                                case 4:
+                                                    fileOptions.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
+                                                    break;
+                                                // <string, string> dictionary (downloadOptions)
+                                                case 2:
+                                                    downloadOptions.Add(parsedLine[0], parsedLine[1]);
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }   // end of file section parsing
+                        }
                         else
-                            ReadFileSection(optionsFile, sectionId);
+                            optionsFile.ReadLine();     // if the line read is not a section header, just ignore it and continue
                     }
-                    else
-                        optionsFile.ReadLine();
+                }
+                catch (Exception exc)   // wrap any parsing exception in an OptionsParsingException containing the current line number
+                {
+                    if (!(exc is OptionsParsingException))
+                        exc = new OptionsParsingException(exc.Message, optionsFile.CurrentLine);
+                    throw exc;
                 }
 
                 if (sectionHeaderLine == null)      // if no lines starting with '#' have been encountered
                     throw new InvalidDataException("Options file didn't contain any useful information.");
 
+                // Since parsing has been successful, we can now copy parsed options into properties
+                FolderOptions = folderOptions;
+                FileOptions = fileOptions;
+                MigrationOptions = migrationOptions;
+                DownloadOptions = downloadOptions;
+                MlcFolderExternalPath = mlcFolderExternalPath;
+
                 // Check for missing options in file
                 CheckForMissingEntries();
-            }
-            catch (Exception exc)
-            {
-                string message;
-                if (exc is InvalidDataException)
-                    message = exc.Message;
-                else
-                    message = $"An unexpected error occurred when parsing options file: {exc.Message.TrimEnd('.')} at line {optionsFile.LineCount}.";
-
-                MessageBox.Show(message + "\r\nDefault settings will be loaded instead.", "Error in settings.dat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                throw;
-            }
-            finally
-            {
-                optionsFile.Close();
-            }
-        }
-
-        /*
-         *  Reads an options file section and fills the corresponding dictionary/variable
-         *  It reads until it finds the end of file or another section header. The StreamReader must be positioned in the line under the section header.
-         *  These are the sections ids:
-         *      0: folderOptions
-         *      1: migrationOptions
-         *      2: downloadOptions
-         *      3: mlcFolderExternalPath (only one line is read)
-         *      4: fileOptions
-         */
-        private void ReadFileSection(StreamReader fileStream, byte sectionId)
-        {
-            // Check if the sectionId is valid
-            if (sectionId < 0 || sectionId > 4)
-                throw new ArgumentOutOfRangeException("Section ID is not valid");
-
-            // Set up the dynamic dictionary "pointer" according to the sectionId
-            dynamic dictionary = null;
-            switch (sectionId)
-            {
-                case 0:
-                    dictionary = FolderOptions;
-                    break;
-                case 1:
-                    dictionary = MigrationOptions;
-                    break;
-                case 2:
-                    dictionary = DownloadOptions;
-                    break;
-                case 4:
-                    dictionary = FileOptions;
-                    break;
-            }
-
-            int startingChar;       // first char code of the current reading line
-            string[] parsedLine;    // the "splitted" line
-
-            // Continue reading until you find a '#' or the EOF
-            while ((startingChar = fileStream.Peek()) != SECTION_HEADER_CHAR && startingChar != EOF)
-            {
-                // If there's an empty line, just skip to the next one
-                if (startingChar == CR || startingChar == LF)
-                    fileStream.ReadLine();
-                else
-                {
-                    if (sectionId == 3)
-                    {
-                        string tmpPath = fileStream.ReadLine();
-                        if (tmpPath.IndexOfAny(Path.GetInvalidPathChars()) == -1)
-                        {
-                            MlcFolderExternalPath = tmpPath;
-                            return;     // for this section there aren't any other things to read
-                        }
-                        else
-                            throw new FormatException("Mlc01 external folder path is malformed");
-                    }
-                    else     // if I'm handling a dictionary
-                    {
-                        parsedLine = fileStream.ReadLine().Split(',');
-                        if (parsedLine.Length != 2)
-                            throw new FormatException("Not a \"key, value\" option");
-
-                        switch (sectionId)
-                        {
-                            // <string, bool> dictionary (folderOptions, migrationOptions, fileOptions)
-                            case 0: case 1: case 4:
-                                dictionary.Add(parsedLine[0], Convert.ToBoolean(parsedLine[1]));
-                                break;
-                            // <string, string> dictionary (downloadOptions)
-                            case 2:
-                                dictionary.Add(parsedLine[0], parsedLine[1]);
-                                break;
-                        }
-                    }
-                }
             }
         }
 
@@ -291,7 +261,6 @@ namespace CemuUpdateTool
 
         /*
          *  Method that sets options dictionaries to their default values
-         *  Called if settings.dat is not found or ReadOptionsFromFile() throws an error
          */
         public void SetDefaultOptions()
         {
@@ -304,8 +273,7 @@ namespace CemuUpdateTool
 
         /*
          *  Writes all options to file.
-         *  Options are saved one per line, in the following format: key,value
-         *  Folder options terminate with "##", additional options with "###"
+         *  Options are divided in sections, which contain one option per line, in the following format: key,value
          */
         public void WriteOptionsToFile()
         {
@@ -363,7 +331,6 @@ namespace CemuUpdateTool
             }
             else
                 return false;
-
         }
 
         /*
@@ -442,20 +409,41 @@ namespace CemuUpdateTool
     }
 
     /*
+     *  Custom exception for parsing errors that contains line number at which the exception has been thrown 
+     */
+    public class OptionsParsingException : Exception
+    {
+        public int CurrentLine { get; }
+
+        public OptionsParsingException() : base() { }
+        public OptionsParsingException(string message) : base(message) { }
+        public OptionsParsingException(string message, int lineCount) : base(message)
+        {
+            CurrentLine = lineCount;
+        }
+        public OptionsParsingException(string message, Exception inner) : base(message, inner) { }
+        public OptionsParsingException(string message, Exception inner, int lineCount) : base(message, inner)
+        {
+            CurrentLine = lineCount;
+        }
+        protected OptionsParsingException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
+    }
+
+    /*
      *  Custom StreamReader derived class that holds the current number of read lines
-     *  LineCount works only with ReadLine(), since it's the only method I use for reading the stream.
+     *  CurrentLine works only with ReadLine(), since it's the only method I use to read the stream.
      */
     class MyStreamReader : StreamReader
     {
         public MyStreamReader(string path) : base(path) {}
 
-        public int LineCount { private set; get; }
+        public int CurrentLine { private set; get; }
 
         public override string ReadLine()
         {
             string result = base.ReadLine();
             if (result != null)
-                LineCount++;
+                CurrentLine++;
             return result;
         }
     }
