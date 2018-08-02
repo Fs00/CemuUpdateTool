@@ -15,6 +15,7 @@ namespace CemuUpdateTool
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en");
 
             // Load options from file
+            // If the application is launched with the 'force-appdata-config' parameter, options are loaded from %AppData% even if local file exists
             OptionsManager opts;
             if (args.Length > 0 && args[0].TrimStart('-', '/') == "force-appdata-config" && FileUtils.FileExists(OptionsManager.AppDataFilePath))
                 opts = new OptionsManager(OptionsManager.AppDataFilePath);

@@ -37,10 +37,10 @@
             this.btnStart = new System.Windows.Forms.Button();
             this.btnOptions = new System.Windows.Forms.Button();
             this.btnSelectNewFolder = new System.Windows.Forms.Button();
-            this.txtBoxNewFolder = new System.Windows.Forms.TextBox();
+            this.txtBoxDestFolder = new System.Windows.Forms.TextBox();
             this.lblNewFolder = new System.Windows.Forms.Label();
             this.btnSelectOldFolder = new System.Windows.Forms.Button();
-            this.txtBoxOldFolder = new System.Windows.Forms.TextBox();
+            this.txtBoxSrcFolder = new System.Windows.Forms.TextBox();
             this.lblOldFolder = new System.Windows.Forms.Label();
             this.txtBoxLog = new System.Windows.Forms.TextBox();
             this.lblDetails = new System.Windows.Forms.Label();
@@ -49,16 +49,14 @@
             this.lblCurrentTask = new System.Windows.Forms.Label();
             this.btnHelp = new System.Windows.Forms.Button();
             this.btnBack = new System.Windows.Forms.Button();
-            this.errProviderNewFolder = new System.Windows.Forms.ErrorProvider(this.components);
-            this.errProviderOldFolder = new System.Windows.Forms.ErrorProvider(this.components);
+            this.errProviderFolders = new System.Windows.Forms.ErrorProvider(this.components);
             this.bottomPanel = new System.Windows.Forms.Panel();
             this.pnlBorder2 = new System.Windows.Forms.Label();
             this.headerPanel = new System.Windows.Forms.Panel();
             this.lblDescription = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlBorder1 = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.errProviderNewFolder)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.errProviderFolders)).BeginInit();
             this.bottomPanel.SuspendLayout();
             this.headerPanel.SuspendLayout();
             this.SuspendLayout();
@@ -88,7 +86,7 @@
             this.lblNewCemuVersion.AutoSize = true;
             this.lblNewCemuVersion.Location = new System.Drawing.Point(385, 130);
             this.lblNewCemuVersion.Name = "lblNewCemuVersion";
-            this.lblNewCemuVersion.Size = new System.Drawing.Size(83, 15);
+            this.lblNewCemuVersion.Size = new System.Drawing.Size(74, 13);
             this.lblNewCemuVersion.TabIndex = 10;
             this.lblNewCemuVersion.Text = "Cemu version:";
             this.lblNewCemuVersion.Visible = false;
@@ -98,7 +96,7 @@
             this.lblOldCemuVersion.AutoSize = true;
             this.lblOldCemuVersion.Location = new System.Drawing.Point(385, 75);
             this.lblOldCemuVersion.Name = "lblOldCemuVersion";
-            this.lblOldCemuVersion.Size = new System.Drawing.Size(83, 15);
+            this.lblOldCemuVersion.Size = new System.Drawing.Size(74, 13);
             this.lblOldCemuVersion.TabIndex = 9;
             this.lblOldCemuVersion.Text = "Cemu version:";
             this.lblOldCemuVersion.Visible = false;
@@ -143,26 +141,27 @@
             this.btnSelectNewFolder.TabIndex = 4;
             this.btnSelectNewFolder.Text = "Select";
             this.btnSelectNewFolder.UseVisualStyleBackColor = true;
-            this.btnSelectNewFolder.Click += new System.EventHandler(this.SelectNewCemuFolder);
+            this.btnSelectNewFolder.Click += new System.EventHandler(this.SelectDestCemuFolder);
             // 
-            // txtBoxNewFolder
+            // txtBoxDestFolder
             // 
-            this.txtBoxNewFolder.AllowDrop = true;
-            this.errProviderNewFolder.SetIconPadding(this.txtBoxNewFolder, -20);
-            this.txtBoxNewFolder.Location = new System.Drawing.Point(16, 151);
-            this.txtBoxNewFolder.Name = "txtBoxNewFolder";
-            this.txtBoxNewFolder.Size = new System.Drawing.Size(394, 23);
-            this.txtBoxNewFolder.TabIndex = 3;
-            this.txtBoxNewFolder.TextChanged += new System.EventHandler(this.CheckNewFolderTextboxContent);
-            this.txtBoxNewFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
-            this.txtBoxNewFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
+            this.txtBoxDestFolder.AllowDrop = true;
+            
+            this.txtBoxDestFolder.Location = new System.Drawing.Point(16, 151);
+            this.errProviderFolders.SetIconPadding(this.txtBoxDestFolder, -20);
+            this.txtBoxDestFolder.Name = "txtBoxDestFolder";
+            this.txtBoxDestFolder.Size = new System.Drawing.Size(394, 20);
+            this.txtBoxDestFolder.TabIndex = 3;
+            this.txtBoxDestFolder.TextChanged += new System.EventHandler(this.CheckDestFolderTextboxContent);
+            this.txtBoxDestFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
+            this.txtBoxDestFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
             // 
             // lblNewFolder
             // 
             this.lblNewFolder.AutoSize = true;
             this.lblNewFolder.Location = new System.Drawing.Point(12, 130);
             this.lblNewFolder.Name = "lblNewFolder";
-            this.lblNewFolder.Size = new System.Drawing.Size(136, 15);
+            this.lblNewFolder.Size = new System.Drawing.Size(119, 13);
             this.lblNewFolder.TabIndex = 3;
             this.lblNewFolder.Text = "Destination Cemu folder";
             // 
@@ -174,26 +173,26 @@
             this.btnSelectOldFolder.TabIndex = 2;
             this.btnSelectOldFolder.Text = "Select";
             this.btnSelectOldFolder.UseVisualStyleBackColor = true;
-            this.btnSelectOldFolder.Click += new System.EventHandler(this.SelectOldCemuFolder);
+            this.btnSelectOldFolder.Click += new System.EventHandler(this.SelectSrcCemuFolder);
             // 
-            // txtBoxOldFolder
+            // txtBoxSrcFolder
             // 
-            this.txtBoxOldFolder.AllowDrop = true;
-            this.errProviderOldFolder.SetIconPadding(this.txtBoxOldFolder, -20);
-            this.txtBoxOldFolder.Location = new System.Drawing.Point(16, 96);
-            this.txtBoxOldFolder.Name = "txtBoxOldFolder";
-            this.txtBoxOldFolder.Size = new System.Drawing.Size(394, 23);
-            this.txtBoxOldFolder.TabIndex = 1;
-            this.txtBoxOldFolder.TextChanged += new System.EventHandler(this.CheckOldFolderTextboxContent);
-            this.txtBoxOldFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
-            this.txtBoxOldFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
+            this.txtBoxSrcFolder.AllowDrop = true;
+            this.errProviderFolders.SetIconPadding(this.txtBoxSrcFolder, -20);
+            this.txtBoxSrcFolder.Location = new System.Drawing.Point(16, 96);
+            this.txtBoxSrcFolder.Name = "txtBoxSrcFolder";
+            this.txtBoxSrcFolder.Size = new System.Drawing.Size(394, 20);
+            this.txtBoxSrcFolder.TabIndex = 1;
+            this.txtBoxSrcFolder.TextChanged += new System.EventHandler(this.CheckSrcFolderTextboxContent);
+            this.txtBoxSrcFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
+            this.txtBoxSrcFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
             // 
             // lblOldFolder
             // 
             this.lblOldFolder.AutoSize = true;
             this.lblOldFolder.Location = new System.Drawing.Point(12, 75);
             this.lblOldFolder.Name = "lblOldFolder";
-            this.lblOldFolder.Size = new System.Drawing.Size(112, 15);
+            this.lblOldFolder.Size = new System.Drawing.Size(100, 13);
             this.lblOldFolder.TabIndex = 0;
             this.lblOldFolder.Text = "Source Cemu folder";
             // 
@@ -225,7 +224,7 @@
             this.lblPercent.AutoSize = true;
             this.lblPercent.Location = new System.Drawing.Point(485, 240);
             this.lblPercent.Name = "lblPercent";
-            this.lblPercent.Size = new System.Drawing.Size(23, 15);
+            this.lblPercent.Size = new System.Drawing.Size(21, 13);
             this.lblPercent.TabIndex = 5;
             this.lblPercent.Text = "0%";
             this.lblPercent.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -243,7 +242,7 @@
             this.lblCurrentTask.AutoSize = true;
             this.lblCurrentTask.Location = new System.Drawing.Point(14, 240);
             this.lblCurrentTask.Name = "lblCurrentTask";
-            this.lblCurrentTask.Size = new System.Drawing.Size(174, 15);
+            this.lblCurrentTask.Size = new System.Drawing.Size(154, 13);
             this.lblCurrentTask.TabIndex = 1;
             this.lblCurrentTask.Text = "Waiting for operations to start...";
             // 
@@ -269,15 +268,10 @@
             this.btnBack.UseVisualStyleBackColor = true;
             this.btnBack.Click += new System.EventHandler(this.Back);
             // 
-            // errProviderNewFolder
+            // errProviderFolders
             // 
-            this.errProviderNewFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
-            this.errProviderNewFolder.ContainerControl = this;
-            // 
-            // errProviderOldFolder
-            // 
-            this.errProviderOldFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
-            this.errProviderOldFolder.ContainerControl = this;
+            this.errProviderFolders.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
+            this.errProviderFolders.ContainerControl = this;
             // 
             // bottomPanel
             // 
@@ -317,7 +311,7 @@
             this.lblDescription.AutoSize = true;
             this.lblDescription.Location = new System.Drawing.Point(18, 34);
             this.lblDescription.Name = "lblDescription";
-            this.lblDescription.Size = new System.Drawing.Size(403, 15);
+            this.lblDescription.Size = new System.Drawing.Size(360, 13);
             this.lblDescription.TabIndex = 15;
             this.lblDescription.Text = "Choose the source Cemu folder, the destination folder and then press Start.";
             // 
@@ -345,9 +339,9 @@
             // 
             // MigrationForm
             // 
-            this.AutoSize = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.AutoSize = true;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(519, 524);
             this.Controls.Add(this.headerPanel);
@@ -363,13 +357,13 @@
             this.Controls.Add(this.lblOldCemuVersion);
             this.Controls.Add(this.lblOldFolder);
             this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.txtBoxOldFolder);
+            this.Controls.Add(this.txtBoxSrcFolder);
             this.Controls.Add(this.btnStart);
             this.Controls.Add(this.btnSelectOldFolder);
             this.Controls.Add(this.btnOptions);
             this.Controls.Add(this.lblNewFolder);
             this.Controls.Add(this.btnSelectNewFolder);
-            this.Controls.Add(this.txtBoxNewFolder);
+            this.Controls.Add(this.txtBoxDestFolder);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
             this.MaximizeBox = false;
@@ -377,8 +371,7 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Cemu Update Tool";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PreventClosingIfOperationInProgress);
-            ((System.ComponentModel.ISupportInitialize)(this.errProviderNewFolder)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.errProviderOldFolder)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.errProviderFolders)).EndInit();
             this.bottomPanel.ResumeLayout(false);
             this.headerPanel.ResumeLayout(false);
             this.headerPanel.PerformLayout();
@@ -388,13 +381,13 @@
         }
 
         #endregion
-        private System.Windows.Forms.TextBox txtBoxOldFolder;
+        private System.Windows.Forms.TextBox txtBoxSrcFolder;
         private System.Windows.Forms.Label lblOldFolder;
         private System.Windows.Forms.Button btnSelectOldFolder;
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Button btnOptions;
         private System.Windows.Forms.Button btnSelectNewFolder;
-        private System.Windows.Forms.TextBox txtBoxNewFolder;
+        private System.Windows.Forms.TextBox txtBoxDestFolder;
         private System.Windows.Forms.Label lblNewFolder;
         private System.Windows.Forms.Label lblPercent;
         private System.Windows.Forms.ProgressBar overallProgressBar;
@@ -402,12 +395,11 @@
         private System.Windows.Forms.Button btnHelp;
         private System.Windows.Forms.Button btnBack;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.ErrorProvider errProviderNewFolder;
         private System.Windows.Forms.Label lblNewCemuVersion;
         private System.Windows.Forms.Label lblOldCemuVersion;
         private System.Windows.Forms.Label lblNewVersionNr;
         private System.Windows.Forms.Label lblOldVersionNr;
-        private System.Windows.Forms.ErrorProvider errProviderOldFolder;
+        private System.Windows.Forms.ErrorProvider errProviderFolders;
         private System.Windows.Forms.Label lblDetails;
         private System.Windows.Forms.TextBox txtBoxLog;
         private System.Windows.Forms.Panel bottomPanel;

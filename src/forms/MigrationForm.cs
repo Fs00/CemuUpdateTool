@@ -48,8 +48,8 @@ namespace CemuUpdateTool
 
             // Remove default (and useless) menu strips
             txtBoxLog.ContextMenuStrip = new ContextMenuStrip();
-            txtBoxOldFolder.ContextMenuStrip = new ContextMenuStrip();
-            txtBoxNewFolder.ContextMenuStrip = new ContextMenuStrip();
+            txtBoxSrcFolder.ContextMenuStrip = new ContextMenuStrip();
+            txtBoxDestFolder.ContextMenuStrip = new ContextMenuStrip();
         }
 
         private void Back(object sender, EventArgs e)
@@ -73,65 +73,55 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Folder selection using FolderBrowserDialog for old Cemu folder
+         *  Folder selection using FolderBrowserDialog for source Cemu folder
          */
-        private void SelectOldCemuFolder(object sender, EventArgs e)
+        private void SelectSrcCemuFolder(object sender, EventArgs e)
         {
             // Open folder picker in Computer or in the currently selected folder (if it exists)
             var folderPicker = new FolderBrowserDialog();
             folderPicker.RootFolder = Environment.SpecialFolder.MyComputer;
-            if (!string.IsNullOrEmpty(txtBoxOldFolder.Text) && FileUtils.DirectoryExists(txtBoxOldFolder.Text))
-                folderPicker.SelectedPath = txtBoxOldFolder.Text;
+            if (!string.IsNullOrEmpty(txtBoxSrcFolder.Text) && FileUtils.DirectoryExists(txtBoxSrcFolder.Text))
+                folderPicker.SelectedPath = txtBoxSrcFolder.Text;
 
             DialogResult result = folderPicker.ShowDialog();
             // Check whether result is different to the other selected folder (it mustn't be equal)
             if (result == DialogResult.OK)
             {
-                if (folderPicker.SelectedPath != txtBoxNewFolder.Text)
-                    txtBoxOldFolder.Text = folderPicker.SelectedPath;
+                if (folderPicker.SelectedPath != txtBoxDestFolder.Text)
+                    txtBoxSrcFolder.Text = folderPicker.SelectedPath;
                 else
                     MessageBox.Show("Source and destination folder must be different.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         /*
-         *  Folder selection using FolderBrowserDialog for new Cemu folder
+         *  Folder selection using FolderBrowserDialog for destination Cemu folder
          */
-        private void SelectNewCemuFolder(object sender, EventArgs e)
+        private void SelectDestCemuFolder(object sender, EventArgs e)
         {
             // Open folder picker in Computer or in the currently selected folder (if it exists)
             var folderPicker = new FolderBrowserDialog();
             folderPicker.RootFolder = Environment.SpecialFolder.MyComputer;
-            if (!string.IsNullOrEmpty(txtBoxNewFolder.Text) && FileUtils.DirectoryExists(txtBoxNewFolder.Text))
-                folderPicker.SelectedPath = txtBoxNewFolder.Text;
+            if (!string.IsNullOrEmpty(txtBoxDestFolder.Text) && FileUtils.DirectoryExists(txtBoxDestFolder.Text))
+                folderPicker.SelectedPath = txtBoxDestFolder.Text;
 
             DialogResult result = folderPicker.ShowDialog();
             // Check whether result is different to the other selected folder (it mustn't be equal)
             if (result == DialogResult.OK)
             {
-                if (folderPicker.SelectedPath != txtBoxOldFolder.Text)
-                    txtBoxNewFolder.Text = folderPicker.SelectedPath;
+                if (folderPicker.SelectedPath != txtBoxSrcFolder.Text)
+                    txtBoxDestFolder.Text = folderPicker.SelectedPath;
                 else
                     MessageBox.Show("Source and destination folder must be different.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void CheckOldFolderTextboxContent(object sender, EventArgs e)
+        private void CheckSrcFolderTextboxContent(object sender, EventArgs e)
         {
-            // Check if input directory exists
-            if (txtBoxOldFolder.Text == "" || !FileUtils.DirectoryExists(txtBoxOldFolder.Text))
-            {
-                errProviderOldFolder.SetError(txtBoxOldFolder, "Directory does not exist");
-                srcFolderTxtBoxValidated = false;
-                btnStart.Enabled = false;
-
-                lblOldCemuVersion.Visible = false;
-                lblOldVersionNr.Text = "";
-            }
             // Check if it's a valid Cemu installation
-            else if (!FileUtils.FileExists(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe")))
+            if (!FileUtils.IsValidCemuInstallation(txtBoxSrcFolder.Text, out string reason))
             {
-                errProviderOldFolder.SetError(txtBoxOldFolder, "Not a valid Cemu installation (Cemu.exe is missing)");
+                errProviderFolders.SetError(txtBoxSrcFolder, reason);
                 srcFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
 
@@ -141,36 +131,38 @@ namespace CemuUpdateTool
             // Display Cemu version label and verify if all user inputs are OK
             else
             {
-                errProviderOldFolder.SetError(txtBoxOldFolder, "");
+                errProviderFolders.SetError(txtBoxSrcFolder, "");
                 srcFolderTxtBoxValidated = true;
 
-                oldCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxOldFolder.Text, "Cemu.exe")), 3);
+                oldCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxSrcFolder.Text, "Cemu.exe")), 3);
                 lblOldCemuVersion.Visible = true;
                 lblOldVersionNr.Text = oldCemuExeVer.ToString();
 
-                if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxOldFolder.Text != txtBoxNewFolder.Text))
+                if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxSrcFolder.Text != txtBoxDestFolder.Text))
                     btnStart.Enabled = true;
                 else
                     btnStart.Enabled = false;
             }
         }
 
-        private void CheckNewFolderTextboxContent(object sender, EventArgs e)
+        private void CheckDestFolderTextboxContent(object sender, EventArgs e)
         {
-            // Check if input directory exists
-            if (txtBoxNewFolder.Text == "" || !FileUtils.DirectoryExists(txtBoxNewFolder.Text))
-            {
-                errProviderNewFolder.SetError(txtBoxNewFolder, "Directory does not exist");
-                destFolderTxtBoxValidated = false;
-                btnStart.Enabled = false;
+            bool contentOk;
+            string reason;
 
-                lblNewCemuVersion.Visible = false;
-                lblNewVersionNr.Text = "";
-            }
-            // Check if it's a valid Cemu installation ONLY IF the form is not in download mode
-            else if (!DownloadMode && !FileUtils.FileExists(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")))
+            // If we're in DownloadMode, check if the directory exists
+            // Otherwise, check if the folder is also a valid Cemu installation
+            if (DownloadMode)
             {
-                errProviderNewFolder.SetError(txtBoxNewFolder, "Not a valid Cemu installation (Cemu.exe is missing)");
+                contentOk = txtBoxDestFolder.Text != "" && FileUtils.DirectoryExists(txtBoxDestFolder.Text);
+                reason = "Directory does not exist";
+            }
+            else
+                contentOk = FileUtils.IsValidCemuInstallation(txtBoxDestFolder.Text, out reason);
+
+            if (!contentOk)
+            {
+                errProviderFolders.SetError(txtBoxDestFolder, reason);
                 destFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
 
@@ -180,17 +172,17 @@ namespace CemuUpdateTool
             // Display Cemu version label (only if the form is not in download mode) and verify if all user inputs are OK
             else
             {
-                errProviderNewFolder.SetError(txtBoxNewFolder, "");
+                errProviderFolders.SetError(txtBoxDestFolder, "");
                 destFolderTxtBoxValidated = true;
 
                 if (!DownloadMode)
                 {
-                    newCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")), 3);
+                    newCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")), 3);
                     lblNewCemuVersion.Visible = true;
                     lblNewVersionNr.Text = newCemuExeVer.ToString();
                 }
 
-                if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxOldFolder.Text != txtBoxNewFolder.Text))
+                if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxSrcFolder.Text != txtBoxDestFolder.Text))
                     btnStart.Enabled = true;
                 else
                     btnStart.Enabled = false;
@@ -215,7 +207,7 @@ namespace CemuUpdateTool
             // If in download mode, warn the user if the destination folder contains a Cemu installation
             else
             {
-                if (FileUtils.FileExists(Path.Combine(txtBoxNewFolder.Text, "Cemu.exe")))
+                if (FileUtils.FileExists(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")))
                 {
                     DialogResult choice = MessageBox.Show("The chosen destination folder already contains a Cemu installation. " +
                         "Do you want to overwrite it?", "Cemu installation already present",
@@ -250,7 +242,7 @@ namespace CemuUpdateTool
 
             // Create a new Worker instance and pass it all needed data
             ctSource = new CancellationTokenSource();
-            worker = new Worker(txtBoxOldFolder.Text, txtBoxNewFolder.Text, foldersToCopy, filesToCopy, ctSource.Token, AppendLogMessage);
+            worker = new Worker(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, foldersToCopy, filesToCopy, ctSource.Token, AppendLogMessage);
 
             // Starting from now, we can safely cancel operations without having problems
             btnCancel.Enabled = true;
@@ -395,12 +387,12 @@ namespace CemuUpdateTool
             lblNewVersionNr.Text = "";
 
             // Reset textboxes (I need to detach & reattach event handlers otherwise errorProviders will be triggered) and buttons
-            txtBoxOldFolder.TextChanged -= CheckOldFolderTextboxContent;
-            txtBoxOldFolder.Text = "";
-            txtBoxOldFolder.TextChanged += CheckOldFolderTextboxContent;
-            txtBoxNewFolder.TextChanged -= CheckNewFolderTextboxContent;
-            txtBoxNewFolder.Text = "";
-            txtBoxNewFolder.TextChanged += CheckNewFolderTextboxContent;
+            txtBoxSrcFolder.TextChanged -= CheckSrcFolderTextboxContent;
+            txtBoxSrcFolder.Text = "";
+            txtBoxSrcFolder.TextChanged += CheckSrcFolderTextboxContent;
+            txtBoxDestFolder.TextChanged -= CheckDestFolderTextboxContent;
+            txtBoxDestFolder.Text = "";
+            txtBoxDestFolder.TextChanged += CheckDestFolderTextboxContent;
             btnCancel.Enabled = false;
             btnBack.Enabled = true;
 

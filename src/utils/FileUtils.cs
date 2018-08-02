@@ -177,9 +177,7 @@ namespace CemuUpdateTool
                     DialogResult choice = MessageBox.Show($"Unexpected error when trying to open Zip file {Path.GetFileName(zipPath)}: {exc.Message} " +
                                     "Do you want to retry or cancel the operation?", "Error during Zip archive opening", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
 
-                    if (choice == DialogResult.Retry)
-                        continue;
-                    else if (choice == DialogResult.Cancel)
+                    if (choice == DialogResult.Cancel)
                         throw;
                 }
             }
@@ -209,7 +207,7 @@ namespace CemuUpdateTool
                             else
                             {
                                 entry.ExtractToFile(extractedFilePath, true);
-                                LogMessage($"Entry {entry.Name} extracted successfully in {Path.GetDirectoryName(extractedFilePath)}.", EventLogEntryType.Information);
+                                //LogMessage($"Entry {entry.Name} extracted successfully in {Path.GetDirectoryName(extractedFilePath)}.", EventLogEntryType.Information);
                                 createdFiles?.Add(new FileInfo(extractedFilePath));
                             }
                             entryWrittenSuccessfully = true;
@@ -230,6 +228,21 @@ namespace CemuUpdateTool
                     }
                 }
             }
+        }
+
+        /*
+         *  Helper method to determine whether a folder contains a Cemu installation
+         */
+        public static bool IsValidCemuInstallation(string path, out string reason)
+        {
+            reason = null;
+            if (string.IsNullOrWhiteSpace(path) || !DirectoryExists(path))
+                reason = "Directory does not exist";
+
+            if (!FileExists(Path.Combine(path, "Cemu.exe")))
+                reason = "Not a valid Cemu installation (Cemu.exe is missing)";
+
+            return reason == null;
         }
 
         /*

@@ -71,7 +71,7 @@ namespace CemuUpdateTool
             VersionNumber latestCemuVersion = null;
 
             // Get data from dictionary
-            PerformingWork("Downloading latest Cemu version");
+            PerformingWork("Retrieving latest Cemu version");
             client.BaseAddress = downloadOptions["cemuBaseUrl"];
             string cemuUrlSuffix = downloadOptions["cemuUrlSuffix"];
             VersionNumber.TryParse(downloadOptions["lastKnownCemuVersion"], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in downloadOptions is malformed
@@ -161,8 +161,9 @@ namespace CemuUpdateTool
             HandleLogMessage("Done!", EventLogEntryType.Information);
 
             // EXTRACT CONTENTS
-            PerformingWork("Extracting downloaded Cemu version");
+            HandleLogMessage("Extracting downloaded Cemu archive... ", EventLogEntryType.Information, false);
             FileUtils.ExtractZipFileContents(destinationFile, HandleLogMessage, cancToken);
+            HandleLogMessage("Done!", EventLogEntryType.Information);
 
             // Since Cemu zips contain a root folder (./cemu_VERSION), move all the content outside that folder
             string extractedRootFolder = Path.Combine(BaseDestinationPath, $"cemu_{latestCemuVersion.ToString()}");
@@ -188,8 +189,8 @@ namespace CemuUpdateTool
          */
         public void PerformMigrationOperations(Dictionary<string, bool> migrationOptions, Action<string> PerformingWork, IProgress<long> progressHandler)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(BaseSourcePath) && !string.IsNullOrWhiteSpace(BaseDestinationPath),
-                         "Source and/or destination Cemu folder are set incorrectly!");
+            if (string.IsNullOrWhiteSpace(BaseSourcePath) || string.IsNullOrWhiteSpace(BaseDestinationPath))
+                throw new ArgumentException("Source and/or destination Cemu folder are set incorrectly!");
 
             // FOLDER OPERATIONS
             foreach (var folder in foldersToCopy)
