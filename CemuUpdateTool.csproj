@@ -91,6 +91,7 @@
     <Compile Include="src\forms\HomeForm.Designer.cs">
       <DependentUpon>HomeForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="src\TextBoxLogger.cs" />
     <Compile Include="src\utils\FileUtils.cs" />
     <Compile Include="src\utils\WebUtils.cs" />
     <Compile Include="src\Worker.cs" />

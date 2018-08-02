@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading;
-using System.Windows.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -24,8 +22,7 @@ namespace CemuUpdateTool
         VersionNumber oldCemuExeVer, newCemuExeVer;
 
         Stopwatch stopwatch;                        // used to measure how much time the task took to complete
-        StringBuilder logBuffer;                    // buffer used to store log messages that must be written into textbox
-        Dispatcher logUpdater;                      // used to update log textbox on another thread
+        TextBoxLogger logUpdater;                   // used to update txtBoxLog asynchronously
 
         public bool DownloadMode { get; }           // if true, newer version of Cemu will be downloaded before migrating
 
@@ -37,7 +34,6 @@ namespace CemuUpdateTool
             this.opts = opts;
 
             stopwatch = new Stopwatch();
-            logBuffer = new StringBuilder(1000);
             progressHandler = new Progress<long>(UpdateProgressBarsAndLog);
 
             // Set title according to the mode chosen
@@ -230,8 +226,8 @@ namespace CemuUpdateTool
                 return;
             }
 
-            // Start the dispatcher used to update log textbox
-            StartLogTextboxDispatcher();
+            // Start the textbox logger
+            logUpdater = new TextBoxLogger(txtBoxLog);
 
             // Start preparing
             txtBoxLog.Clear();
@@ -242,7 +238,7 @@ namespace CemuUpdateTool
 
             // Create a new Worker instance and pass it all needed data
             ctSource = new CancellationTokenSource();
-            worker = new Worker(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, foldersToCopy, filesToCopy, ctSource.Token, AppendLogMessage);
+            worker = new Worker(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, foldersToCopy, filesToCopy, ctSource.Token, logUpdater.AppendLogMessage);
 
             // Starting from now, we can safely cancel operations without having problems
             btnCancel.Enabled = true;
@@ -264,7 +260,7 @@ namespace CemuUpdateTool
                                                           overallProgressBar.Value = (int)evtArgs.BytesReceived;
                                                        
                                                           // Refresh log textbox
-                                                          UpdateLogTextbox();
+                                                          logUpdater.UpdateTextBox();
                                                       })
                                                 );
                     newCemuExeVer = await downloadTask;
@@ -280,7 +276,7 @@ namespace CemuUpdateTool
                         }
                         catch (Exception optionsUpdateExc)
                         {
-                            AppendLogMessage($"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
+                            logUpdater.AppendLogMessage($"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
                         }
                     }
                 }
@@ -328,7 +324,7 @@ namespace CemuUpdateTool
                     result = WorkOutcome.CancelledByUser;
                 else
                 {
-                    AppendLogMessage($"\r\nOperation aborted due to unrecoverable error: {taskExc.Message}", false);
+                    logUpdater.AppendLogMessage($"\r\nOperation aborted due to unrecoverable error: {taskExc.Message}", false);
                     result = WorkOutcome.Aborted;
                 }
             }
@@ -348,18 +344,18 @@ namespace CemuUpdateTool
             {
                 case WorkOutcome.Success:
                     MessageBox.Show("Operation successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
+                    logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     break;
                 case WorkOutcome.Aborted:
                     MessageBox.Show("Operation aborted due to an unexpected error.", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     break;
                 case WorkOutcome.CancelledByUser:
                     MessageBox.Show("Operation cancelled by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    AppendLogMessage($"\r\nOperations cancelled due to user request.", false);
+                    logUpdater.AppendLogMessage($"\r\nOperations cancelled due to user request.", false);
                     break;
                 case WorkOutcome.CompletedWithErrors:
                     MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    AppendLogMessage($"\r\nOperations terminated with {worker.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
+                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {worker.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     break;
             }
 
@@ -372,9 +368,6 @@ namespace CemuUpdateTool
          */
         private void ResetEverything()
         {
-            // Tell the log textbox dispatcher to stop after printing all queued messages
-            var dispatcherShutdown = logUpdater.InvokeAsync(() => Dispatcher.CurrentDispatcher.InvokeShutdown());
-
             // Reset progress bars
             overallProgressBar.Value = 0;
             lblPercent.Text = "0%";
@@ -403,10 +396,8 @@ namespace CemuUpdateTool
             // Reset stopwatch
             stopwatch.Reset();
 
-            // Once the log dispatcher has been shut down, print all buffer content before it gets deleted
-            dispatcherShutdown.Wait();
-            txtBoxLog.AppendText(logBuffer.ToString());
-            logBuffer.Clear();
+            // Tell the textbox logger to stop after printing all queued messages
+            logUpdater.StopAndWaitShutdown();
         }
 
         private void CancelOperations(object sender = null, EventArgs e = null)
@@ -429,24 +420,7 @@ namespace CemuUpdateTool
 
             lblPercent.Text = Math.Floor(overallProgressBar.Value / (double)overallProgressBar.Maximum * 100) + "%";
 
-            UpdateLogTextbox();
-        }
-
-        /*
-         *  Callback method that prints log buffer content asynchronously and flushes it
-         *  Lock avoids race conditions with AppendLogMessage.
-         */
-        private void UpdateLogTextbox()
-        {
-            if (txtBoxLog.Visible)
-            {
-                lock (logBuffer)
-                {
-                    string log = logBuffer.ToString();
-                    logUpdater.InvokeAsync(() => txtBoxLog.AppendText(log));
-                    logBuffer.Clear();
-                }
-            }
+            logUpdater.UpdateTextBox();
         }
 
         /*
@@ -456,22 +430,8 @@ namespace CemuUpdateTool
         private void ChangeProgressLabelText(string newLabelText)
         {
             lblCurrentTask.Text = $"{newLabelText}...";
-            AppendLogMessage($"-- {newLabelText} --");
-            UpdateLogTextbox();
-        }
-
-        /*
-         *  Callback method that appends a message to be written in Details textbox
-         */
-        private void AppendLogMessage(string message, bool newLine = true)
-        {
-            // Lock avoids race conditions with UpdateLogTextbox
-            lock (logBuffer)
-            {
-                logBuffer.Append(message);
-                if (newLine)
-                    logBuffer.Append("\r\n");
-            }
+            logUpdater.AppendLogMessage($"-- {newLabelText} --");
+            logUpdater.UpdateTextBox();
         }
 
         /*
@@ -520,41 +480,12 @@ namespace CemuUpdateTool
             }
         }
 
-        private void StartLogTextboxDispatcher()
-        {
-            // Create and start the thread on which the dispatcher will run
-            Thread uiDispatcherThread = new Thread(() => Dispatcher.Run());
-            uiDispatcherThread.IsBackground = true;
-            uiDispatcherThread.Name = "LogTextboxUpdater";
-            uiDispatcherThread.Start();
-
-            // Wait until dispatcher is running
-            int maxWaitingCycles = 100;
-            int cycleIndex = 0;
-            do
-            {
-                Thread.Sleep(10);
-                logUpdater = Dispatcher.FromThread(uiDispatcherThread);
-                Debug.WriteLine((logUpdater == null) ? "Couldn't get dispatcher. Retrying..." : "Dispatcher obtained.");
-                cycleIndex++;
-            }
-            while (logUpdater == null && cycleIndex < maxWaitingCycles);
-
-            // If dispatcher is still null, it means that we had some unknown problems
-            if (logUpdater == null)
-            {
-                uiDispatcherThread.Abort();
-                throw new ApplicationException("Failed to start dispatcher!");
-            }
-        }
-
         /*
-         *  Shutdown synchronously the log dispatcher if it's running when the form is closing.
-         *  It avoids exception caused by disposing the control during re-rendering.
+         *  If there's a job running, cancel window closing and ask the user if he wants to cancel operations
          */
         private void PreventClosingIfOperationInProgress(object sender, FormClosingEventArgs e)
         {
-            if (!(logUpdater == null || logUpdater.HasShutdownStarted))
+            if (logUpdater != null && logUpdater.IsReady)
             {
                 e.Cancel = true;
                 DialogResult choice = MessageBox.Show("You can't close this window while an operation is in progress. Do you want to cancel the job?",
