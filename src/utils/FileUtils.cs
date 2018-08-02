@@ -156,9 +156,10 @@ namespace CemuUpdateTool
 
         /*
          *  Extracts all the contents of a given Zip file in the same directory as the archive, keeping its internal folder structure
+         *  Returns the path to the folder where the archive is extracted
          */
-        public static void ExtractZipFileContents(string zipPath, LogMessageHandler LogMessage, CancellationToken? cToken = null,
-                                                  List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
+        public static string ExtractZipFileContents(string zipPath, LogMessageHandler LogMessage, CancellationToken? cToken = null,
+                                                    List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             string extractionPath = Path.GetDirectoryName(zipPath);
             ZipArchive archive = null;
@@ -228,6 +229,7 @@ namespace CemuUpdateTool
                     }
                 }
             }
+            return extractionPath;
         }
 
         /*

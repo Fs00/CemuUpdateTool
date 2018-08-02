@@ -113,67 +113,24 @@ namespace CemuUpdateTool
             client.DownloadProgressChanged += progressHandler;
 
             // DOWNLOAD THE FILE
-            string destinationFile = Path.Combine(BaseDestinationPath, "cemu_dl.tmp.zip");
             HandleLogMessage($"Downloading file {client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix}... ", EventLogEntryType.Information, false);
-            bool fileDownloaded = false;
-            while (!fileDownloaded)
-            {
-                try
-                {
-                    client.DownloadFileTaskAsync(client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix, destinationFile).Wait();
-                    fileDownloaded = true;
-                }
-                catch (AggregateException exc)    // DownloadFileTaskAsync wraps all its exceptions in an AggregateException
-                {
-                    // Delete temporary download file if present, since it won't be used
-                    try
-                    {
-                        if (FileUtils.FileExists(destinationFile))
-                            System.IO.File.Delete(destinationFile);
-                    }
-                    catch (Exception deletionExc)
-                    {
-                        HandleLogMessage($"Unable to delete temporary download file: {deletionExc.Message}", EventLogEntryType.Error);
-                    }
-
-                    // Handle web request cancellation
-                    if ((exc.InnerException as WebException)?.Status == WebExceptionStatus.RequestCanceled)
-                        throw new OperationCanceledException();
-
-                    // Build the message according to the type of error
-                    string message = $"An error occurred when trying to download the latest Cemu version: ";
-                    if (exc.InnerException is WebException webExc)     // internet or read-only file error
-                    {
-                        if (webExc.Status == WebExceptionStatus.UnknownError && webExc.InnerException != null)  // file error
-                            message += webExc.InnerException.Message;
-                        else
-                            message += GetWebErrorMessage(webExc.Status);
-                    }
-                    else if (exc.InnerException is InvalidOperationException)  // should never happen
-                        message += exc.InnerException.Message;
-                    message += " Would you like to retry or give up the entire operation?";
-
-                    DialogResult choice = MessageBox.Show(message, "Download error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
-                    if (choice == DialogResult.Cancel)
-                        throw exc.InnerException;
-                }
-            }
+            string downloadedFile = DownloadCemuArchive(client, latestCemuVersion, cemuUrlSuffix);
             HandleLogMessage("Done!", EventLogEntryType.Information);
 
             // EXTRACT CONTENTS
             HandleLogMessage("Extracting downloaded Cemu archive... ", EventLogEntryType.Information, false);
-            FileUtils.ExtractZipFileContents(destinationFile, HandleLogMessage, cancToken);
+            string extractionPath = FileUtils.ExtractZipFileContents(downloadedFile, HandleLogMessage, cancToken);
             HandleLogMessage("Done!", EventLogEntryType.Information);
 
-            // Since Cemu zips contain a root folder (./cemu_VERSION), move all the content outside that folder
-            string extractedRootFolder = Path.Combine(BaseDestinationPath, $"cemu_{latestCemuVersion.ToString()}");
-            FileUtils.CopyDir(extractedRootFolder, BaseDestinationPath, delegate {}, cancToken, null, CreatedFiles, CreatedDirectories);    // silent copy
+            // Since Cemu zips contain a root folder (./cemu_[VERSION]), copy the content from there to the destination path
+            string downloadedCemuFolder = Path.Combine(extractionPath, $"cemu_{latestCemuVersion.ToString()}");
+            FileUtils.CopyDir(downloadedCemuFolder, BaseDestinationPath, delegate {}, cancToken, null, CreatedFiles, CreatedDirectories);    // silent copy
 
             // Remove zip file and original folder once extraction is finished
             try
             {
-                Directory.Delete(extractedRootFolder, true);
-                System.IO.File.Delete(destinationFile);
+                Directory.Delete(downloadedCemuFolder, true);
+                System.IO.File.Delete(downloadedFile);
             }
             catch (Exception exc)
             {
@@ -273,6 +230,59 @@ namespace CemuUpdateTool
         }
 
         /*
+         *  Performs the download of the selected Cemu version.
+         *  The file is downloaded in %Temp% directory (%UserProfile%\AppData\Local\Temp)
+         */
+        private string DownloadCemuArchive(WebClient client, VersionNumber cemuVersion, string urlSuffix)
+        {
+            string destinationFile = Path.Combine(Path.GetTempPath(), $"cemu_{cemuVersion.ToString()}.zip");
+            bool fileDownloaded = false;
+            while (!fileDownloaded)
+            {
+                try
+                {
+                    client.DownloadFileTaskAsync(client.BaseAddress + cemuVersion.ToString() + urlSuffix, destinationFile).Wait();
+                    fileDownloaded = true;
+                }
+                catch (AggregateException exc)    // DownloadFileTaskAsync wraps all its exceptions in an AggregateException
+                {
+                    // Delete temporary download file if present, since it won't be used
+                    try
+                    {
+                        if (FileUtils.FileExists(destinationFile))
+                            System.IO.File.Delete(destinationFile);
+                    }
+                    catch (Exception deletionExc)
+                    {
+                        HandleLogMessage($"Unable to delete temporary download file: {deletionExc.Message}", EventLogEntryType.Error);
+                    }
+
+                    // Handle web request cancellation
+                    if ((exc.InnerException as WebException)?.Status == WebExceptionStatus.RequestCanceled)
+                        throw new OperationCanceledException();
+
+                    // Build the message according to the type of error
+                    string message = $"An error occurred when trying to download the latest Cemu version: ";
+                    if (exc.InnerException is WebException webExc)     // internet or read-only file error
+                    {
+                        if (webExc.Status == WebExceptionStatus.UnknownError && webExc.InnerException != null)  // file error
+                            message += webExc.InnerException.Message;
+                        else
+                            message += GetWebErrorMessage(webExc.Status);
+                    }
+                    else if (exc.InnerException is InvalidOperationException)  // should never happen
+                        message += exc.InnerException.Message;
+                    message += " Would you like to retry or give up the entire operation?";
+
+                    DialogResult choice = MessageBox.Show(message, "Download error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                    if (choice == DialogResult.Cancel)
+                        throw exc.InnerException;
+                }
+            }
+            return destinationFile;
+        }
+
+        /*
          *  Calculates the size of every folder and file to copy
          */
         private void CalculateSizes()
@@ -354,7 +364,7 @@ namespace CemuUpdateTool
             string logMessage = "";
             if (type == EventLogEntryType.Error || type == EventLogEntryType.FailureAudit)
             {
-                // if it's an error message, update errors encountered flag
+                // if it's an error message, update errors encountered counter
                 ErrorsEncountered++;
                 logMessage += "ERROR: ";
             }
