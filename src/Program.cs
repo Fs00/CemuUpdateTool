@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using System.IO;
 using System.Globalization;
+using Microsoft.Win32;
 
 namespace CemuUpdateTool
 {
@@ -15,18 +16,24 @@ namespace CemuUpdateTool
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en");
 
             #if !DEBUG
-            // Attach event handler to generate a crashlog and exit the program when an unhandled exception is thrown
-            var appDomain = AppDomain.CurrentDomain;
-            appDomain.UnhandledException += (o, e) => {
-                GenerateCrashlog(e.ExceptionObject as Exception);
-                Application.Exit();
-            };
-
-            // Make the application crash if ValueTuple isn't present (to be improved)
-            ValueTuple.Create();
+            // Attach event handler to generate a crashlog when an unhandled exception is thrown
+            AppDomain.CurrentDomain.UnhandledException += (o, e) => GenerateCrashlog(e.ExceptionObject as Exception);
             #endif
 
-            // LOAD OPTIONS
+            // Load ValueTuple DLL from resources if .NET Framework version is < 4.7
+            try
+            {
+                if (IsDotNetVersionLessThan47())
+                    System.Reflection.Assembly.Load(Properties.Resources.ValueTupleDLL);
+            }
+            catch
+            {
+                MessageBox.Show("An error occurred when trying to load a necessary component for the program. This is likely due to corrupted executable file or incompatible OS version.",
+                                "Fatal error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+            }
+
+            // Load options
             OptionsManager opts;
             try
             {
@@ -47,8 +54,6 @@ namespace CemuUpdateTool
                 opts = new OptionsManager();
             }
 
-            /*int res = GetProcessDpiAwareness(IntPtr.Zero, out int value);
-            System.Diagnostics.Debug.WriteLine($"DpiAwareness: {(res == 0 ? value.ToString() : "ERR")}");*/
             Application.Run(new ContainerForm(new HomeForm(opts)));
         }
 
@@ -85,9 +90,14 @@ namespace CemuUpdateTool
             File.WriteAllText($@".\cemuUpdateTool-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt", crashlogContent);
         }
 
-        #if DEBUG
-        [System.Runtime.InteropServices.DllImport("shcore.dll")]
-        public static extern int GetProcessDpiAwareness(IntPtr proc, out int value);
-        #endif
+        /*
+         *  Checks a registry key to determine if .NET framework version is < 4.7
+         *  Reference: docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed
+         */
+        private static bool IsDotNetVersionLessThan47()
+        {
+            int releaseCode = (int)Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\NET Framework Setup\NDP\v4\Full").GetValue("Release");
+            return releaseCode < 460798;
+        }
     }
 }

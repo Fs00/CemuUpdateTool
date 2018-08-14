@@ -69,5 +69,15 @@ namespace CemuUpdateTool.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        public static byte[] ValueTupleDLL {
+            get {
+                object obj = ResourceManager.GetObject("ValueTupleDLL", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }
