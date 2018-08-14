@@ -23,13 +23,16 @@ namespace CemuUpdateTool
 
     public class Worker
     {
-        public string BaseSourcePath { get; }              // older Cemu folder
-        public string BaseDestinationPath { get; }         // new Cemu folder
+        // Source and destination Cemu folders
+        public string BaseSourcePath      { get; }
+        public string BaseDestinationPath { get; }
 
-        public int ErrorsEncountered { private set; get; }
-              
-        public List<FileInfo> CreatedFiles { private set; get; }               // list of files that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
-        public List<DirectoryInfo> CreatedDirectories { private set; get; }    // list of directories that have been created by the Worker, necessary for restoring the original situation when you cancel the operation
+        // Counts the number of errors
+        public int ErrorsEncountered      { private set; get; }
+
+        // Lists of files and directories that have been created by the Worker, necessary for restoring the original situation when operation is cancelled
+        public List<FileInfo> CreatedFiles            { get; }
+        public List<DirectoryInfo> CreatedDirectories { get; }
 
         // ValueTuple arrays containing names and sizes of the files and folders to be copied
         (string Name, long Size)[] foldersToCopy;

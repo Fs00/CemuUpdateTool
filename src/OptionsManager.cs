@@ -7,12 +7,12 @@ namespace CemuUpdateTool
 {
     public class OptionsManager
     {
-        public Dictionary<string, bool> FolderOptions { private set; get; }      // contains a list of Cemu subfolders and whether they have to be copied
-        public Dictionary<string, bool> FileOptions { private set; get; }        // contains a list of files included in Cemu folder and whether they have to be copied
-        public Dictionary<string, bool> MigrationOptions { private set; get; }   // contains a set of additional options for the migration
-        public Dictionary<string, string> DownloadOptions { private set; get; }  // contains a set of options for the download of Cemu versions
-        public string MlcFolderExternalPath { get; set; } = "";                  // mlc01 folder's external path for Cemu 1.10+
-        public string OptionsFilePath { set; get; }                              // the path of the settings file (is empty string when no file is used)
+        public Dictionary<string, bool> FolderOptions     { private set; get; }     // contains a list of Cemu subfolders and whether they have to be copied
+        public Dictionary<string, bool> FileOptions       { private set; get; }     // contains a list of files included in Cemu folder and whether they have to be copied
+        public Dictionary<string, bool> MigrationOptions  { private set; get; }     // contains a set of additional options for the migration
+        public Dictionary<string, string> DownloadOptions { private set; get; }     // contains a set of options for the download of Cemu versions
+        public string MlcFolderExternalPath { set; get; } = "";                     // mlc01 folder's external path for Cemu 1.10+
+        public string OptionsFilePath       { set; get; }                           // the path of the settings file (is empty string when no file is used)
 
         // Default options for every dictionary
         Dictionary<string, bool> defaultFolderOptions = new Dictionary<string, bool> {
@@ -138,7 +138,8 @@ namespace CemuUpdateTool
                             {
                                 /*
                                  *  PARSE FILE SECTION
-                                 *  It reads until it finds the end of file or another section header. The StreamReader must be positioned in the line under the section header.
+                                 *  The StreamReader is now positioned in the line under the section header.
+                                 *  The iteration stops when end of file or another section header is found.
                                  *  These are the sections ids:
                                  *      0: folderOptions
                                  *      1: migrationOptions
