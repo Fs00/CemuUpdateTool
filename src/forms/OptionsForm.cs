@@ -11,6 +11,10 @@ namespace CemuUpdateTool
         bool optionsFileLocationChanged;
         bool? newCustomFoldersEnabledState = null;  // null if custom folders must remain untouched, otherwise they're enabled/disabled according to the value
 
+        // These lists contain the custom folders added/removed by user, which will be used to update options
+        List<string> addedCustomFolders, removedCustomFolders,
+                     addedCustomFiles, removedCustomFiles;
+
         public OptionsForm(OptionsManager classInstance)
         {
             InitializeComponent();

@@ -88,6 +88,18 @@
     <Compile Include="src\forms\HomeForm.Designer.cs">
       <DependentUpon>HomeForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="src\forms\InputDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\forms\InputDialog.Designer.cs">
+      <DependentUpon>InputDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="src\forms\ListEditingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\forms\ListEditingForm.Designer.cs">
+      <DependentUpon>ListEditingForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="src\TextBoxLogger.cs" />
     <Compile Include="src\utils\FileUtils.cs" />
     <Compile Include="src\utils\WebUtils.cs" />
@@ -128,6 +140,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="src\forms\HomeForm.resx">
       <DependentUpon>HomeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\forms\InputDialog.resx">
+      <DependentUpon>InputDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\forms\ListEditingForm.resx">
+      <DependentUpon>ListEditingForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="src\forms\MigrationForm.resx">
       <DependentUpon>MigrationForm.cs</DependentUpon>
