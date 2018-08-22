@@ -389,13 +389,13 @@ namespace CemuUpdateTool
          */
         public IEnumerable<string> DefaultFolders()
         {
-            foreach (var option in FolderOptions)
+            foreach (var option in defaultFolderOptions)
                 yield return option.Key;
         }
 
         public IEnumerable<string> DefaultFiles()
         {
-            foreach (var option in FileOptions)
+            foreach (var option in defaultFileOptions)
                 yield return option.Key;
         }
 
