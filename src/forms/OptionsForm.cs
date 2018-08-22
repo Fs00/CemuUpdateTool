@@ -258,12 +258,26 @@ namespace CemuUpdateTool
         {
             if (updatedCustomFolders != null)
             {
-                // TODO
+                // Delete the old custom folder options from the dictionary
+                List<string> oldCustomFolders = handler.CustomFolders().ToList();
+                foreach (string folder in oldCustomFolders)
+                    handler.FolderOptions.Remove(folder);
+
+                // ... and add the updated ones
+                foreach (var folder in updatedCustomFolders)
+                    handler.FolderOptions.Add(folder.Key, folder.Value);
             }
 
             if (updatedCustomFiles != null)
             {
-                // TODO
+                // Delete the old custom files options from the dictionary
+                List<string> oldCustomFiles = handler.CustomFiles().ToList();
+                foreach (string file in oldCustomFiles)
+                    handler.FileOptions.Remove(file);
+
+                // ... and add the updated ones
+                foreach (var file in updatedCustomFolders)
+                    handler.FileOptions.Add(file.Key, file.Value);
             }
         }
 

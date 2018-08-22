@@ -62,7 +62,7 @@ namespace CemuUpdateTool
         
         /*
          *  Validation delegate for the InputDialog.
-         *  It checks if the string is a valid file name and it's not included in forbiddenValues
+         *  It checks if the string is a valid file name, it's not included in forbiddenValues and it's not already added
          */
         private bool IsInputOK(string input, out string value, out string reason)
         {
@@ -80,6 +80,11 @@ namespace CemuUpdateTool
             else if (forbiddenValues.Contains(input))
             {
                 reason = "This value is already included in default options";
+                return false;
+            }
+            else if (dictionary.ContainsKey(input))
+            {
+                reason = "This value has already been added";
                 return false;
             }
 
