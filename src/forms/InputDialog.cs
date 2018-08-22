@@ -22,7 +22,7 @@ namespace CemuUpdateTool
             Close();
         }
 
-        private void ValidateInputAndClose(object sender, EventArgs e)
+        private void ValidateInputAndClose(object sender = null, EventArgs e = null)
         {
             if (InputIsValidated(txtBoxInput.Text.Trim(' '), out T value, out T reason))
             {
@@ -32,6 +32,12 @@ namespace CemuUpdateTool
             }
             else
                 MessageBox.Show($"The value you inserted is not valid: {reason}.", "Invalid input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private void ValidateOnEnterKeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == '\r')
+                ValidateInputAndClose();
         }
     }
 }

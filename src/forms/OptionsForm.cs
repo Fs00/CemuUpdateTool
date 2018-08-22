@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -9,11 +10,10 @@ namespace CemuUpdateTool
     {
         OptionsManager handler;
         bool optionsFileLocationChanged;
-        bool? newCustomFoldersEnabledState = null;  // null if custom folders must remain untouched, otherwise they're enabled/disabled according to the value
 
-        // These lists contain the custom folders added/removed by user, which will be used to update options
-        List<string> addedCustomFolders, removedCustomFolders,
-                     addedCustomFiles, removedCustomFiles;
+        // These will contain the unsaved changes made to custom files/folders if the user edits them
+        Dictionary<string, bool> updatedCustomFolders,
+                                 updatedCustomFiles;
 
         public OptionsForm(OptionsManager classInstance)
         {
@@ -54,7 +54,7 @@ namespace CemuUpdateTool
             }
             chkBoxDLCUpds.Checked = handler.FolderOptions[@"mlc01\usr\title"];
             chkBoxShaderCaches.Checked = handler.FolderOptions[@"shaderCache\transferable"];
-            RefreshCustomFolderStats();
+            RefreshCustomEntriesStats();
 
             // FILE OPTIONS
             // As above, the settings' checkbox is set as indeterminate if only one of the two options files is set to true
@@ -192,32 +192,13 @@ namespace CemuUpdateTool
             }
         }
 
-        private void RefreshCustomFolderStats()
+        private void RefreshCustomEntriesStats()
         {
-            int foldersCounter = 0,
-                enabledFoldersCounter = 0;
-
-            foreach (string folder in handler.CustomFolders())
-            {
-                foldersCounter++;
-                if (handler.FolderOptions[folder] == true)
-                    enabledFoldersCounter++;
-            }
+            int foldersCounter = handler.CustomFolders().Count(),
+                filesCounter = handler.CustomFiles().Count();
 
             lblCustomFoldersCnt.Text = foldersCounter.ToString();
-            lblEnabledCustomFoldersCnt.Text = enabledFoldersCounter.ToString();
-        }
-
-        private void EnableOrDisableCustomFolders(bool enable)
-        {
-            // Save in a temporary list all the custom folders
-            List<string> customFolders = new List<string>();
-            foreach (string folder in handler.CustomFolders())
-                customFolders.Add(folder);
-
-            // Apply changes to folderOptions
-            foreach (string folder in customFolders)
-                handler.FolderOptions[folder] = enable;
+            lblCustomFilesCnt.Text = filesCounter.ToString();
         }
 
         private void DeleteSettingsFile(object sender, EventArgs e)
@@ -249,6 +230,46 @@ namespace CemuUpdateTool
                 handler.SetDefaultOptions();
                 SetCheckboxesAccordingToOptions();
             }
+        }
+
+        private void SaveOptionsAndClose(object sender, EventArgs e)
+        {
+            SetOptionsAccordingToCheckboxes();
+            UpdateCustomOptions();
+
+            try
+            {
+                if (chkBoxSettingsOnFile.Checked)
+                    handler.WriteOptionsToFile();
+                else
+                    MessageBox.Show("Please take note that if you don't store options in a file, they'll be lost as soon as you exit the application.",
+                                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show($"Unexpected error when saving options on file: {exc.Message} Changes won't be preserved after closing the program.",
+                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            Close();
+        }
+
+        private void UpdateCustomOptions()
+        {
+            if (updatedCustomFolders != null)
+            {
+                // TODO
+            }
+
+            if (updatedCustomFiles != null)
+            {
+                // TODO
+            }
+        }
+
+        private void DiscardAndClose(object sender, EventArgs e)
+        {
+            Close();
         }
 
         /*
@@ -334,50 +355,6 @@ namespace CemuUpdateTool
                 errProviderMlcFolder.SetError(txtBoxCustomMlc01Path, "");
         }
 
-        private void SaveOptionsAndClose(object sender, EventArgs e)
-        {
-            SetOptionsAccordingToCheckboxes();
-            if (newCustomFoldersEnabledState != null)
-                EnableOrDisableCustomFolders(newCustomFoldersEnabledState.Value);
-
-            try
-            {
-                if (chkBoxSettingsOnFile.Checked)
-                    handler.WriteOptionsToFile();
-                else
-                    MessageBox.Show("Please take note that if you don't store options in a file, they'll be lost as soon as you exit the application.",
-                                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-            catch (Exception exc)
-            {
-                MessageBox.Show($"Unexpected error when saving options on file: {exc.Message} Changes won't be preserved after closing the program.",
-                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            Close();
-        }
-
-        private void DiscardAndClose(object sender, EventArgs e)
-        {
-            Close();
-        }
-
-        /*
-         *  These methods will just update the "Enabled" label and notify the form to 
-         *  enable/disable custom folders once the user clicks on "Save options"
-         */
-        private void CustomFoldersWillBeEnabled(object sender, EventArgs e)
-        {
-            lblEnabledCustomFoldersCnt.Text = lblCustomFoldersCnt.Text;
-            newCustomFoldersEnabledState = true;
-        }
-
-        private void CustomFoldersWillBeDisabled(object sender, EventArgs e)
-        {
-            lblEnabledCustomFoldersCnt.Text = "0";
-            newCustomFoldersEnabledState = false;
-        }
-
         /*
          *  Checks if Cemu download URL is valid
          */
@@ -387,6 +364,37 @@ namespace CemuUpdateTool
                 lblUriError.Visible = true;
             else
                 lblUriError.Visible = false;
+        }
+
+        /*
+         *  Open custom folders/files management dialog
+         */
+        private void OpenManageFoldersDialog(object sender, EventArgs e)
+        {
+            // Initialize the updated dictionary if it's never been edited
+            if (updatedCustomFolders == null)
+            {
+                updatedCustomFolders = new Dictionary<string, bool>();
+                foreach (string folder in handler.CustomFolders())
+                    updatedCustomFolders.Add(folder, handler.FolderOptions[folder]);
+            }
+
+            new DictionaryEditingForm(updatedCustomFolders, handler.DefaultFolders()).ShowDialog();
+            lblCustomFoldersCnt.Text = updatedCustomFolders.Count.ToString();     // update custom folders counter
+        }
+
+        private void OpenManageFilesDialog(object sender, EventArgs e)
+        {
+            // Initialize the updated dictionary if it's never been edited
+            if (updatedCustomFiles == null)
+            {
+                updatedCustomFiles = new Dictionary<string, bool>();
+                foreach (string file in handler.CustomFiles())
+                    updatedCustomFiles.Add(file, handler.FileOptions[file]);
+            }
+
+            new DictionaryEditingForm(updatedCustomFiles, handler.DefaultFiles()).ShowDialog();
+            lblCustomFilesCnt.Text = updatedCustomFiles.Count.ToString();         // update custom files counter
         }
 
         private void OpenHelpForm(object sender, EventArgs e)

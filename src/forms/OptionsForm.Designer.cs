@@ -45,13 +45,13 @@
             this.txtBoxCustomMlc01Path = new System.Windows.Forms.TextBox();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.foldersTab = new System.Windows.Forms.TabPage();
-            this.grpBoxCustomFolders = new System.Windows.Forms.GroupBox();
-            this.btnEnableCustomFolders = new System.Windows.Forms.Button();
-            this.lblEnabledCustomFoldersCnt = new System.Windows.Forms.Label();
+            this.grpBoxCustomEntries = new System.Windows.Forms.GroupBox();
+            this.lblTotalCustomFiles = new System.Windows.Forms.Label();
+            this.lblCustomFilesCnt = new System.Windows.Forms.Label();
+            this.btnManageFolders = new System.Windows.Forms.Button();
             this.lblTotalCustomFolders = new System.Windows.Forms.Label();
             this.lblCustomFoldersCnt = new System.Windows.Forms.Label();
-            this.lblEnabledCustomFolder = new System.Windows.Forms.Label();
-            this.btnDisableCustomFolders = new System.Windows.Forms.Button();
+            this.btnManageFiles = new System.Windows.Forms.Button();
             this.chkBoxControllerProfiles = new System.Windows.Forms.CheckBox();
             this.chkBoxCemuSettings = new System.Windows.Forms.CheckBox();
             this.chkBoxGameProfiles = new System.Windows.Forms.CheckBox();
@@ -80,7 +80,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.errProviderMlcFolder)).BeginInit();
             this.tabControl.SuspendLayout();
             this.foldersTab.SuspendLayout();
-            this.grpBoxCustomFolders.SuspendLayout();
+            this.grpBoxCustomEntries.SuspendLayout();
             this.featuresTab.SuspendLayout();
             this.grpBoxMigration.SuspendLayout();
             this.downloadTab.SuspendLayout();
@@ -234,7 +234,7 @@
             // 
             // foldersTab
             // 
-            this.foldersTab.Controls.Add(this.grpBoxCustomFolders);
+            this.foldersTab.Controls.Add(this.grpBoxCustomEntries);
             this.foldersTab.Controls.Add(this.txtBoxCustomMlc01Path);
             this.foldersTab.Controls.Add(this.chkBoxCustomMlc01Path);
             this.foldersTab.Controls.Add(this.chkBoxControllerProfiles);
@@ -252,48 +252,58 @@
             this.foldersTab.Text = "Folders";
             this.foldersTab.UseVisualStyleBackColor = true;
             // 
-            // grpBoxCustomFolders
+            // grpBoxCustomEntries
             // 
-            this.grpBoxCustomFolders.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.grpBoxCustomFolders.Controls.Add(this.btnEnableCustomFolders);
-            this.grpBoxCustomFolders.Controls.Add(this.lblEnabledCustomFoldersCnt);
-            this.grpBoxCustomFolders.Controls.Add(this.lblTotalCustomFolders);
-            this.grpBoxCustomFolders.Controls.Add(this.lblCustomFoldersCnt);
-            this.grpBoxCustomFolders.Controls.Add(this.lblEnabledCustomFolder);
-            this.grpBoxCustomFolders.Controls.Add(this.btnDisableCustomFolders);
-            this.grpBoxCustomFolders.Location = new System.Drawing.Point(18, 267);
-            this.grpBoxCustomFolders.Name = "grpBoxCustomFolders";
-            this.grpBoxCustomFolders.Size = new System.Drawing.Size(335, 92);
-            this.grpBoxCustomFolders.TabIndex = 18;
-            this.grpBoxCustomFolders.TabStop = false;
-            this.grpBoxCustomFolders.Text = "Custom folders";
+            this.grpBoxCustomEntries.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.grpBoxCustomEntries.Controls.Add(this.lblTotalCustomFiles);
+            this.grpBoxCustomEntries.Controls.Add(this.lblCustomFilesCnt);
+            this.grpBoxCustomEntries.Controls.Add(this.btnManageFolders);
+            this.grpBoxCustomEntries.Controls.Add(this.lblTotalCustomFolders);
+            this.grpBoxCustomEntries.Controls.Add(this.lblCustomFoldersCnt);
+            this.grpBoxCustomEntries.Controls.Add(this.btnManageFiles);
+            this.grpBoxCustomEntries.Location = new System.Drawing.Point(18, 267);
+            this.grpBoxCustomEntries.Name = "grpBoxCustomEntries";
+            this.grpBoxCustomEntries.Size = new System.Drawing.Size(335, 92);
+            this.grpBoxCustomEntries.TabIndex = 18;
+            this.grpBoxCustomEntries.TabStop = false;
+            this.grpBoxCustomEntries.Text = "Custom folders and files";
             // 
-            // btnEnableCustomFolders
+            // lblTotalCustomFiles
             // 
-            this.btnEnableCustomFolders.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnEnableCustomFolders.Location = new System.Drawing.Point(137, 39);
-            this.btnEnableCustomFolders.Name = "btnEnableCustomFolders";
-            this.btnEnableCustomFolders.Size = new System.Drawing.Size(87, 27);
-            this.btnEnableCustomFolders.TabIndex = 14;
-            this.btnEnableCustomFolders.Text = "Enable all";
-            this.btnEnableCustomFolders.UseVisualStyleBackColor = true;
-            this.btnEnableCustomFolders.Click += new System.EventHandler(this.CustomFoldersWillBeEnabled);
+            this.lblTotalCustomFiles.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lblTotalCustomFiles.AutoSize = true;
+            this.lblTotalCustomFiles.Location = new System.Drawing.Point(216, 62);
+            this.lblTotalCustomFiles.Name = "lblTotalCustomFiles";
+            this.lblTotalCustomFiles.Size = new System.Drawing.Size(36, 15);
+            this.lblTotalCustomFiles.TabIndex = 17;
+            this.lblTotalCustomFiles.Text = "Total:";
             // 
-            // lblEnabledCustomFoldersCnt
+            // lblCustomFilesCnt
             // 
-            this.lblEnabledCustomFoldersCnt.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.lblEnabledCustomFoldersCnt.AutoSize = true;
-            this.lblEnabledCustomFoldersCnt.Location = new System.Drawing.Point(77, 54);
-            this.lblEnabledCustomFoldersCnt.Name = "lblEnabledCustomFoldersCnt";
-            this.lblEnabledCustomFoldersCnt.Size = new System.Drawing.Size(13, 15);
-            this.lblEnabledCustomFoldersCnt.TabIndex = 17;
-            this.lblEnabledCustomFoldersCnt.Text = "0";
+            this.lblCustomFilesCnt.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lblCustomFilesCnt.AutoSize = true;
+            this.lblCustomFilesCnt.Location = new System.Drawing.Point(261, 62);
+            this.lblCustomFilesCnt.Name = "lblCustomFilesCnt";
+            this.lblCustomFilesCnt.Size = new System.Drawing.Size(13, 15);
+            this.lblCustomFilesCnt.TabIndex = 18;
+            this.lblCustomFilesCnt.Text = "0";
+            // 
+            // btnManageFolders
+            // 
+            this.btnManageFolders.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.btnManageFolders.Location = new System.Drawing.Point(20, 28);
+            this.btnManageFolders.Name = "btnManageFolders";
+            this.btnManageFolders.Size = new System.Drawing.Size(142, 27);
+            this.btnManageFolders.TabIndex = 14;
+            this.btnManageFolders.Text = "Manage custom folders";
+            this.btnManageFolders.UseVisualStyleBackColor = true;
+            this.btnManageFolders.Click += new System.EventHandler(this.OpenManageFoldersDialog);
             // 
             // lblTotalCustomFolders
             // 
             this.lblTotalCustomFolders.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblTotalCustomFolders.AutoSize = true;
-            this.lblTotalCustomFolders.Location = new System.Drawing.Point(19, 33);
+            this.lblTotalCustomFolders.Location = new System.Drawing.Point(60, 62);
             this.lblTotalCustomFolders.Name = "lblTotalCustomFolders";
             this.lblTotalCustomFolders.Size = new System.Drawing.Size(36, 15);
             this.lblTotalCustomFolders.TabIndex = 12;
@@ -303,32 +313,22 @@
             // 
             this.lblCustomFoldersCnt.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCustomFoldersCnt.AutoSize = true;
-            this.lblCustomFoldersCnt.Location = new System.Drawing.Point(77, 33);
+            this.lblCustomFoldersCnt.Location = new System.Drawing.Point(105, 62);
             this.lblCustomFoldersCnt.Name = "lblCustomFoldersCnt";
             this.lblCustomFoldersCnt.Size = new System.Drawing.Size(13, 15);
             this.lblCustomFoldersCnt.TabIndex = 16;
             this.lblCustomFoldersCnt.Text = "0";
             // 
-            // lblEnabledCustomFolder
+            // btnManageFiles
             // 
-            this.lblEnabledCustomFolder.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.lblEnabledCustomFolder.AutoSize = true;
-            this.lblEnabledCustomFolder.Location = new System.Drawing.Point(19, 54);
-            this.lblEnabledCustomFolder.Name = "lblEnabledCustomFolder";
-            this.lblEnabledCustomFolder.Size = new System.Drawing.Size(52, 15);
-            this.lblEnabledCustomFolder.TabIndex = 13;
-            this.lblEnabledCustomFolder.Text = "Enabled:";
-            // 
-            // btnDisableCustomFolders
-            // 
-            this.btnDisableCustomFolders.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnDisableCustomFolders.Location = new System.Drawing.Point(231, 39);
-            this.btnDisableCustomFolders.Name = "btnDisableCustomFolders";
-            this.btnDisableCustomFolders.Size = new System.Drawing.Size(87, 27);
-            this.btnDisableCustomFolders.TabIndex = 15;
-            this.btnDisableCustomFolders.Text = "Disable all";
-            this.btnDisableCustomFolders.UseVisualStyleBackColor = true;
-            this.btnDisableCustomFolders.Click += new System.EventHandler(this.CustomFoldersWillBeDisabled);
+            this.btnManageFiles.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.btnManageFiles.Location = new System.Drawing.Point(174, 28);
+            this.btnManageFiles.Name = "btnManageFiles";
+            this.btnManageFiles.Size = new System.Drawing.Size(142, 27);
+            this.btnManageFiles.TabIndex = 15;
+            this.btnManageFiles.Text = "Manage custom files";
+            this.btnManageFiles.UseVisualStyleBackColor = true;
+            this.btnManageFiles.Click += new System.EventHandler(this.OpenManageFilesDialog);
             // 
             // chkBoxControllerProfiles
             // 
@@ -604,8 +604,8 @@
             this.tabControl.ResumeLayout(false);
             this.foldersTab.ResumeLayout(false);
             this.foldersTab.PerformLayout();
-            this.grpBoxCustomFolders.ResumeLayout(false);
-            this.grpBoxCustomFolders.PerformLayout();
+            this.grpBoxCustomEntries.ResumeLayout(false);
+            this.grpBoxCustomEntries.PerformLayout();
             this.featuresTab.ResumeLayout(false);
             this.grpBoxMigration.ResumeLayout(false);
             this.grpBoxMigration.PerformLayout();
@@ -652,15 +652,15 @@
         private System.Windows.Forms.TextBox txtBoxUrlSuffix;
         private System.Windows.Forms.TextBox txtBoxBaseUrl;
         private System.Windows.Forms.Label lblUrl;
-        private System.Windows.Forms.Button btnDisableCustomFolders;
-        private System.Windows.Forms.Button btnEnableCustomFolders;
-        private System.Windows.Forms.Label lblEnabledCustomFolder;
+        private System.Windows.Forms.Button btnManageFiles;
+        private System.Windows.Forms.Button btnManageFolders;
         private System.Windows.Forms.Label lblTotalCustomFolders;
-        private System.Windows.Forms.Label lblEnabledCustomFoldersCnt;
         private System.Windows.Forms.Label lblCustomFoldersCnt;
-        private System.Windows.Forms.GroupBox grpBoxCustomFolders;
+        private System.Windows.Forms.GroupBox grpBoxCustomEntries;
         private System.Windows.Forms.Label lblHttp;
         private System.Windows.Forms.Label lblUriError;
         private System.Windows.Forms.Button btnHelp;
+        private System.Windows.Forms.Label lblTotalCustomFiles;
+        private System.Windows.Forms.Label lblCustomFilesCnt;
     }
 }

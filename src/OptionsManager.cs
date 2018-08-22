@@ -385,7 +385,22 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Iterator method that returns only custom user folders (the ones that aren't in default dictionary)
+         *  Iterators on default files/folders dictionaries
+         */
+        public IEnumerable<string> DefaultFolders()
+        {
+            foreach (var option in FolderOptions)
+                yield return option.Key;
+        }
+
+        public IEnumerable<string> DefaultFiles()
+        {
+            foreach (var option in FileOptions)
+                yield return option.Key;
+        }
+
+        /*
+         *  Iterators that return only custom user folders/files (the ones that aren't in default dictionary)
          */
         public IEnumerable<string> CustomFolders()
         {
@@ -396,9 +411,6 @@ namespace CemuUpdateTool
             }
         }
 
-        /*
-         *  Iterator method that returns only custom user files (the ones that aren't in default dictionary)
-         */
         public IEnumerable<string> CustomFiles()
         {
             foreach (KeyValuePair<string, bool> option in FileOptions)
