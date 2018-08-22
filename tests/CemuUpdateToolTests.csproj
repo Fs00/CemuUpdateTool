@@ -51,7 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileUtilsTests.cs" />
-    <Compile Include="ListEditingTests.cs" />
     <Compile Include="WebUtilsTests.cs" />
     <Compile Include="VersionNumberTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
