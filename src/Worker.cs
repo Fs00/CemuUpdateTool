@@ -237,6 +237,16 @@ namespace CemuUpdateTool
                 PerformingWork("Updating game profiles");
                 FileUtils.CopyDir(Path.Combine(BaseDestinationPath, "gameProfiles"), Path.Combine(cemuInstallationPath, "gameProfiles"), HandleLogMessage, cancToken);
             }
+
+            // Clean up temporary downloaded Cemu folder
+            try
+            {
+                Directory.Delete(BaseDestinationPath, true);
+            }
+            catch (Exception exc)
+            {
+                HandleLogMessage($"Unexpected error during deletion of temporary downloaded Cemu folder: {exc.Message}", EventLogEntryType.Error);
+            }
         }
 
         private VersionNumber DiscoverLatestCemuVersion(string cemuUrlSuffix, VersionNumber lastKnownCemuVersion = null)
