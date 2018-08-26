@@ -222,7 +222,7 @@ namespace CemuUpdateTool
             if (foldersToCopy.Count == 0 && filesToCopy.Count == 0)
             {
                 MessageBox.Show("It seems that there are neither folders nor single files to copy. Probably you set up options incorrectly.",
-                    "Empty folders and files lists", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                "Empty folders and files lists", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -249,7 +249,7 @@ namespace CemuUpdateTool
                 // Perform download operations if we are in download mode
                 if (DownloadMode)
                 {
-                    var downloadTask = Task.Run(() => worker.PerformDownloadOperations(opts.DownloadOptions, ChangeProgressLabelText,
+                    var downloadTask = Task.Run(() => worker.PerformDownloadOperations(opts.Download, ChangeProgressLabelText,
                                                       (o, evtArgs) => {
                                                           // Set maximum progress bar value according to file size
                                                           if (overallProgressBar.Maximum != evtArgs.TotalBytesToReceive)
@@ -266,10 +266,10 @@ namespace CemuUpdateTool
                     newCemuExeVer = await downloadTask;
 
                     // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
-                    VersionNumber.TryParse(opts.DownloadOptions["lastKnownCemuVersion"], out VersionNumber previousLastKnownCemuVersion);
+                    VersionNumber.TryParse(opts.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
                     if (previousLastKnownCemuVersion != newCemuExeVer)
                     {
-                        opts.DownloadOptions["lastKnownCemuVersion"] = newCemuExeVer.ToString();
+                        opts.Download[OptionsKeys.LastKnownCemuVersion] = newCemuExeVer.ToString();
                         try
                         {
                             opts.WriteOptionsToFile();
@@ -292,7 +292,7 @@ namespace CemuUpdateTool
                 overallProgressBar.Maximum = (int)overallSize;
 
                 // Start migration operations in a secondary thread
-                var migrationTask = Task.Run(() => worker.PerformMigrationOperations(opts.MigrationOptions, ChangeProgressLabelText, progressHandler));
+                var migrationTask = Task.Run(() => worker.PerformMigrationOperations(opts.Migration, ChangeProgressLabelText, progressHandler));
                 await migrationTask;
 
                 stopwatch.Stop();
@@ -330,13 +330,13 @@ namespace CemuUpdateTool
             }
 
             // Ask if user wants to create Cemu desktop shortcut
-            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.MigrationOptions["askForDesktopShortcut"] == true)
+            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.Migration[OptionsKeys.AskForDesktopShortcut])
             {
                 DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 bool isNewCemuVersionAtLeast110 = newCemuExeVer.Major > 1 || newCemuExeVer.Minor >= 10;
                 if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
                     worker.CreateDesktopShortcut(newCemuExeVer.ToString(),
-                      (isNewCemuVersionAtLeast110 && opts.MigrationOptions["dontCopyMlcFolderFor1.10+"] == true) ? opts.MlcFolderExternalPath : null);
+                      (isNewCemuVersionAtLeast110 && opts.Migration[OptionsKeys.UseCustomMlcFolderIfSupported] == true) ? opts.CustomMlcFolderPath : null);
             }
 
             // Show a MessageBox with the final result of the task

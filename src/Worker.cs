@@ -73,9 +73,9 @@ namespace CemuUpdateTool
         {
             // Get data from dictionary
             PerformingWork("Retrieving latest Cemu version");
-            client.BaseAddress = downloadOptions["cemuBaseUrl"];
-            string cemuUrlSuffix = downloadOptions["cemuUrlSuffix"];
-            VersionNumber.TryParse(downloadOptions["lastKnownCemuVersion"], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in downloadOptions is malformed
+            client.BaseAddress = downloadOptions[OptionsKeys.CemuBaseUrl];
+            string cemuUrlSuffix = downloadOptions[OptionsKeys.CemuUrlSuffix];
+            VersionNumber.TryParse(downloadOptions[OptionsKeys.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in downloadOptions is malformed
 
             // FIND OUT WHICH IS THE LATEST CEMU VERSION
             VersionNumber latestCemuVersion = DiscoverLatestCemuVersion(cemuUrlSuffix, lastKnownCemuVersion);
@@ -128,7 +128,7 @@ namespace CemuUpdateTool
             foreach (var folder in foldersToCopy)
             {
                 // Destination folder contents removal
-                if (migrationOptions["deleteDestFolderContents"] == true)
+                if (migrationOptions[OptionsKeys.DeleteDestinationFolderContents])
                 {
                     string destFolderPath = Path.Combine(BaseDestinationPath, folder.Name);
                     if (FileUtils.DirectoryExists(destFolderPath))
@@ -170,15 +170,15 @@ namespace CemuUpdateTool
             }
 
             // SET COMPATIBILITY OPTIONS for new Cemu executable
-            if (migrationOptions["setCompatibilityOptions"] == true)
+            if (migrationOptions[OptionsKeys.SetCompatibilityOptions])
             {
                 // Build the key value
                 string keyValue = "";
-                if (migrationOptions["compatOpts_runAsAdmin"])
+                if (migrationOptions[OptionsKeys.CompatibilityRunAsAdmin])
                     keyValue += "RUNASADMIN ";
-                if (migrationOptions["compatOpts_noFullscreenOptimizations"])
+                if (migrationOptions[OptionsKeys.CompatibilityNoFullscreenOptimizations])
                     keyValue += "DISABLEDXMAXIMIZEDWINDOWEDMODE ";
-                if (migrationOptions["compatOpts_overrideHiDPIBehaviour"])
+                if (migrationOptions[OptionsKeys.CompatibilityOverrideHiDPIBehaviour])
                     keyValue += "HIGHDPIAWARE";
 
                 // Write the value in the registry

@@ -5,43 +5,76 @@ using System.IO;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  Contains string constants used to access options dictionaries
+     */
+    public static class OptionsKeys
+    {
+        // Folder options
+        public const string ControllerProfiles = "controllerProfiles";
+        public const string GameProfiles = "gameProfiles";
+        public const string GraphicPacks = "graphicPacks";
+        public const string OldSavegames = @"mlc01\emulatorSave";       // savegame directory before 1.11
+        public const string Savegames = @"mlc01\usr\save";              // savegame directory since 1.11
+        public const string DLCUpdates = @"mlc01\usr\title";            // DLC/updates directory
+        public const string TransferableCaches = @"shaderCache\transferable";
+
+        // File options
+        public const string SettingsBin = "settings.bin";
+        public const string SettingsXml = "settings.xml";
+
+        // Migration options
+        public const string DeleteDestinationFolderContents = "deleteDestFolderContents";
+        public const string UseCustomMlcFolderIfSupported = "dontCopyMlcFolderFor1.10+";
+        public const string AskForDesktopShortcut = "askForDesktopShortcut";
+        public const string SetCompatibilityOptions = "setCompatibilityOptions";
+        public const string CompatibilityRunAsAdmin = "compatOpts_runAsAdmin";
+        public const string CompatibilityNoFullscreenOptimizations = "compatOpts_noFullscreenOptimizations";
+        public const string CompatibilityOverrideHiDPIBehaviour = "compatOpts_overrideHiDPIBehaviour";
+
+        // Download options
+        public const string CemuBaseUrl = "cemuBaseUrl";
+        public const string CemuUrlSuffix = "cemuUrlSuffix";
+        public const string LastKnownCemuVersion = "lastKnownCemuVersion";
+    }
+
     public class OptionsManager
     {
-        public Dictionary<string, bool> FolderOptions     { private set; get; }     // contains a list of Cemu subfolders and whether they have to be copied
-        public Dictionary<string, bool> FileOptions       { private set; get; }     // contains a list of files included in Cemu folder and whether they have to be copied
-        public Dictionary<string, bool> MigrationOptions  { private set; get; }     // contains a set of additional options for the migration
-        public Dictionary<string, string> DownloadOptions { private set; get; }     // contains a set of options for the download of Cemu versions
-        public string MlcFolderExternalPath { set; get; } = "";                     // mlc01 folder's external path for Cemu 1.10+
-        public string OptionsFilePath       { set; get; }                           // the path of the settings file (is empty string when no file is used)
+        public Dictionary<string, bool> Folders     { private set; get; }     // contains a list of Cemu subfolders and whether they have to be copied
+        public Dictionary<string, bool> Files       { private set; get; }     // contains a list of files included in Cemu folder and whether they have to be copied
+        public Dictionary<string, bool> Migration   { private set; get; }     // contains a set of additional options for the migration
+        public Dictionary<string, string> Download  { private set; get; }     // contains a set of options for the download of Cemu versions
+        public string CustomMlcFolderPath   { set; get; } = "";               // mlc01 folder's custom path for Cemu 1.10+
+        public string OptionsFilePath       { set; get; }                     // the path of the settings file (is empty string when no file is used)
 
         // Default options for every dictionary
         Dictionary<string, bool> defaultFolderOptions = new Dictionary<string, bool> {
-            { "controllerProfiles", true },
-            { "gameProfiles", false },
-            { "graphicPacks", true },
-            { @"mlc01\emulatorSave", true },       // savegame directory before 1.11
-            { @"mlc01\usr\save", true },           // savegame directory since 1.11
-            { @"mlc01\usr\title", true },          // DLC/updates directory
-            { @"shaderCache\transferable", true }
+            { OptionsKeys.ControllerProfiles, true },
+            { OptionsKeys.GameProfiles, false },
+            { OptionsKeys.GraphicPacks, true },
+            { OptionsKeys.OldSavegames, true },
+            { OptionsKeys.Savegames, true },
+            { OptionsKeys.DLCUpdates, true },
+            { OptionsKeys.TransferableCaches, true }
         };
         Dictionary<string, bool> defaultFileOptions = new Dictionary<string, bool> {
-            { "settings.bin", true },       // Cemu settings file
-            { "settings.xml", true }        // file containing game list data
+            { OptionsKeys.SettingsBin, true },       // Cemu settings file
+            { OptionsKeys.SettingsXml, true }        // file containing game list data
         };
         Dictionary<string, bool> defaultMigrationOptions = new Dictionary<string, bool> {
-            { "deleteDestFolderContents", false },
-            { "dontCopyMlcFolderFor1.10+", false },
-            { "askForDesktopShortcut", true },
+            { OptionsKeys.DeleteDestinationFolderContents, false },
+            { OptionsKeys.UseCustomMlcFolderIfSupported, false },
+            { OptionsKeys.AskForDesktopShortcut, true },
             // Compatibility options for new Cemu installation
-            { "setCompatibilityOptions", true },
-            { "compatOpts_runAsAdmin", false },
-            { "compatOpts_noFullscreenOptimizations", true },
-            { "compatOpts_overrideHiDPIBehaviour", true }
+            { OptionsKeys.SetCompatibilityOptions, true },
+            { OptionsKeys.CompatibilityRunAsAdmin, false },
+            { OptionsKeys.CompatibilityNoFullscreenOptimizations, true },
+            { OptionsKeys.CompatibilityOverrideHiDPIBehaviour, true }
         };
         Dictionary<string, string> defaultDownloadOptions = new Dictionary<string, string> {
-            { "cemuBaseUrl", "http://cemu.info/releases/cemu_" },
-            { "cemuUrlSuffix", ".zip" },
-            { "lastKnownCemuVersion", "1.0.0" },
+            { OptionsKeys.CemuBaseUrl, "http://cemu.info/releases/cemu_" },
+            { OptionsKeys.CemuUrlSuffix, ".zip" },
+            { OptionsKeys.LastKnownCemuVersion, "1.0.0" },
         };
 
         // Useful constants to make code more clean & readable
@@ -111,7 +144,7 @@ namespace CemuUpdateTool
             var fileOptions = new Dictionary<string, bool>();
             var migrationOptions = new Dictionary<string, bool>();
             var downloadOptions = new Dictionary<string, string>();
-            string mlcFolderExternalPath = "";
+            string customMlcFolderPath = "";
 
             if (string.IsNullOrEmpty(OptionsFilePath))      // should never happen
                 throw new InvalidOperationException("Options file path is not specified.");
@@ -144,7 +177,7 @@ namespace CemuUpdateTool
                                  *      0: folderOptions
                                  *      1: migrationOptions
                                  *      2: downloadOptions
-                                 *      3: mlcFolderExternalPath (only one line is read)
+                                 *      3: customMlcFolderPath (only one line is read)
                                  *      4: fileOptions
                                  */
 
@@ -168,7 +201,7 @@ namespace CemuUpdateTool
                                             string tmpPath = optionsFile.ReadLine();
                                             if (tmpPath.IndexOfAny(Path.GetInvalidPathChars()) == -1)
                                             {
-                                                mlcFolderExternalPath = tmpPath;
+                                                customMlcFolderPath = tmpPath;
                                                 break;     // for this section there aren't any other things to read
                                             }
                                             else
@@ -217,11 +250,11 @@ namespace CemuUpdateTool
                     throw new InvalidDataException("Options file didn't contain any useful information.");
 
                 // Since parsing has been successful, we can now copy parsed options into properties
-                FolderOptions = folderOptions;
-                FileOptions = fileOptions;
-                MigrationOptions = migrationOptions;
-                DownloadOptions = downloadOptions;
-                MlcFolderExternalPath = mlcFolderExternalPath;
+                Folders = folderOptions;
+                Files = fileOptions;
+                Migration = migrationOptions;
+                Download = downloadOptions;
+                CustomMlcFolderPath = customMlcFolderPath;
 
                 // Check for missing options in file
                 CheckForMissingEntries();
@@ -237,26 +270,26 @@ namespace CemuUpdateTool
         {
             foreach (string key in defaultFolderOptions.Keys)
             {
-                if (!FolderOptions.ContainsKey(key))
-                    FolderOptions.Add(key, false);    // if a folder was not found, it means that it shouldn't be copied
+                if (!Folders.ContainsKey(key))
+                    Folders.Add(key, false);    // if a folder was not found, it means that it shouldn't be copied
             }
 
             foreach (string key in defaultFileOptions.Keys)
             {
-                if (!FileOptions.ContainsKey(key))
-                    FileOptions.Add(key, false);    // if a file was not found, it means that it shouldn't be copied
+                if (!Files.ContainsKey(key))
+                    Files.Add(key, false);    // if a file was not found, it means that it shouldn't be copied
             }
 
             foreach (string key in defaultMigrationOptions.Keys)
             {
-                if (!MigrationOptions.ContainsKey(key))
-                    MigrationOptions.Add(key, defaultMigrationOptions[key]);
+                if (!Migration.ContainsKey(key))
+                    Migration.Add(key, defaultMigrationOptions[key]);
             }
 
             foreach (string key in defaultDownloadOptions.Keys)
             {
-                if (!DownloadOptions.ContainsKey(key))
-                    DownloadOptions.Add(key, defaultDownloadOptions[key]);
+                if (!Download.ContainsKey(key))
+                    Download.Add(key, defaultDownloadOptions[key]);
             }
         }
 
@@ -265,11 +298,11 @@ namespace CemuUpdateTool
          */
         public void SetDefaultOptions()
         {
-            FolderOptions = new Dictionary<string, bool>(defaultFolderOptions);
-            FileOptions = new Dictionary<string, bool>(defaultFileOptions);
-            MigrationOptions = new Dictionary<string, bool>(defaultMigrationOptions);
-            DownloadOptions = new Dictionary<string, string>(defaultDownloadOptions);
-            MlcFolderExternalPath = "";
+            Folders = new Dictionary<string, bool>(defaultFolderOptions);
+            Files = new Dictionary<string, bool>(defaultFileOptions);
+            Migration = new Dictionary<string, bool>(defaultMigrationOptions);
+            Download = new Dictionary<string, string>(defaultDownloadOptions);
+            CustomMlcFolderPath = "";
         }
 
         /*
@@ -282,26 +315,26 @@ namespace CemuUpdateTool
 
             // Write folder options
             dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}0");
-            foreach (KeyValuePair<string, bool> option in FolderOptions)
+            foreach (KeyValuePair<string, bool> option in Folders)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
 
             // Write additional options
             dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}1");
-            foreach (KeyValuePair<string, bool> option in MigrationOptions)
+            foreach (KeyValuePair<string, bool> option in Migration)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
 
             // Write download options
             dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}2");
-            foreach (KeyValuePair<string, string> option in DownloadOptions)
+            foreach (KeyValuePair<string, string> option in Download)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
 
             // Write mlc01 custom folder path
-            if (MlcFolderExternalPath != "")
-                dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}3\r\n" + MlcFolderExternalPath);   // \r\n -> CR-LF
+            if (CustomMlcFolderPath != "")
+                dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}3\r\n" + CustomMlcFolderPath);   // \r\n -> CR-LF
 
             // Write file options
             dataToWrite.AppendLine($"{(char) SECTION_HEADER_CHAR}4");
-            foreach (KeyValuePair<string, bool> option in FileOptions)
+            foreach (KeyValuePair<string, bool> option in Files)
                 dataToWrite.AppendLine($"{option.Key},{option.Value}");
 
             // Create destination directory if it doesn't exist
@@ -342,9 +375,9 @@ namespace CemuUpdateTool
             List<string> foldersToCopy = new List<string>();
 
             // Ignore mlc01 subfolders if source Cemu version is at least 1.10 and custom mlc folder option is selected
-            if (cemuVersionIsAtLeast110 && MigrationOptions["dontCopyMlcFolderFor1.10+"] == true)
+            if (cemuVersionIsAtLeast110 && Migration[OptionsKeys.UseCustomMlcFolderIfSupported] == true)
             {
-                foreach (string folder in SelectedEntries(FolderOptions))
+                foreach (string folder in SelectedEntries(Folders))
                 {
                     if (!folder.StartsWith(@"mlc01\"))
                         foldersToCopy.Add(folder);
@@ -352,7 +385,7 @@ namespace CemuUpdateTool
             }
             else    // otherwise append folders without any extra check 
             {
-                foreach (string folder in SelectedEntries(FolderOptions))
+                foreach (string folder in SelectedEntries(Folders))
                     foldersToCopy.Add(folder);
             }
             
@@ -366,7 +399,7 @@ namespace CemuUpdateTool
         {
             List<string> filesToCopy = new List<string>();
 
-            foreach (string file in SelectedEntries(FileOptions))
+            foreach (string file in SelectedEntries(Files))
                 filesToCopy.Add(file);
 
             return filesToCopy;
@@ -404,7 +437,7 @@ namespace CemuUpdateTool
          */
         public IEnumerable<string> CustomFolders()
         {
-            foreach (KeyValuePair<string, bool> option in FolderOptions)
+            foreach (KeyValuePair<string, bool> option in Folders)
             {
                 if (!defaultFolderOptions.ContainsKey(option.Key))
                     yield return option.Key;
@@ -413,7 +446,7 @@ namespace CemuUpdateTool
 
         public IEnumerable<string> CustomFiles()
         {
-            foreach (KeyValuePair<string, bool> option in FileOptions)
+            foreach (KeyValuePair<string, bool> option in Files)
             {
                 if (!defaultFileOptions.ContainsKey(option.Key))
                     yield return option.Key;
@@ -428,13 +461,10 @@ namespace CemuUpdateTool
     {
         public int CurrentLine { get; }
 
-        public OptionsParsingException() : base() { }
-        public OptionsParsingException(string message) : base(message) { }
         public OptionsParsingException(string message, int lineCount) : base(message)
         {
             CurrentLine = lineCount;
         }
-        public OptionsParsingException(string message, Exception inner) : base(message, inner) { }
         public OptionsParsingException(string message, Exception inner, int lineCount) : base(message, inner)
         {
             CurrentLine = lineCount;

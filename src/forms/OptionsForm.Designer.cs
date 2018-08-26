@@ -466,7 +466,7 @@
             this.chkBoxCompatOpts.TabIndex = 10;
             this.chkBoxCompatOpts.Text = "Set compatibility options for new Cemu installation:";
             this.chkBoxCompatOpts.UseVisualStyleBackColor = true;
-            this.chkBoxCompatOpts.CheckedChanged += new System.EventHandler(this.UpdateCompatOptsCheckboxesState);
+            this.chkBoxCompatOpts.CheckedChanged += new System.EventHandler(this.UpdateCompatOptionsCheckboxesState);
             // 
             // chkBoxDeletePrevContent
             // 
