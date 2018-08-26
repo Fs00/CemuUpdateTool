@@ -111,7 +111,7 @@ namespace CemuUpdateTool
 
             // Check if destination folder exists, if not throw exception
             if (!DirectoryExists(folderPath))
-                throw new DirectoryNotFoundException("Directory doesn't exist!");
+                throw new DirectoryNotFoundException($"Directory {folderPath} doesn't exist!");
 
             // Delete files
             foreach (FileInfo file in directory.GetFiles())
@@ -262,7 +262,7 @@ namespace CemuUpdateTool
          * Custom case-sensitive implementations of File.Exists() and Directory.Exists() -- based on original solution by Eric Bole-Feysot
          */
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        public static extern int GetLongPathName(string path, StringBuilder longPath, int longPathLength);
+        private static extern int GetLongPathName(string path, StringBuilder longPath, int longPathLength);
         public static bool FileExists(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))
