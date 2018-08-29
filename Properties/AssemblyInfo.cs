@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+[assembly: AssemblyReleaseDate(2018, 9, 1)]
 
 // Se si imposta ComVisible su false, i tipi in questo assembly non saranno visibili
 // ai componenti COM. Se è necessario accedere a un tipo in questo assembly da

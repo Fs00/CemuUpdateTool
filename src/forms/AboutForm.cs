@@ -1,5 +1,6 @@
 ﻿using System.Windows.Forms;
 using System.Drawing;
+using System.Reflection;
 
 namespace CemuUpdateTool
 {
@@ -9,13 +10,20 @@ namespace CemuUpdateTool
         {
             InitializeComponent();
             Icon = SystemIcons.Information;     // set form icon
-            lblVersion.Text += Application.ProductVersion;
+            lblVersion.Text += Application.ProductVersion + $" ({GetReleaseDate()})";
 
-            linklblForum.Links.Add(0, 17, "http://forum.cemu.info/forumdisplay.php/15-Guides-amp-modifications");    // add link to link label
-            // Position link label according to the other label position to avoid excessive distance caused by scaling
-            var newLinkLblBounds = linklblForum.Bounds;
-            newLinkLblBounds.X = lblUpdates.Bounds.Right - 3;
-            linklblForum.Bounds = newLinkLblBounds;
+            // Add links to labels
+            linklblForum.Links.Add(36, 57, "http://forum.cemu.info/showthread.php/684");
+            linkLblDonate.Links.Add(27, 37, "https://paypal.me/Fs00");
+        }
+
+        private string GetReleaseDate()
+        {
+            var attributes = GetType().Assembly.GetCustomAttributes(typeof(AssemblyReleaseDateAttribute), false);
+            if (attributes != null)
+                return (attributes[0] as AssemblyReleaseDateAttribute).ToString();
+
+            return "";
         }
 
         private void LinkLabelClicked(object sender, LinkLabelLinkClickedEventArgs e)
