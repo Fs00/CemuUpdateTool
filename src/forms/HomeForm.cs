@@ -36,6 +36,11 @@ namespace CemuUpdateTool
             ContainerForm.ShowForm(new MigrationForm(options, true));
         }
 
+        private void ShowUpdateForm(object sender, EventArgs e)
+        {
+            ContainerForm.ShowForm(new UpdateForm(options));
+        }
+
         private void ShowOptionsForm(object sender, LinkLabelLinkClickedEventArgs e)
         {
             new OptionsForm(options).ShowDialog();

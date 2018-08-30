@@ -101,6 +101,18 @@
     <Compile Include="src\forms\DictionaryEditingForm.Designer.cs">
       <DependentUpon>DictionaryEditingForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="src\forms\OperationsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\forms\OperationsForm.Designer.cs">
+      <DependentUpon>OperationsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="src\forms\UpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\forms\UpdateForm.Designer.cs">
+      <DependentUpon>UpdateForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="src\TextBoxLogger.cs" />
     <Compile Include="src\utils\FileUtils.cs" />
     <Compile Include="src\utils\WebUtils.cs" />
@@ -151,6 +163,9 @@
     <EmbeddedResource Include="src\forms\MigrationForm.resx">
       <DependentUpon>MigrationForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="src\forms\OperationsForm.resx">
+      <DependentUpon>OperationsForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="src\forms\OptionsForm.resx">
       <DependentUpon>OptionsForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -164,6 +179,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="src\forms\UpdateForm.resx">
+      <DependentUpon>UpdateForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include=".gitignore" />
     <None Include="Properties\App.manifest" />
     <None Include="Properties\Settings.settings">

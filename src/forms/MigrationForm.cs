@@ -58,11 +58,6 @@ namespace CemuUpdateTool
             new HelpForm(this).Show();
         }
 
-        private void OpenAboutForm(object sender, EventArgs e)
-        {
-            new AboutForm().ShowDialog();
-        }
-
         private void OpenOptionsForm(object sender, EventArgs e)
         {
             new OptionsForm(opts).ShowDialog();

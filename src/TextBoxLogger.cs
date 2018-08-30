@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
-    class TextBoxLogger
+    public class TextBoxLogger
     {
         StringBuilder logBuffer;        // buffer used to store log messages that must be written into textbox
         Dispatcher workDispatcher;      // used to update textbox on another thread

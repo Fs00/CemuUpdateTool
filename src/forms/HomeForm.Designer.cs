@@ -36,6 +36,7 @@
             this.lnkLblHelp = new System.Windows.Forms.LinkLabel();
             this.bottomPanel = new System.Windows.Forms.Panel();
             this.pnlBorder = new System.Windows.Forms.Label();
+            this.btnUpdate = new System.Windows.Forms.Button();
             this.bottomPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -132,12 +133,27 @@
             this.pnlBorder.Size = new System.Drawing.Size(530, 2);
             this.pnlBorder.TabIndex = 14;
             // 
+            // btnUpdate
+            // 
+            this.btnUpdate.FlatAppearance.BorderColor = System.Drawing.SystemColors.Control;
+            this.btnUpdate.FlatAppearance.BorderSize = 2;
+            this.btnUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnUpdate.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnUpdate.Location = new System.Drawing.Point(215, 257);
+            this.btnUpdate.Name = "btnUpdate";
+            this.btnUpdate.Size = new System.Drawing.Size(80, 44);
+            this.btnUpdate.TabIndex = 15;
+            this.btnUpdate.Text = "Update";
+            this.btnUpdate.UseVisualStyleBackColor = true;
+            this.btnUpdate.Click += new System.EventHandler(this.ShowUpdateForm);
+            // 
             // HomeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(504, 371);
+            this.Controls.Add(this.btnUpdate);
             this.Controls.Add(this.pnlBorder);
             this.Controls.Add(this.bottomPanel);
             this.Controls.Add(this.btnDlMigrate);
@@ -159,5 +175,6 @@
         private System.Windows.Forms.LinkLabel lnkLblHelp;
         private System.Windows.Forms.Panel bottomPanel;
         private System.Windows.Forms.Label pnlBorder;
+        private System.Windows.Forms.Button btnUpdate;
     }
 }
