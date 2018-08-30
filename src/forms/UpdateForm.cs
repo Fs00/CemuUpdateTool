@@ -59,7 +59,7 @@ namespace CemuUpdateTool
 
             // Create a new Worker instance and pass it all needed data
             ctSource = new CancellationTokenSource();
-            //worker = new Worker(txtBoxCemuFolder.Text, ctSource.Token, logUpdater.AppendLogMessage);
+            worker = new Worker(txtBoxCemuFolder.Text, ctSource.Token, logUpdater.AppendLogMessage);
 
             // Starting from now, we can safely cancel operations without having problems
             btnCancel.Enabled = true;

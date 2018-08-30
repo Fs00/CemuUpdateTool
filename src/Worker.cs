@@ -42,13 +42,25 @@ namespace CemuUpdateTool
         MyWebClient client;
         Action<string, bool> LoggerDelegate;    // callback that writes a message on an external log (in this case MigrationForm textbox)
 
-        public Worker(string baseSrcPath, string baseDestPath, List<string> foldersToCopy, List<string> filesToCopy, CancellationToken cancToken, Action<string, bool> LoggerDelegate)
+        // Constructor for update operations
+        public Worker(string baseDestPath, CancellationToken cancToken, Action<string, bool> LoggerDelegate)
         {
-            BaseSourcePath = baseSrcPath;
             BaseDestinationPath = baseDestPath;
             this.cancToken = cancToken;
             this.LoggerDelegate = LoggerDelegate;
 
+            client = new MyWebClient();
+            cancToken.Register(StopPendingWebOperation);    // register the action to be performed when cancellation is requested
+            CreatedFiles = new List<FileInfo>();
+            CreatedDirectories = new List<DirectoryInfo>();
+        }
+
+        // Constructor for migration operations
+        public Worker(string baseSrcPath, string baseDestPath, List<string> foldersToCopy, List<string> filesToCopy, CancellationToken cancToken, Action<string, bool> LoggerDelegate)
+               : this(baseDestPath, cancToken, LoggerDelegate)
+        {
+            BaseSourcePath = baseSrcPath;
+            
             // Populate folders/file tuple arrays and calculate their sizes
             this.foldersToCopy = new (string, long)[foldersToCopy.Count];
             for (int i = 0; i < foldersToCopy.Count; i++)
@@ -58,16 +70,11 @@ namespace CemuUpdateTool
             for (int i = 0; i < filesToCopy.Count; i++)
                 this.filesToCopy[i] = (filesToCopy[i], 0L);
             CalculateSizes();
-
-            client = new MyWebClient();
-            cancToken.Register(StopPendingWebOperation);    // register the action to be performed when cancellation is requested
-            CreatedFiles = new List<FileInfo>();
-            CreatedDirectories = new List<DirectoryInfo>();
         }
 
         /*
          *  Downloads and extracts the latest Cemu version.
-         *  Returns the version number of the downloaded Cemu version (needed by MigrationForm)
+         *  Returns the version number of the downloaded Cemu version (needed to update the latest known Cemu version in options)
          */
         public VersionNumber PerformDownloadOperations(Dictionary<string, string> downloadOptions, Action<string> PerformingWork, DownloadProgressChangedEventHandler progressHandler)
         {
@@ -207,14 +214,15 @@ namespace CemuUpdateTool
         /*
          *  Performs update operations, which include Cemu executable replacing, resources folder removal (avoids not updated translations) and, upon user request,
          *  precompiled removal and game profiles update.
+         *  Returns the version number of the downloaded Cemu version in order to update the latest known Cemu version in options.
          *  Note: to reuse correctly PerformDownloadOperations(), BaseDestinationPath must be set to a temporary folder. From there, we copy only the files we need
          *        to the cemuInstallationPath passed by parameter.
          */
-        public void PerformUpdateOperations(string cemuInstallationPath, bool removePrecompiledCaches, bool updateGameProfiles,
-                                            Dictionary<string, string> downloadOptions, Action<string> PerformingWork, DownloadProgressChangedEventHandler progressHandler)
+        public VersionNumber PerformUpdateOperations(string cemuInstallationPath, bool removePrecompiledCaches, bool updateGameProfiles,
+                                                     Dictionary<string, string> downloadOptions, Action<string> PerformingWork, DownloadProgressChangedEventHandler progressHandler)
         {
             // Download the latest version of Cemu to BaseDestinationPath
-            PerformDownloadOperations(downloadOptions, PerformingWork, progressHandler);
+            VersionNumber downloadedCemuVer = PerformDownloadOperations(downloadOptions, PerformingWork, progressHandler);
 
             // Replace Cemu.exe from the downloaded Cemu version
             System.IO.File.Copy(Path.Combine(BaseDestinationPath, "Cemu.exe"), Path.Combine(cemuInstallationPath, "Cemu.exe"), true);
@@ -247,6 +255,8 @@ namespace CemuUpdateTool
             {
                 HandleLogMessage($"Unexpected error during deletion of temporary downloaded Cemu folder: {exc.Message}", EventLogEntryType.Error);
             }
+
+            return downloadedCemuVer;
         }
 
         private VersionNumber DiscoverLatestCemuVersion(string cemuUrlSuffix, VersionNumber lastKnownCemuVersion = null)
