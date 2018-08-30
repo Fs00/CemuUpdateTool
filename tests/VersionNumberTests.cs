@@ -144,6 +144,7 @@ namespace CemuUpdateTool.Tests
             Assert.AreEqual(0, equalsResult);
         }
 
+        #pragma warning disable CS1718
         [TestMethod()]
         public void ComparisonOperatorsTest()
         {
@@ -167,5 +168,6 @@ namespace CemuUpdateTool.Tests
             Assert.IsTrue(leResult);
             Assert.IsTrue(geResult);
         }
+        #pragma warning restore CS1718
     }
 }
