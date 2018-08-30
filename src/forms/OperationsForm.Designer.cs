@@ -52,7 +52,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this.btnCancel.Enabled = false;
             this.btnCancel.Location = new System.Drawing.Point(326, 142);
             this.btnCancel.Name = "btnCancel";
@@ -64,7 +64,7 @@
             // 
             // btnStart
             // 
-            this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this.btnStart.Enabled = false;
             this.btnStart.Location = new System.Drawing.Point(419, 142);
             this.btnStart.Name = "btnStart";
@@ -91,14 +91,14 @@
             // 
             this.lblDetails.Location = new System.Drawing.Point(14, 263);
             this.lblDetails.Name = "lblDetails";
-            this.lblDetails.Size = new System.Drawing.Size(494, 15);
+            this.lblDetails.Size = new System.Drawing.Size(400, 15);
             this.lblDetails.TabIndex = 6;
             this.lblDetails.Text = "▽ Details";
             this.lblDetails.Click += new System.EventHandler(this.ShowHideDetailsTextbox);
             // 
             // lblPercent
             // 
-            this.lblPercent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblPercent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this.lblPercent.AutoSize = true;
             this.lblPercent.Location = new System.Drawing.Point(485, 193);
             this.lblPercent.Name = "lblPercent";
@@ -109,8 +109,7 @@
             // 
             // overallProgressBar
             // 
-            this.overallProgressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.overallProgressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left));
             this.overallProgressBar.Location = new System.Drawing.Point(16, 215);
             this.overallProgressBar.Margin = new System.Windows.Forms.Padding(3, 7, 3, 3);
             this.overallProgressBar.Name = "overallProgressBar";
@@ -129,7 +128,7 @@
             // btnHelp
             // 
             this.btnHelp.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.btnHelp.Location = new System.Drawing.Point(421, 11);
+            this.btnHelp.Location = new System.Drawing.Point(421, 10);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(87, 29);
             this.btnHelp.TabIndex = 9;

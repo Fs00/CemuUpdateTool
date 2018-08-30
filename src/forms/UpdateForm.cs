@@ -88,5 +88,10 @@ namespace CemuUpdateTool
             txtBoxCemuFolder.Text = "";
             txtBoxCemuFolder.TextChanged += CheckFolderTextboxContent;
         }
+
+        // These "fake overrides" are needed to avoid VS designer errors
+        protected override void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e) { base.ResizeFormOnLogTextboxVisibleChanged(sender, e); }
+        protected override void TextboxDragDrop(object sender, DragEventArgs e) { base.TextboxDragDrop(sender, e); }
+        protected override void TextboxDragEnter(object sender, DragEventArgs e) { base.TextboxDragEnter(sender, e); }
     }
 }

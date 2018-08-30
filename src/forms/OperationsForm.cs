@@ -95,7 +95,7 @@ namespace CemuUpdateTool
         /*
          *  Methods for handling drag & drop into folder textboxes
          */
-        protected void TextboxDragEnter(object sender, DragEventArgs e)
+        protected virtual void TextboxDragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.Text) || e.Data.GetDataPresent(DataFormats.FileDrop))
                 e.Effect = DragDropEffects.Copy;
@@ -103,7 +103,7 @@ namespace CemuUpdateTool
                 e.Effect = DragDropEffects.None;
         }
 
-        protected void TextboxDragDrop(object sender, DragEventArgs e)
+        protected virtual void TextboxDragDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 (sender as TextBox).Text = (e.Data.GetData(DataFormats.FileDrop) as string[])[0];
@@ -126,8 +126,9 @@ namespace CemuUpdateTool
 
         /*
          *  Resizes the form when txtBoxLog's visible state changes
+         *  Note: this event handler must be added only on inherited forms, otherwise the designer will crash
          */
-        protected void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e)
+        protected virtual void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e)
         {
             if (ContainerForm.IsCurrentDisplayingForm(this))     // avoid triggering the event before the form is shown
             {

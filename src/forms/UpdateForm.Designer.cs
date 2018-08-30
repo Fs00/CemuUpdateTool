@@ -46,7 +46,7 @@
             // 
             // lblPercent
             // 
-            this.lblPercent.Location = new System.Drawing.Point(554, 174);
+            this.lblPercent.Location = new System.Drawing.Point(499, 174);
             // 
             // overallProgressBar
             // 
@@ -73,20 +73,20 @@
             // 
             this.txtBoxLog.Location = new System.Drawing.Point(30, 265);
             this.txtBoxLog.Size = new System.Drawing.Size(492, 133);
-            this.txtBoxLog.VisibleChanged += new System.EventHandler(ResizeFormOnLogTextboxVisibleChanged);
+            this.txtBoxLog.VisibleChanged += new System.EventHandler(this.ResizeFormOnLogTextboxVisibleChanged);
             // 
             // bottomPanel
             // 
             this.bottomPanel.Location = new System.Drawing.Point(0, 412);
-            this.bottomPanel.Size = new System.Drawing.Size(533, 46);
+            this.bottomPanel.Size = new System.Drawing.Size(537, 46);
             // 
             // headerPanel
             // 
-            this.headerPanel.Size = new System.Drawing.Size(533, 64);
+            this.headerPanel.Size = new System.Drawing.Size(537, 64);
             // 
             // pnlBorder1
             // 
-            this.pnlBorder1.Size = new System.Drawing.Size(534, 2);
+            this.pnlBorder1.Size = new System.Drawing.Size(546, 2);
             // 
             // lblTitle
             // 
@@ -101,7 +101,6 @@
             // 
             // lblVersionNr
             // 
-            this.lblVersionNr.Anchor = (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right);
             this.lblVersionNr.Location = new System.Drawing.Point(494, 75);
             this.lblVersionNr.Name = "lblVersionNr";
             this.lblVersionNr.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -112,7 +111,6 @@
             // 
             // lblCemuVersion
             // 
-            this.lblCemuVersion.Anchor = (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right);
             this.lblCemuVersion.AutoSize = true;
             this.lblCemuVersion.Location = new System.Drawing.Point(414, 75);
             this.lblCemuVersion.Name = "lblCemuVersion";
@@ -123,7 +121,6 @@
             // 
             // btnSelectFolder
             // 
-            this.btnSelectFolder.Anchor = (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right);
             this.btnSelectFolder.Location = new System.Drawing.Point(433, 95);
             this.btnSelectFolder.Name = "btnSelectFolder";
             this.btnSelectFolder.Size = new System.Drawing.Size(89, 25);
@@ -141,8 +138,8 @@
             this.txtBoxCemuFolder.Size = new System.Drawing.Size(411, 23);
             this.txtBoxCemuFolder.TabIndex = 1;
             this.txtBoxCemuFolder.TextChanged += new System.EventHandler(this.CheckFolderTextboxContent);
-            this.txtBoxCemuFolder.DragEnter += new System.Windows.Forms.DragEventHandler(TextboxDragEnter);
-            this.txtBoxCemuFolder.DragDrop += new System.Windows.Forms.DragEventHandler(TextboxDragDrop);
+            this.txtBoxCemuFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
+            this.txtBoxCemuFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
             // 
             // lblCemuFolder
             // 
@@ -176,7 +173,7 @@
             // UpdateForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
-            this.ClientSize = new System.Drawing.Size(533, 458);
+            this.ClientSize = new System.Drawing.Size(537, 458);
             this.Controls.Add(this.chkBoxDeletePrecompiled);
             this.Controls.Add(this.chkBoxUpdGameProfiles);
             this.Controls.Add(this.lblVersionNr);

@@ -8,12 +8,8 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
-    public partial class MigrationForm : Form
+    public partial class MigrationForm : OperationsForm
     {
-        OptionsManager opts;
-        Worker worker;
-
-        CancellationTokenSource ctSource;           // handles task cancellation
         Progress<long> progressHandler;             // used to send callbacks to UI thread
         bool progressBarMaxDivided = false;         /* if overall size to copy > int.MaxValue (maximum possible ProgressBar value), progress bar maximum
                                                        is divided by 1000 and therefore the same applies to every increment to its value */
@@ -21,19 +17,12 @@ namespace CemuUpdateTool
              destFolderTxtBoxValidated = false;     // true when content of the textbox is verified to be correct
         VersionNumber oldCemuExeVer, newCemuExeVer;
 
-        Stopwatch stopwatch;                        // used to measure how much time the task took to complete
-        TextBoxLogger logUpdater;                   // used to update txtBoxLog asynchronously
-
         public bool DownloadMode { get; }           // if true, newer version of Cemu will be downloaded before migrating
 
-        public MigrationForm(OptionsManager opts, bool downloadMode)
+        public MigrationForm(OptionsManager opts, bool downloadMode) : base(opts)
         {
             InitializeComponent();
-            CheckForIllegalCrossThreadCalls = false;
             DownloadMode = downloadMode;
-            this.opts = opts;
-
-            stopwatch = new Stopwatch();
             progressHandler = new Progress<long>(UpdateProgressBarsAndLog);
 
             // Set title according to the mode chosen
@@ -43,24 +32,8 @@ namespace CemuUpdateTool
                 lblTitle.Text = "Migrate";
 
             // Remove default (and useless) menu strips
-            txtBoxLog.ContextMenuStrip = new ContextMenuStrip();
             txtBoxSrcFolder.ContextMenuStrip = new ContextMenuStrip();
             txtBoxDestFolder.ContextMenuStrip = new ContextMenuStrip();
-        }
-
-        private void Back(object sender, EventArgs e)
-        {
-            ContainerForm.ShowHomeForm();
-        }
-
-        private void OpenHelpForm(object sender, EventArgs e)
-        {
-            new HelpForm(this).Show();
-        }
-
-        private void OpenOptionsForm(object sender, EventArgs e)
-        {
-            new OptionsForm(opts).ShowDialog();
         }
 
         /*
@@ -68,18 +41,14 @@ namespace CemuUpdateTool
          */
         private void SelectSrcCemuFolder(object sender, EventArgs e)
         {
-            // Open folder picker in Computer or in the currently selected folder (if it exists)
-            var folderPicker = new FolderBrowserDialog();
-            folderPicker.RootFolder = Environment.SpecialFolder.MyComputer;
-            if (!string.IsNullOrEmpty(txtBoxSrcFolder.Text) && FileUtils.DirectoryExists(txtBoxSrcFolder.Text))
-                folderPicker.SelectedPath = txtBoxSrcFolder.Text;
+            // Open folder picker
+            string chosenFolder = ChooseFolder(txtBoxSrcFolder.Text);
 
-            DialogResult result = folderPicker.ShowDialog();
             // Check whether result is different to the other selected folder (it mustn't be equal)
-            if (result == DialogResult.OK)
+            if (chosenFolder != null)
             {
-                if (folderPicker.SelectedPath != txtBoxDestFolder.Text)
-                    txtBoxSrcFolder.Text = folderPicker.SelectedPath;
+                if (chosenFolder != txtBoxDestFolder.Text)
+                    txtBoxSrcFolder.Text = chosenFolder;
                 else
                     MessageBox.Show("Source and destination folder must be different.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -90,18 +59,14 @@ namespace CemuUpdateTool
          */
         private void SelectDestCemuFolder(object sender, EventArgs e)
         {
-            // Open folder picker in Computer or in the currently selected folder (if it exists)
-            var folderPicker = new FolderBrowserDialog();
-            folderPicker.RootFolder = Environment.SpecialFolder.MyComputer;
-            if (!string.IsNullOrEmpty(txtBoxDestFolder.Text) && FileUtils.DirectoryExists(txtBoxDestFolder.Text))
-                folderPicker.SelectedPath = txtBoxDestFolder.Text;
+            // Open folder picker
+            string chosenFolder = ChooseFolder(txtBoxDestFolder.Text);
 
-            DialogResult result = folderPicker.ShowDialog();
             // Check whether result is different to the other selected folder (it mustn't be equal)
-            if (result == DialogResult.OK)
+            if (chosenFolder != null)
             {
-                if (folderPicker.SelectedPath != txtBoxSrcFolder.Text)
-                    txtBoxDestFolder.Text = folderPicker.SelectedPath;
+                if (chosenFolder != txtBoxSrcFolder.Text)
+                    txtBoxDestFolder.Text = chosenFolder;
                 else
                     MessageBox.Show("Source and destination folder must be different.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -116,8 +81,8 @@ namespace CemuUpdateTool
                 srcFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
 
-                lblOldCemuVersion.Visible = false;
-                lblOldVersionNr.Text = "";
+                lblSrcCemuVersion.Visible = false;
+                lblSrcVersionNr.Text = "";
             }
             // Display Cemu version label and verify if all user inputs are OK
             else
@@ -126,8 +91,8 @@ namespace CemuUpdateTool
                 srcFolderTxtBoxValidated = true;
 
                 oldCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxSrcFolder.Text, "Cemu.exe")), 3);
-                lblOldCemuVersion.Visible = true;
-                lblOldVersionNr.Text = oldCemuExeVer.ToString();
+                lblSrcCemuVersion.Visible = true;
+                lblSrcVersionNr.Text = oldCemuExeVer.ToString();
 
                 if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxSrcFolder.Text != txtBoxDestFolder.Text))
                     btnStart.Enabled = true;
@@ -157,8 +122,8 @@ namespace CemuUpdateTool
                 destFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
 
-                lblNewCemuVersion.Visible = false;
-                lblNewVersionNr.Text = "";
+                lblDestCemuVersion.Visible = false;
+                lblDestVersionNr.Text = "";
             }
             // Display Cemu version label (only if the form is not in download mode) and verify if all user inputs are OK
             else
@@ -169,8 +134,8 @@ namespace CemuUpdateTool
                 if (!DownloadMode)
                 {
                     newCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")), 3);
-                    lblNewCemuVersion.Visible = true;
-                    lblNewVersionNr.Text = newCemuExeVer.ToString();
+                    lblDestCemuVersion.Visible = true;
+                    lblDestVersionNr.Text = newCemuExeVer.ToString();
                 }
 
                 if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxSrcFolder.Text != txtBoxDestFolder.Text))
@@ -180,7 +145,7 @@ namespace CemuUpdateTool
             }
         }
 
-        private async void DoOperationsAsync(object sender, EventArgs e)
+        protected override async void DoOperationsAsync(object sender, EventArgs e)
         {
             // If not in download mode, warn the user if old Cemu version is not older than new one
             if (!DownloadMode)
@@ -361,18 +326,15 @@ namespace CemuUpdateTool
         /*
          *  Resets the GUI and all Worker-related variables in order for the form to be ready for another task
          */
-        private void ResetEverything()
+        protected override void ResetEverything()
         {
-            // Reset progress bars
-            overallProgressBar.Value = 0;
-            lblPercent.Text = "0%";
-            lblCurrentTask.Text = "Waiting for operations to start...";
+            base.ResetEverything();
 
             // Reset Cemu version label
-            lblOldCemuVersion.Visible = false;
-            lblNewCemuVersion.Visible = false;
-            lblOldVersionNr.Text = "";
-            lblNewVersionNr.Text = "";
+            lblSrcCemuVersion.Visible = false;
+            lblDestCemuVersion.Visible = false;
+            lblSrcVersionNr.Text = "";
+            lblDestVersionNr.Text = "";
 
             // Reset textboxes (I need to detach & reattach event handlers otherwise errorProviders will be triggered) and buttons
             txtBoxSrcFolder.TextChanged -= CheckSrcFolderTextboxContent;
@@ -381,24 +343,10 @@ namespace CemuUpdateTool
             txtBoxDestFolder.TextChanged -= CheckDestFolderTextboxContent;
             txtBoxDestFolder.Text = "";
             txtBoxDestFolder.TextChanged += CheckDestFolderTextboxContent;
-            btnCancel.Enabled = false;
-            btnBack.Enabled = true;
 
             // Reset textboxes' validated state
             srcFolderTxtBoxValidated = false;
             destFolderTxtBoxValidated = false;
-
-            // Reset stopwatch
-            stopwatch.Reset();
-
-            // Tell the textbox logger to stop after printing all queued messages
-            logUpdater.StopAndWaitShutdown();
-        }
-
-        private void CancelOperations(object sender = null, EventArgs e = null)
-        {
-            lblCurrentTask.Text = "Cancelling...";
-            ctSource.Cancel();
         }
         
         /*
@@ -418,76 +366,14 @@ namespace CemuUpdateTool
             logUpdater.UpdateTextBox();
         }
 
-        /*
-         *  Callback method that updates current task label according to the next task
-         *  It also updates log textbox in order to prevent messages not being written if progress bar isn't updated during a task
-         */
-        private void ChangeProgressLabelText(string newLabelText)
+        private void OpenOptionsForm(object sender, EventArgs e)
         {
-            lblCurrentTask.Text = $"{newLabelText}...";
-            logUpdater.AppendLogMessage($"-- {newLabelText} --");
-            logUpdater.UpdateTextBox();
+            new OptionsForm(opts).ShowDialog();
         }
 
-        /*
-         *  Methods for handling drag & drop into folder textboxes
-         */
-        private void TextboxDragEnter(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.Text) || e.Data.GetDataPresent(DataFormats.FileDrop))
-                e.Effect = DragDropEffects.Copy;
-            else
-                e.Effect = DragDropEffects.None;
-        }
-
-        private void TextboxDragDrop(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                (sender as TextBox).Text = (e.Data.GetData(DataFormats.FileDrop) as string[])[0];
-            else if (e.Data.GetDataPresent(DataFormats.Text))
-                (sender as TextBox).Text = e.Data.GetData(DataFormats.Text).ToString();
-        }
-
-        /*
-         *  Shows/hides log textbox when clicking on Details label
-         */
-        private void ShowHideDetailsTextbox(object sender, EventArgs e)
-        {
-            if (txtBoxLog.Visible)  // arrow down -> arrow right
-                lblDetails.Text = lblDetails.Text.Replace((char)9661, (char)9655);
-            else                    // arrow right -> arrow down
-                lblDetails.Text = lblDetails.Text.Replace((char)9655, (char)9661);
-
-            txtBoxLog.Visible = !txtBoxLog.Visible;
-        }
-
-        /*
-         *  Resizes the form when txtBoxLog's visible state changes
-         */
-        private void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e)
-        {
-            if (ContainerForm.IsCurrentDisplayingForm(this))     // avoid triggering the event before the form is shown
-            {
-                if (txtBoxLog.Visible)
-                    this.Height += txtBoxLog.Height;
-                else
-                    this.Height -= txtBoxLog.Height;
-            }
-        }
-
-        /*
-         *  If there's a job running, cancel window closing and ask the user if he wants to cancel operations
-         */
-        private void PreventClosingIfOperationInProgress(object sender, FormClosingEventArgs e)
-        {
-            if (logUpdater != null && logUpdater.IsReady)
-            {
-                e.Cancel = true;
-                DialogResult choice = MessageBox.Show("You can't close this window while an operation is in progress. Do you want to cancel the job?",
-                                                      "Exit not allowed", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                if (choice == DialogResult.Yes)
-                    CancelOperations();
-            }
-        }
+        // These "fake overrides" are needed to avoid VS designer errors
+        protected override void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e)  { base.ResizeFormOnLogTextboxVisibleChanged(sender, e); }
+        protected override void TextboxDragDrop(object sender, DragEventArgs e)  { base.TextboxDragDrop(sender, e); }
+        protected override void TextboxDragEnter(object sender, DragEventArgs e)  { base.TextboxDragEnter(sender, e); }
     }
 }
