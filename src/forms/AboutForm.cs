@@ -13,8 +13,8 @@ namespace CemuUpdateTool
             lblVersion.Text += Application.ProductVersion + $" ({GetReleaseDate()})";
 
             // Add links to labels
-            linklblForum.Links.Add(36, 57, "http://forum.cemu.info/showthread.php/684");
-            linkLblDonate.Links.Add(27, 37, "https://paypal.me/Fs00");
+            linklblForum.Links.Add(36, 26, "http://forum.cemu.info/showthread.php/684");
+            linkLblDonate.Links.Add(27, 15, "https://paypal.me/Fs00");
         }
 
         private string GetReleaseDate()

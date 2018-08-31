@@ -108,7 +108,7 @@
             this.linkLblDonate.Name = "linkLblDonate";
             this.linkLblDonate.Size = new System.Drawing.Size(209, 21);
             this.linkLblDonate.TabIndex = 7;
-            this.linkLblDonate.Text = "If you want to say thanks, donate me!";
+            this.linkLblDonate.Text = "If you want to say thanks, donate to me!";
             this.linkLblDonate.UseCompatibleTextRendering = true;
             this.linkLblDonate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelClicked);
             // 

@@ -29,59 +29,11 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.lblContact = new System.Windows.Forms.Label();
-            this.linkLblDiscord = new System.Windows.Forms.LinkLabel();
-            this.lblOr = new System.Windows.Forms.Label();
-            this.linkLblForum = new System.Windows.Forms.LinkLabel();
             this.btnClose = new System.Windows.Forms.Button();
             this.richTxtBoxHelp = new System.Windows.Forms.RichTextBox();
             this.toolTipProfileInfo = new System.Windows.Forms.ToolTip(this.components);
+            this.linkLblQuestions = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
-            // 
-            // lblContact
-            // 
-            this.lblContact.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblContact.AutoSize = true;
-            this.lblContact.Location = new System.Drawing.Point(12, 277);
-            this.lblContact.Name = "lblContact";
-            this.lblContact.Size = new System.Drawing.Size(241, 15);
-            this.lblContact.TabIndex = 1;
-            this.lblContact.Text = "More questions? Don\'t hesitate to ask me on";
-            // 
-            // linkLblDiscord
-            // 
-            this.linkLblDiscord.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.linkLblDiscord.AutoSize = true;
-            this.linkLblDiscord.Location = new System.Drawing.Point(251, 277);
-            this.linkLblDiscord.Name = "linkLblDiscord";
-            this.linkLblDiscord.Size = new System.Drawing.Size(47, 15);
-            this.linkLblDiscord.TabIndex = 2;
-            this.linkLblDiscord.TabStop = true;
-            this.linkLblDiscord.Text = "Discord";
-            this.toolTipProfileInfo.SetToolTip(this.linkLblDiscord, "(user ID: Fs00#9393)");
-            this.linkLblDiscord.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelClicked);
-            // 
-            // lblOr
-            // 
-            this.lblOr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblOr.AutoSize = true;
-            this.lblOr.Location = new System.Drawing.Point(295, 277);
-            this.lblOr.Name = "lblOr";
-            this.lblOr.Size = new System.Drawing.Size(51, 15);
-            this.lblOr.TabIndex = 3;
-            this.lblOr.Text = "or in the";
-            // 
-            // linkLblForum
-            // 
-            this.linkLblForum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.linkLblForum.AutoSize = true;
-            this.linkLblForum.Location = new System.Drawing.Point(344, 277);
-            this.linkLblForum.Name = "linkLblForum";
-            this.linkLblForum.Size = new System.Drawing.Size(112, 15);
-            this.linkLblForum.TabIndex = 4;
-            this.linkLblForum.TabStop = true;
-            this.linkLblForum.Text = "Cemu forum thread";
-            this.linkLblForum.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelClicked);
             // 
             // btnClose
             // 
@@ -116,21 +68,31 @@
             this.toolTipProfileInfo.InitialDelay = 300;
             this.toolTipProfileInfo.ReshowDelay = 100;
             // 
+            // linkLblQuestions
+            // 
+            this.linkLblQuestions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.linkLblQuestions.AutoSize = true;
+            this.linkLblQuestions.LinkArea = new System.Windows.Forms.LinkArea(83, 0);
+            this.linkLblQuestions.Location = new System.Drawing.Point(12, 276);
+            this.linkLblQuestions.Name = "linkLblQuestions";
+            this.linkLblQuestions.Size = new System.Drawing.Size(458, 21);
+            this.linkLblQuestions.TabIndex = 7;
+            this.linkLblQuestions.Text = "More questions? Don\'t hesitate to ask me on Discord or in the official forum thre" +
+    "ad";
+            this.linkLblQuestions.UseCompatibleTextRendering = true;
+            // 
             // HelpForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(586, 309);
+            this.Controls.Add(this.linkLblQuestions);
             this.Controls.Add(this.richTxtBoxHelp);
             this.Controls.Add(this.btnClose);
-            this.Controls.Add(this.linkLblForum);
-            this.Controls.Add(this.lblOr);
-            this.Controls.Add(this.linkLblDiscord);
-            this.Controls.Add(this.lblContact);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.MaximizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(580, 150);
+            this.MinimumSize = new System.Drawing.Size(603, 150);
             this.Name = "HelpForm";
             this.Text = "Help";
             this.ResumeLayout(false);
@@ -139,12 +101,9 @@
         }
 
         #endregion
-        private System.Windows.Forms.Label lblContact;
-        private System.Windows.Forms.LinkLabel linkLblDiscord;
-        private System.Windows.Forms.Label lblOr;
-        private System.Windows.Forms.LinkLabel linkLblForum;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.RichTextBox richTxtBoxHelp;
         private System.Windows.Forms.ToolTip toolTipProfileInfo;
+        private System.Windows.Forms.LinkLabel linkLblQuestions;
     }
 }

@@ -135,7 +135,7 @@
             // 
             // btnSelectDestFolder
             // 
-            this.btnSelectDestFolder.Location = new System.Drawing.Point(419, 149);
+            this.btnSelectDestFolder.Location = new System.Drawing.Point(419, 150);
             this.btnSelectDestFolder.Name = "btnSelectDestFolder";
             this.btnSelectDestFolder.Size = new System.Drawing.Size(89, 25);
             this.btnSelectDestFolder.TabIndex = 4;
@@ -166,7 +166,7 @@
             // 
             // btnSelectSrcFolder
             // 
-            this.btnSelectSrcFolder.Location = new System.Drawing.Point(419, 96);
+            this.btnSelectSrcFolder.Location = new System.Drawing.Point(419, 95);
             this.btnSelectSrcFolder.Name = "btnSelectSrcFolder";
             this.btnSelectSrcFolder.Size = new System.Drawing.Size(89, 25);
             this.btnSelectSrcFolder.TabIndex = 2;

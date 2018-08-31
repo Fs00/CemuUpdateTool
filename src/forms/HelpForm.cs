@@ -11,8 +11,8 @@ namespace CemuUpdateTool
             InitializeComponent();
 
             Icon = System.Drawing.SystemIcons.Question;
-            linkLblForum.Links.Add(0, 17, "http://forum.cemu.info/forumdisplay.php/15-Guides-amp-modifications");
-            linkLblDiscord.Links.Add(0, 7, "http://discordapp.com");
+            linkLblQuestions.Links.Add(62, 26, "http://forum.cemu.info/showthread.php/684");
+            linkLblQuestions.Links.Add(44, 7, "http://discordapp.com");
 
             // Initialize the resource manager used to load text
             ResourceManager textResources = new ResourceManager("CemuUpdateTool.resources.HelpFormTexts", GetType().Assembly);
