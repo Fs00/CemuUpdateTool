@@ -40,11 +40,11 @@
             this.btnBack = new System.Windows.Forms.Button();
             this.errProviderFolders = new System.Windows.Forms.ErrorProvider(this.components);
             this.bottomPanel = new System.Windows.Forms.Panel();
-            this.pnlBorder2 = new System.Windows.Forms.Label();
+            this.pnlBorderBottom = new System.Windows.Forms.Label();
             this.headerPanel = new System.Windows.Forms.Panel();
             this.lblDescription = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
-            this.pnlBorder1 = new System.Windows.Forms.Label();
+            this.pnlBorderTop = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderFolders)).BeginInit();
             this.bottomPanel.SuspendLayout();
             this.headerPanel.SuspendLayout();
@@ -52,7 +52,6 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this.btnCancel.Enabled = false;
             this.btnCancel.Location = new System.Drawing.Point(326, 142);
             this.btnCancel.Name = "btnCancel";
@@ -64,7 +63,6 @@
             // 
             // btnStart
             // 
-            this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this.btnStart.Enabled = false;
             this.btnStart.Location = new System.Drawing.Point(419, 142);
             this.btnStart.Name = "btnStart";
@@ -83,7 +81,7 @@
             this.txtBoxLog.Name = "txtBoxLog";
             this.txtBoxLog.ReadOnly = true;
             this.txtBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtBoxLog.Size = new System.Drawing.Size(478, 133);
+            this.txtBoxLog.Size = new System.Drawing.Size(478, 134);
             this.txtBoxLog.TabIndex = 11;
             this.txtBoxLog.TabStop = false;
             // 
@@ -91,14 +89,13 @@
             // 
             this.lblDetails.Location = new System.Drawing.Point(14, 263);
             this.lblDetails.Name = "lblDetails";
-            this.lblDetails.Size = new System.Drawing.Size(400, 15);
+            this.lblDetails.Size = new System.Drawing.Size(493, 15);
             this.lblDetails.TabIndex = 6;
             this.lblDetails.Text = "▽ Details";
             this.lblDetails.Click += new System.EventHandler(this.ShowHideDetailsTextbox);
             // 
             // lblPercent
             // 
-            this.lblPercent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this.lblPercent.AutoSize = true;
             this.lblPercent.Location = new System.Drawing.Point(485, 193);
             this.lblPercent.Name = "lblPercent";
@@ -109,7 +106,6 @@
             // 
             // overallProgressBar
             // 
-            this.overallProgressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left));
             this.overallProgressBar.Location = new System.Drawing.Point(16, 215);
             this.overallProgressBar.Margin = new System.Windows.Forms.Padding(3, 7, 3, 3);
             this.overallProgressBar.Name = "overallProgressBar";
@@ -155,7 +151,7 @@
             // bottomPanel
             // 
             this.bottomPanel.BackColor = System.Drawing.SystemColors.Control;
-            this.bottomPanel.Controls.Add(this.pnlBorder2);
+            this.bottomPanel.Controls.Add(this.pnlBorderBottom);
             this.bottomPanel.Controls.Add(this.btnHelp);
             this.bottomPanel.Controls.Add(this.btnBack);
             this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -164,21 +160,21 @@
             this.bottomPanel.Size = new System.Drawing.Size(519, 46);
             this.bottomPanel.TabIndex = 12;
             // 
-            // pnlBorder2
+            // pnlBorderBottom
             // 
-            this.pnlBorder2.BackColor = System.Drawing.SystemColors.Control;
-            this.pnlBorder2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pnlBorder2.Location = new System.Drawing.Point(0, 0);
-            this.pnlBorder2.Name = "pnlBorder2";
-            this.pnlBorder2.Size = new System.Drawing.Size(530, 2);
-            this.pnlBorder2.TabIndex = 13;
+            this.pnlBorderBottom.BackColor = System.Drawing.SystemColors.Control;
+            this.pnlBorderBottom.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.pnlBorderBottom.Location = new System.Drawing.Point(-1, 0);
+            this.pnlBorderBottom.Name = "pnlBorderBottom";
+            this.pnlBorderBottom.Size = new System.Drawing.Size(520, 1);
+            this.pnlBorderBottom.TabIndex = 13;
             // 
             // headerPanel
             // 
             this.headerPanel.BackColor = System.Drawing.SystemColors.Control;
             this.headerPanel.Controls.Add(this.lblDescription);
             this.headerPanel.Controls.Add(this.lblTitle);
-            this.headerPanel.Controls.Add(this.pnlBorder1);
+            this.headerPanel.Controls.Add(this.pnlBorderTop);
             this.headerPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.headerPanel.Location = new System.Drawing.Point(0, 0);
             this.headerPanel.Name = "headerPanel";
@@ -206,15 +202,14 @@
             this.lblTitle.TabIndex = 14;
             this.lblTitle.UseMnemonic = false;
             // 
-            // pnlBorder1
+            // pnlBorderTop
             // 
-            this.pnlBorder1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlBorder1.BackColor = System.Drawing.SystemColors.Control;
-            this.pnlBorder1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pnlBorder1.Location = new System.Drawing.Point(-3, 62);
-            this.pnlBorder1.Name = "pnlBorder1";
-            this.pnlBorder1.Size = new System.Drawing.Size(530, 2);
-            this.pnlBorder1.TabIndex = 13;
+            this.pnlBorderTop.BackColor = System.Drawing.SystemColors.Control;
+            this.pnlBorderTop.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.pnlBorderTop.Location = new System.Drawing.Point(-1, 63);
+            this.pnlBorderTop.Name = "pnlBorderTop";
+            this.pnlBorderTop.Size = new System.Drawing.Size(530, 1);
+            this.pnlBorderTop.TabIndex = 13;
             // 
             // OperationsForm
             // 
@@ -262,9 +257,9 @@
         protected System.Windows.Forms.Label lblDetails;
         protected System.Windows.Forms.TextBox txtBoxLog;
         protected System.Windows.Forms.Panel bottomPanel;
-        protected System.Windows.Forms.Label pnlBorder2;
+        protected System.Windows.Forms.Label pnlBorderBottom;
         protected System.Windows.Forms.Panel headerPanel;
-        protected System.Windows.Forms.Label pnlBorder1;
+        protected System.Windows.Forms.Label pnlBorderTop;
         protected System.Windows.Forms.Label lblTitle;
         protected System.Windows.Forms.Label lblDescription;
     }

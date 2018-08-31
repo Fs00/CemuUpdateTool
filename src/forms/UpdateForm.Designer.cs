@@ -68,6 +68,7 @@
             // lblDetails
             // 
             this.lblDetails.Location = new System.Drawing.Point(14, 244);
+            this.lblDetails.Size = new System.Drawing.Size(508, 15);
             // 
             // txtBoxLog
             // 
@@ -80,13 +81,17 @@
             this.bottomPanel.Location = new System.Drawing.Point(0, 412);
             this.bottomPanel.Size = new System.Drawing.Size(537, 46);
             // 
+            // pnlBorderBottom
+            // 
+            this.pnlBorderBottom.Size = new System.Drawing.Size(540, 1);
+            // 
             // headerPanel
             // 
             this.headerPanel.Size = new System.Drawing.Size(537, 64);
             // 
-            // pnlBorder1
+            // pnlBorderTop
             // 
-            this.pnlBorder1.Size = new System.Drawing.Size(546, 2);
+            this.pnlBorderTop.Size = new System.Drawing.Size(540, 1);
             // 
             // lblTitle
             // 
@@ -101,18 +106,20 @@
             // 
             // lblVersionNr
             // 
-            this.lblVersionNr.Location = new System.Drawing.Point(494, 75);
+            this.lblVersionNr.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblVersionNr.Location = new System.Drawing.Point(482, 75);
             this.lblVersionNr.Name = "lblVersionNr";
             this.lblVersionNr.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.lblVersionNr.Size = new System.Drawing.Size(40, 15);
             this.lblVersionNr.TabIndex = 11;
             this.lblVersionNr.Text = "    ";
-            this.lblVersionNr.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblVersionNr.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // lblCemuVersion
             // 
             this.lblCemuVersion.AutoSize = true;
-            this.lblCemuVersion.Location = new System.Drawing.Point(414, 75);
+            this.lblCemuVersion.Location = new System.Drawing.Point(403, 75);
             this.lblCemuVersion.Name = "lblCemuVersion";
             this.lblCemuVersion.Size = new System.Drawing.Size(83, 15);
             this.lblCemuVersion.TabIndex = 9;

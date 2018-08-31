@@ -67,10 +67,12 @@
             // lblDetails
             // 
             this.lblDetails.Location = new System.Drawing.Point(14, 310);
+            this.lblDetails.Size = new System.Drawing.Size(494, 15);
             // 
             // txtBoxLog
             // 
             this.txtBoxLog.Location = new System.Drawing.Point(30, 331);
+            this.txtBoxLog.Size = new System.Drawing.Size(478, 133);
             this.txtBoxLog.VisibleChanged += new System.EventHandler(this.ResizeFormOnLogTextboxVisibleChanged);
             // 
             // bottomPanel
@@ -79,28 +81,32 @@
             // 
             // lblDestVersionNr
             // 
+            this.lblDestVersionNr.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDestVersionNr.Location = new System.Drawing.Point(468, 130);
             this.lblDestVersionNr.Name = "lblDestVersionNr";
             this.lblDestVersionNr.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.lblDestVersionNr.Size = new System.Drawing.Size(40, 15);
             this.lblDestVersionNr.TabIndex = 12;
             this.lblDestVersionNr.Text = "    ";
-            this.lblDestVersionNr.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblDestVersionNr.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // lblSrcVersionNr
             // 
+            this.lblSrcVersionNr.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblSrcVersionNr.Location = new System.Drawing.Point(468, 75);
             this.lblSrcVersionNr.Name = "lblSrcVersionNr";
             this.lblSrcVersionNr.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.lblSrcVersionNr.Size = new System.Drawing.Size(40, 15);
             this.lblSrcVersionNr.TabIndex = 11;
             this.lblSrcVersionNr.Text = "    ";
-            this.lblSrcVersionNr.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblSrcVersionNr.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // lblDestCemuVersion
             // 
             this.lblDestCemuVersion.AutoSize = true;
-            this.lblDestCemuVersion.Location = new System.Drawing.Point(385, 130);
+            this.lblDestCemuVersion.Location = new System.Drawing.Point(387, 130);
             this.lblDestCemuVersion.Name = "lblDestCemuVersion";
             this.lblDestCemuVersion.Size = new System.Drawing.Size(83, 15);
             this.lblDestCemuVersion.TabIndex = 10;
@@ -110,7 +116,7 @@
             // lblSrcCemuVersion
             // 
             this.lblSrcCemuVersion.AutoSize = true;
-            this.lblSrcCemuVersion.Location = new System.Drawing.Point(385, 75);
+            this.lblSrcCemuVersion.Location = new System.Drawing.Point(387, 75);
             this.lblSrcCemuVersion.Name = "lblSrcCemuVersion";
             this.lblSrcCemuVersion.Size = new System.Drawing.Size(83, 15);
             this.lblSrcCemuVersion.TabIndex = 9;
