@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using System.IO;
 using System.Globalization;
-using Microsoft.Win32;
+using System.Reflection;
 
 namespace CemuUpdateTool
 {
@@ -17,20 +17,40 @@ namespace CemuUpdateTool
 
             #if !DEBUG
             // Attach event handler to generate a crashlog when an unhandled exception is thrown
-            AppDomain.CurrentDomain.UnhandledException += (o, e) => GenerateCrashlog(e.ExceptionObject as Exception);
+            AppDomain.CurrentDomain.UnhandledException += (o, e) => {
+                GenerateCrashlog(e.ExceptionObject as Exception);
+                Environment.Exit(0);
+            };
             #endif
 
-            // Load ValueTuple DLL from resources if .NET Framework version is < 4.7
             try
             {
-                if (IsDotNetVersionLessThan47())
-                    System.Reflection.Assembly.Load(Properties.Resources.ValueTupleDLL);
+                // Check that ValueTuple types can be instantiated. If it fails, it means that ValueType assembly can't be loaded from local DLL or GAC
+                AppDomain.CurrentDomain.CreateInstance("System.ValueTuple, Version = 4.0.3.0, Culture = neutral, PublicKeyToken = cc7b13ffcd2ddd51", "System.ValueTuple");
             }
             catch
             {
-                MessageBox.Show("An error occurred when trying to load a necessary component for the program. This is likely due to corrupted executable file or incompatible OS version.",
-                                "Fatal error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
+                Assembly valueTupleAssembly = null;
+                try
+                {
+                    // Load ValueTuple assembly from resources
+                    valueTupleAssembly = Assembly.Load(Properties.Resources.ValueTupleDLL);
+                }
+                catch
+                {
+                    // If it fails, show error dialog and quit
+                    MessageBox.Show("An error occurred when trying to load a necessary component for the program. This is likely due to corrupted executable file or incompatible OS version.",
+                                    "Fatal error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Environment.Exit(0);
+                }
+
+                // Register AssemblyResolve event handler to make sure that all ValueTuple assembly requests are satisfied
+                AppDomain.CurrentDomain.AssemblyResolve += (o, e) => {
+                    if (e.Name == valueTupleAssembly.FullName)
+                        return valueTupleAssembly;
+
+                    return null;
+                }; 
             }
 
             // Load options
@@ -88,16 +108,6 @@ namespace CemuUpdateTool
 
             // Write crashlog content on file
             File.WriteAllText($@".\cemuUpdateTool-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt", crashlogContent);
-        }
-
-        /*
-         *  Checks a registry key to determine if .NET framework version is < 4.7
-         *  Reference: docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed
-         */
-        private static bool IsDotNetVersionLessThan47()
-        {
-            int releaseCode = (int)Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\NET Framework Setup\NDP\v4\Full").GetValue("Release");
-            return releaseCode < 460798;
         }
     }
 }
