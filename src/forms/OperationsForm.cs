@@ -82,6 +82,45 @@ namespace CemuUpdateTool
         }
 
         /*
+         *  Shows a MessageBox with the final result of the task
+         */
+        protected void ShowWorkResultDialog(WorkOutcome result)
+        {
+            switch (result)
+            {
+                case WorkOutcome.Success:
+                    MessageBox.Show("Operation successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
+                    break;
+                case WorkOutcome.Aborted:
+                    MessageBox.Show("Operation aborted due to an unexpected error.", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    break;
+                case WorkOutcome.CancelledByUser:
+                    MessageBox.Show("Operation cancelled by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    logUpdater.AppendLogMessage($"\r\nOperations cancelled due to user request.", false);
+                    break;
+                case WorkOutcome.CompletedWithErrors:
+                    MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {worker.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
+                    break;
+            }
+        }
+
+        protected void HandleDownloadProgress(object sender, System.Net.DownloadProgressChangedEventArgs evtArgs)
+        {
+            // Set maximum progress bar value according to file size (happens only the first time)
+            if (overallProgressBar.Maximum != evtArgs.TotalBytesToReceive)
+                overallProgressBar.Maximum = (int)evtArgs.TotalBytesToReceive;
+
+            // Update percent label and progress bar
+            lblPercent.Text = evtArgs.ProgressPercentage + "%";
+            overallProgressBar.Value = (int)evtArgs.BytesReceived;
+
+            // Refresh log textbox to make sure that log is always updated
+            logUpdater.UpdateTextBox();
+        }
+
+        /*
          *  Callback method that updates current task label according to the next task
          *  It also updates log textbox in order to prevent messages not being written if progress bar isn't updated during a task
          */

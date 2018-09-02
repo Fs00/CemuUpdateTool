@@ -58,8 +58,9 @@ namespace CemuUpdateTool
             WorkOutcome result = WorkOutcome.Success;
 
             // Create a new Worker instance and pass it all needed data
+            // Worker's BaseDestinationPath is to a temporary folder to reuse correctly download operations method (see PerformUpdateOperations)
             ctSource = new CancellationTokenSource();
-            worker = new Worker(txtBoxCemuFolder.Text, ctSource.Token, logUpdater.AppendLogMessage);
+            worker = new Worker(Path.Combine(Path.GetTempPath(), "cemu_update"), ctSource.Token, logUpdater.AppendLogMessage);
 
             // Starting from now, we can safely cancel operations without having problems
             btnCancel.Enabled = true;
@@ -67,12 +68,46 @@ namespace CemuUpdateTool
             stopwatch.Start();
             try
             {
-                // TODO
+                VersionNumber downloadedCemuVersion = await Task.Run(() => worker.PerformUpdateOperations(txtBoxCemuFolder.Text, chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked,
+                                                                                                          opts.Download, ChangeProgressLabelText, HandleDownloadProgress));
+                // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
+                VersionNumber.TryParse(opts.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
+                if (previousLastKnownCemuVersion != downloadedCemuVersion)
+                {
+                    opts.Download[OptionsKeys.LastKnownCemuVersion] = downloadedCemuVersion.ToString();
+                    try
+                    {
+                        opts.WriteOptionsToFile();
+                    }
+                    catch (Exception optionsUpdateExc)
+                    {
+                        logUpdater.AppendLogMessage($"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
+                    }
+                }
+
+                stopwatch.Stop();
+
+                // If there have been errors during operations, update result
+                if (worker.ErrorsEncountered > 0)
+                    result = WorkOutcome.CompletedWithErrors;
             }
             catch (Exception taskExc)
             {
+                stopwatch.Stop();
 
+                // Update result according to caught exception type
+                if (taskExc is OperationCanceledException)
+                    result = WorkOutcome.CancelledByUser;
+                else
+                {
+                    logUpdater.AppendLogMessage($"\r\nOperation aborted due to unrecoverable error: {taskExc.Message}", false);
+                    result = WorkOutcome.Aborted;
+                }
             }
+
+            ShowWorkResultDialog(result);
+            // Reset form controls to their original state
+            ResetEverything();
         }
 
         protected override void ResetEverything()

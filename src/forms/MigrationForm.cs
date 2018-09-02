@@ -209,21 +209,7 @@ namespace CemuUpdateTool
                 // Perform download operations if we are in download mode
                 if (DownloadMode)
                 {
-                    var downloadTask = Task.Run(() => worker.PerformDownloadOperations(opts.Download, ChangeProgressLabelText,
-                                                      (o, evtArgs) => {
-                                                          // Set maximum progress bar value according to file size
-                                                          if (overallProgressBar.Maximum != evtArgs.TotalBytesToReceive)
-                                                              overallProgressBar.Maximum = (int)evtArgs.TotalBytesToReceive;
-                                                       
-                                                          // Update percent label and progress bar
-                                                          lblPercent.Text = evtArgs.ProgressPercentage + "%";
-                                                          overallProgressBar.Value = (int)evtArgs.BytesReceived;
-                                                       
-                                                          // Refresh log textbox
-                                                          logUpdater.UpdateTextBox();
-                                                      })
-                                                );
-                    newCemuExeVer = await downloadTask;
+                    newCemuExeVer = await Task.Run(() => worker.PerformDownloadOperations(opts.Download, ChangeProgressLabelText, HandleDownloadProgress));
 
                     // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
                     VersionNumber.TryParse(opts.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
@@ -299,26 +285,7 @@ namespace CemuUpdateTool
                       (isNewCemuVersionAtLeast110 && opts.Migration[OptionsKeys.UseCustomMlcFolderIfSupported] == true) ? opts.CustomMlcFolderPath : null);
             }
 
-            // Show a MessageBox with the final result of the task
-            switch (result)
-            {
-                case WorkOutcome.Success:
-                    MessageBox.Show("Operation successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
-                    break;
-                case WorkOutcome.Aborted:
-                    MessageBox.Show("Operation aborted due to an unexpected error.", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                    break;
-                case WorkOutcome.CancelledByUser:
-                    MessageBox.Show("Operation cancelled by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    logUpdater.AppendLogMessage($"\r\nOperations cancelled due to user request.", false);
-                    break;
-                case WorkOutcome.CompletedWithErrors:
-                    MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {worker.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
-                    break;
-            }
-
+            ShowWorkResultDialog(result);
             // Reset form controls to their original state
             ResetEverything();
         }
