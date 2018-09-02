@@ -44,7 +44,8 @@ namespace CemuUpdateTool
                     Environment.Exit(0);
                 }
 
-                // Register AssemblyResolve event handler to make sure that all ValueTuple assembly requests are satisfied
+                // Register AssemblyResolve event handler (last resort in assembly resolving before failure) to resolve all ValueTuple references
+                // Reference: docs.microsoft.com/it-it/dotnet/framework/deployment/best-practices-for-assembly-loading#no-context
                 AppDomain.CurrentDomain.AssemblyResolve += (o, e) => {
                     if (e.Name == valueTupleAssembly.FullName)
                         return valueTupleAssembly;
@@ -106,8 +107,15 @@ namespace CemuUpdateTool
             crashlogContent += string.Format("HResult: 0x{0:X8}\r\n", exc.HResult) +
                                $"Stack trace:\r\n{exc.StackTrace}";
 
-            // Write crashlog content on file
-            File.WriteAllText($@".\cemuUpdateTool-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt", crashlogContent);
+            try
+            {
+                // Write crashlog content on file
+                File.WriteAllText($@".\cemuUpdateTool-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt", crashlogContent);
+            }
+            catch (Exception fileWriteExc)
+            {
+                MessageBox.Show($"Error when writing crash log on file: {fileWriteExc.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }
