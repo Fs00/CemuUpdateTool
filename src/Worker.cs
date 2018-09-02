@@ -225,12 +225,18 @@ namespace CemuUpdateTool
             VersionNumber downloadedCemuVer = PerformDownloadOperations(downloadOptions, PerformingWork, progressHandler);
 
             // Replace Cemu.exe from the downloaded Cemu version
-            System.IO.File.Copy(Path.Combine(BaseDestinationPath, "Cemu.exe"), Path.Combine(cemuInstallationPath, "Cemu.exe"), true);
+            var downloadedCemuExe = new FileInfo(Path.Combine(BaseDestinationPath, "Cemu.exe"));
+            downloadedCemuExe.CopyToCustom(Path.Combine(cemuInstallationPath, "Cemu.exe"), HandleLogMessage);
 
             // Remove 'resources' folder from the updated Cemu installation to avoid old translations being used
             string resourcesFolder = Path.Combine(cemuInstallationPath, "resources");
             if (FileUtils.DirectoryExists(resourcesFolder))
-                Directory.Delete(resourcesFolder, true);
+            {
+                PerformingWork("Removing outdated translation files");
+                FileUtils.RemoveDirContents(resourcesFolder, HandleLogMessage, cancToken);
+                if (FileUtils.DirectoryIsEmpty(resourcesFolder))
+                    Directory.Delete(resourcesFolder);
+            }
 
             // Remove precompiled caches
             if (removePrecompiledCaches)
