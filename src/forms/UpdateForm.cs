@@ -87,9 +87,13 @@ namespace CemuUpdateTool
 
                 stopwatch.Stop();
 
-                // If there have been errors during operations, update result
                 if (worker.ErrorsEncountered > 0)
+                {
+                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {worker.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     result = WorkOutcome.CompletedWithErrors;
+                }
+                else
+                    logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
             }
             catch (Exception taskExc)
             {
@@ -97,7 +101,10 @@ namespace CemuUpdateTool
 
                 // Update result according to caught exception type
                 if (taskExc is OperationCanceledException)
+                {
+                    logUpdater.AppendLogMessage($"\r\nOperations cancelled due to user request.", false);
                     result = WorkOutcome.CancelledByUser;
+                }
                 else
                 {
                     logUpdater.AppendLogMessage($"\r\nOperation aborted due to unrecoverable error: {taskExc.Message}", false);
@@ -105,14 +112,13 @@ namespace CemuUpdateTool
                 }
             }
 
+            ResetState();
             ShowWorkResultDialog(result);
-            // Reset form controls to their original state
-            ResetEverything();
         }
 
-        protected override void ResetEverything()
+        protected override void ResetState()
         {
-            base.ResetEverything();
+            base.ResetState();
 
             // Reset Cemu version label
             lblCemuVersion.Visible = false;

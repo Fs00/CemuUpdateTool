@@ -58,8 +58,11 @@ namespace CemuUpdateTool
         /*
          *  Resets the GUI and all Worker-related variables in order for the form to be ready for another task
          */
-        protected virtual void ResetEverything()
+        protected virtual void ResetState()
         {
+            // Tell the textbox logger to stop after printing all queued messages
+            logUpdater.StopAndWaitShutdown();
+
             // Reset progress bars
             overallProgressBar.Value = 0;
             lblPercent.Text = "0%";
@@ -70,9 +73,6 @@ namespace CemuUpdateTool
 
             // Reset stopwatch
             stopwatch.Reset();
-
-            // Tell the textbox logger to stop after printing all queued messages
-            logUpdater.StopAndWaitShutdown();
         }
 
         protected void CancelOperations(object sender = null, EventArgs e = null)
@@ -90,18 +90,15 @@ namespace CemuUpdateTool
             {
                 case WorkOutcome.Success:
                     MessageBox.Show("Operation successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     break;
                 case WorkOutcome.Aborted:
                     MessageBox.Show("Operation aborted due to an unexpected error.", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     break;
                 case WorkOutcome.CancelledByUser:
                     MessageBox.Show("Operation cancelled by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    logUpdater.AppendLogMessage($"\r\nOperations cancelled due to user request.", false);
                     break;
                 case WorkOutcome.CompletedWithErrors:
                     MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {worker.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     break;
             }
         }

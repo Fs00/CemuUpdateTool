@@ -245,7 +245,12 @@ namespace CemuUpdateTool
 
                 // If there have been errors during operations, update result
                 if (worker.ErrorsEncountered > 0)
+                {
+                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {worker.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     result = WorkOutcome.CompletedWithErrors;
+                }
+                else
+                    logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
             }
             catch (Exception taskExc)   // task cancelled or aborted due to an error
             {
@@ -267,13 +272,18 @@ namespace CemuUpdateTool
 
                 // Update result according to caught exception type
                 if (taskExc is OperationCanceledException)
+                {
+                    logUpdater.AppendLogMessage($"\r\nOperations cancelled due to user request.", false);
                     result = WorkOutcome.CancelledByUser;
+                }
                 else
                 {
                     logUpdater.AppendLogMessage($"\r\nOperation aborted due to unrecoverable error: {taskExc.Message}", false);
                     result = WorkOutcome.Aborted;
                 }
             }
+
+            ResetState();
 
             // Ask if user wants to create Cemu desktop shortcut
             if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.Migration[OptionsKeys.AskForDesktopShortcut])
@@ -286,16 +296,14 @@ namespace CemuUpdateTool
             }
 
             ShowWorkResultDialog(result);
-            // Reset form controls to their original state
-            ResetEverything();
         }
 
         /*
          *  Resets the GUI and all Worker-related variables in order for the form to be ready for another task
          */
-        protected override void ResetEverything()
+        protected override void ResetState()
         {
-            base.ResetEverything();
+            base.ResetState();
 
             // Reset Cemu version label
             lblSrcCemuVersion.Visible = false;
