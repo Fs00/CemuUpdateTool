@@ -68,13 +68,10 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Resets the GUI and all Worker-related variables in order for the form to be ready for another task
+         *  Resets the GUI in order for the form to be ready for another task
          */
-        protected virtual void ResetState()
+        protected virtual void ResetControls()
         {
-            // Tell the textbox logger to stop after printing all queued messages
-            logUpdater.StopAndWaitShutdown();
-
             // Reset progress bars
             overallProgressBar.Value = 0;
             lblPercent.Text = "0%";

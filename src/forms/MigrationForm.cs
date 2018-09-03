@@ -259,6 +259,7 @@ namespace CemuUpdateTool
                     logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     result = WorkOutcome.Success;
                 }
+                lblCurrentTask.Text = "Operations completed!";
             }
             catch (Exception taskExc)   // task cancelled or aborted due to an error
             {
@@ -289,9 +290,11 @@ namespace CemuUpdateTool
                     logUpdater.AppendLogMessage($"\r\nOperation aborted due to unrecoverable error: {taskExc.Message}", false);
                     result = WorkOutcome.Aborted;
                 }
+                lblCurrentTask.Text = "Operations stopped!";
             }
 
-            ResetState();
+            // Tell the textbox logger to stop after printing all queued messages
+            logUpdater.StopAndWaitShutdown();
 
             // Ask if user wants to create Cemu desktop shortcut
             if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.Migration[OptionsKeys.AskForDesktopShortcut])
@@ -304,14 +307,12 @@ namespace CemuUpdateTool
             }
 
             ShowWorkResultDialog(result);
+            ResetControls();
         }
 
-        /*
-         *  Resets the GUI and all Worker-related variables in order for the form to be ready for another task
-         */
-        protected override void ResetState()
+        protected override void ResetControls()
         {
-            base.ResetState();
+            base.ResetControls();
 
             // Reset Cemu version labels
             lblSrcVersionNr.Text = "";

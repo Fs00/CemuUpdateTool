@@ -87,6 +87,7 @@ namespace CemuUpdateTool
                     logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     result = WorkOutcome.Success;
                 }
+                lblCurrentTask.Text = "Operations completed!";
             }
             catch (Exception taskExc)
             {
@@ -103,15 +104,19 @@ namespace CemuUpdateTool
                     logUpdater.AppendLogMessage($"\r\nOperation aborted due to unrecoverable error: {taskExc.Message}", false);
                     result = WorkOutcome.Aborted;
                 }
+                lblCurrentTask.Text = "Operations stopped!";
             }
 
-            ResetState();
+            // Tell the textbox logger to stop after printing all queued messages
+            logUpdater.StopAndWaitShutdown();
+
             ShowWorkResultDialog(result);
+            ResetControls();
         }
 
-        protected override void ResetState()
+        protected override void ResetControls()
         {
-            base.ResetState();
+            base.ResetControls();
 
             // Reset Cemu version label
             lblCemuVersion.Visible = false;
