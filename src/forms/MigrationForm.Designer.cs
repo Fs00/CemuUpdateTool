@@ -39,6 +39,7 @@
             this.btnSelectSrcFolder = new System.Windows.Forms.Button();
             this.txtBoxSrcFolder = new System.Windows.Forms.TextBox();
             this.lblSrcFolder = new System.Windows.Forms.Label();
+            this.comboBoxVersion = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderFolders)).BeginInit();
             this.bottomPanel.SuspendLayout();
             this.headerPanel.SuspendLayout();
@@ -195,13 +196,26 @@
             this.lblSrcFolder.TabIndex = 0;
             this.lblSrcFolder.Text = "Source Cemu folder";
             // 
+            // comboBoxVersion
+            // 
+            this.comboBoxVersion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.comboBoxVersion.Items.AddRange(new object[] {
+            "Latest"});
+            this.comboBoxVersion.Location = new System.Drawing.Point(443, 127);
+            this.comboBoxVersion.MaxDropDownItems = 1;
+            this.comboBoxVersion.MaxLength = 10;
+            this.comboBoxVersion.Name = "comboBoxVersion";
+            this.comboBoxVersion.Size = new System.Drawing.Size(65, 23);
+            this.comboBoxVersion.TabIndex = 14;
+            this.comboBoxVersion.Leave += new System.EventHandler(this.ParseSuppliedVersionInCombobox);
+            // 
             // MigrationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.ClientSize = new System.Drawing.Size(519, 524);
+            this.Controls.Add(this.comboBoxVersion);
             this.Controls.Add(this.lblDestVersionNr);
             this.Controls.Add(this.lblSrcVersionNr);
-            this.Controls.Add(this.lblDestCemuVersion);
             this.Controls.Add(this.lblSrcCemuVersion);
             this.Controls.Add(this.lblSrcFolder);
             this.Controls.Add(this.txtBoxSrcFolder);
@@ -210,7 +224,9 @@
             this.Controls.Add(this.lblDestFolder);
             this.Controls.Add(this.btnSelectDestFolder);
             this.Controls.Add(this.txtBoxDestFolder);
+            this.Controls.Add(this.lblDestCemuVersion);
             this.Name = "MigrationForm";
+            this.Controls.SetChildIndex(this.lblDestCemuVersion, 0);
             this.Controls.SetChildIndex(this.txtBoxDestFolder, 0);
             this.Controls.SetChildIndex(this.btnSelectDestFolder, 0);
             this.Controls.SetChildIndex(this.lblDestFolder, 0);
@@ -219,7 +235,6 @@
             this.Controls.SetChildIndex(this.txtBoxSrcFolder, 0);
             this.Controls.SetChildIndex(this.lblSrcFolder, 0);
             this.Controls.SetChildIndex(this.lblSrcCemuVersion, 0);
-            this.Controls.SetChildIndex(this.lblDestCemuVersion, 0);
             this.Controls.SetChildIndex(this.lblSrcVersionNr, 0);
             this.Controls.SetChildIndex(this.lblDestVersionNr, 0);
             this.Controls.SetChildIndex(this.btnStart, 0);
@@ -231,6 +246,7 @@
             this.Controls.SetChildIndex(this.lblDetails, 0);
             this.Controls.SetChildIndex(this.txtBoxLog, 0);
             this.Controls.SetChildIndex(this.headerPanel, 0);
+            this.Controls.SetChildIndex(this.comboBoxVersion, 0);
             ((System.ComponentModel.ISupportInitialize)(this.errProviderFolders)).EndInit();
             this.bottomPanel.ResumeLayout(false);
             this.headerPanel.ResumeLayout(false);
@@ -252,6 +268,7 @@
         private System.Windows.Forms.Label lblSrcCemuVersion;
         private System.Windows.Forms.Label lblDestVersionNr;
         private System.Windows.Forms.Label lblSrcVersionNr;
+        private System.Windows.Forms.ComboBox comboBoxVersion;
     }
 }
 

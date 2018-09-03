@@ -248,8 +248,7 @@ namespace CemuUpdateTool
             reason = null;
             if (string.IsNullOrWhiteSpace(path) || !DirectoryExists(path))
                 reason = "Directory does not exist";
-
-            if (!FileExists(Path.Combine(path, "Cemu.exe")))
+            else if (!FileExists(Path.Combine(path, "Cemu.exe")))
                 reason = "Not a valid Cemu installation (Cemu.exe is missing)";
 
             return reason == null;

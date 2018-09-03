@@ -76,27 +76,56 @@ namespace CemuUpdateTool
          *  Downloads and extracts the latest Cemu version.
          *  Returns the version number of the downloaded Cemu version (needed to update the latest known Cemu version in options)
          */
-        public VersionNumber PerformDownloadOperations(Dictionary<string, string> downloadOptions, Action<string> PerformingWork, DownloadProgressChangedEventHandler progressHandler)
+        public VersionNumber PerformDownloadOperations(Dictionary<string, string> downloadOptions, Action<string> PerformingWork,
+                                                       DownloadProgressChangedEventHandler progressHandler, VersionNumber cemuVersionToBeDownloaded = null)
         {
             // Get data from dictionary
-            PerformingWork("Retrieving latest Cemu version");
+            PerformingWork("Downloading Cemu archive");
             client.BaseAddress = downloadOptions[OptionsKeys.CemuBaseUrl];
             string cemuUrlSuffix = downloadOptions[OptionsKeys.CemuUrlSuffix];
-            VersionNumber.TryParse(downloadOptions[OptionsKeys.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in downloadOptions is malformed
 
-            // FIND OUT WHICH IS THE LATEST CEMU VERSION
-            VersionNumber latestCemuVersion = DiscoverLatestCemuVersion(cemuUrlSuffix, lastKnownCemuVersion);
-            if (latestCemuVersion == null)       // if this condition is true, it's much likely caused by wrong Cemu website set
-                throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");
+            // If no Cemu version to be downloaded is specified, discover which is the latest one
+            if (cemuVersionToBeDownloaded == null)
+            {
+                VersionNumber.TryParse(downloadOptions[OptionsKeys.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in downloadOptions is malformed
+                cemuVersionToBeDownloaded = DiscoverLatestCemuVersion(cemuUrlSuffix, lastKnownCemuVersion);
+                if (cemuVersionToBeDownloaded == null)       // if this condition is true, it's much likely caused by wrong Cemu website set
+                    throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");
 
-            HandleLogMessage($"Latest Cemu version found is {latestCemuVersion.ToString()}.", EventLogEntryType.Information);
+                HandleLogMessage($"Latest Cemu version found is {cemuVersionToBeDownloaded.ToString()}.", EventLogEntryType.Information);
+            }
+            // Otherwise, check if the supplied version exists. If not, quit the task
+            else
+            {
+                bool versionChecked = false;
+                while (!versionChecked)
+                {
+                    try
+                    {
+                        if (!client.RemoteFileExists(cemuVersionToBeDownloaded.ToString() + cemuUrlSuffix))
+                            throw new ArgumentException("The Cemu version you supplied does not exist.");
+
+                        versionChecked = true;
+                    }
+                    catch (WebException exc)
+                    {
+                        // Build the message according to the type of error
+                        string message = $"An error occurred when trying to connect to Cemu version repository: {GetWebErrorMessage(exc.Status)} " +
+                                         "Would you like to retry or give up the entire operation?";
+
+                        DialogResult choice = MessageBox.Show(message, "Internet request error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                        if (choice == DialogResult.Cancel)
+                            throw;
+                    }
+                }
+            }
 
             // Add the DownloadProgressChanged event handler
             client.DownloadProgressChanged += progressHandler;
 
             // DOWNLOAD THE FILE
-            HandleLogMessage($"Downloading file {client.BaseAddress + latestCemuVersion.ToString() + cemuUrlSuffix}... ", EventLogEntryType.Information, false);
-            string downloadedFile = DownloadCemuArchive(latestCemuVersion, cemuUrlSuffix);
+            HandleLogMessage($"Downloading file {client.BaseAddress + cemuVersionToBeDownloaded.ToString() + cemuUrlSuffix}... ", EventLogEntryType.Information, false);
+            string downloadedFile = DownloadCemuArchive(cemuVersionToBeDownloaded, cemuUrlSuffix);
             HandleLogMessage("Done!", EventLogEntryType.Information);
 
             // EXTRACT CONTENTS
@@ -105,7 +134,7 @@ namespace CemuUpdateTool
             HandleLogMessage("Done!", EventLogEntryType.Information);
 
             // Since Cemu zips contain a root folder (./cemu_[VERSION]), copy the content from there to the destination path
-            string downloadedCemuFolder = Path.Combine(extractionPath, $"cemu_{latestCemuVersion.ToString()}");
+            string downloadedCemuFolder = Path.Combine(extractionPath, $"cemu_{cemuVersionToBeDownloaded.ToString()}");
             FileUtils.CopyDir(downloadedCemuFolder, BaseDestinationPath, delegate {}, cancToken, null, CreatedFiles, CreatedDirectories);    // silent copy
 
             // Remove zip file and original folder once extraction is finished
@@ -119,7 +148,7 @@ namespace CemuUpdateTool
                 HandleLogMessage($"Unexpected error during deletion of temporary download/extraction files: {exc.Message}", EventLogEntryType.Error);
             }
 
-            return latestCemuVersion;
+            return cemuVersionToBeDownloaded;
         }
 
         /*
@@ -280,8 +309,8 @@ namespace CemuUpdateTool
                 catch (WebException exc)
                 {
                     // Build the message according to the type of error
-                    string message = $"An error occurred when trying to find out which is the latest Cemu version: {GetWebErrorMessage(exc.Status)} ";
-                    message += "Would you like to retry or give up the entire operation?";
+                    string message = $"An error occurred when trying to find out which is the latest Cemu version: {GetWebErrorMessage(exc.Status)} " +
+                                      "Would you like to retry or give up the entire operation?";
 
                     DialogResult choice = MessageBox.Show(message, "Internet request error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
                     if (choice == DialogResult.Cancel)

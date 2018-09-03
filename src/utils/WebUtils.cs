@@ -7,20 +7,6 @@ namespace CemuUpdateTool
     public static class WebUtils
     {
         /*
-         *  Checks if a remote file exists checking the code of the server response
-         */
-        public static bool RemoteFileExists(string relativeUrl, MyWebClient client)
-        {
-            var response = (HttpWebResponse) client.GetWebResponseHead(relativeUrl);
-            HttpStatusCode responseCode = response.StatusCode;
-            response.Close();
-            if (responseCode == HttpStatusCode.OK)
-                return true;
-            else
-                return false;
-        }
-
-        /*
          *  Method that recursively finds the latest online version for a program in a given branch (e.g. 1.x, 2.5.x, x, etc.)
          *  In order for this method to work, all versions must be in the same remote folder (obviously publicly accessible)
          *  and files be named in the format [prefix][version][suffix].
@@ -42,7 +28,7 @@ namespace CemuUpdateTool
                 // If this is the first recursive call, make sure that the starting version exists (since it's user-editable)
                 if (currentRecursiveCall == 0)
                 {
-                    if (!startingVersion.IsSubVersionOf(branch) || !RemoteFileExists(startingVersion.ToString(maxVersionLength) + urlSuffix, client))
+                    if (!startingVersion.IsSubVersionOf(branch) || !client.RemoteFileExists(startingVersion.ToString(maxVersionLength) + urlSuffix))
                         startingVersion = null;
                 }
                 // Otherwise, make sure that startingVersion is still useful (e.g. if startingVersion is 1.10.3 and at the third recursive call branch is 1.11,
@@ -72,7 +58,7 @@ namespace CemuUpdateTool
             while (lastCheckedVersionExists)
             {
                 cToken?.ThrowIfCancellationRequested();
-                if (RemoteFileExists(lastCheckedVersion.ToString(maxVersionLength) + urlSuffix, client))
+                if (client.RemoteFileExists(lastCheckedVersion.ToString(maxVersionLength) + urlSuffix))
                     lastCheckedVersion++;
                 else
                 {
@@ -132,6 +118,17 @@ namespace CemuUpdateTool
                 throw new OperationCanceledException();
             }
             return response;
+        }
+
+        /*
+         *  Checks if a remote file exists checking the code of the server response
+         */
+        public bool RemoteFileExists(string relativeUrl)
+        {
+            var response = (HttpWebResponse) GetWebResponseHead(relativeUrl);
+            HttpStatusCode responseCode = response.StatusCode;
+            response.Close();
+            return responseCode == HttpStatusCode.OK;
         }
     }
 }

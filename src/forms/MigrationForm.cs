@@ -15,7 +15,7 @@ namespace CemuUpdateTool
                                                        is divided by 1000 and therefore the same applies to every increment to its value */
         bool srcFolderTxtBoxValidated = false,
              destFolderTxtBoxValidated = false;     // true when content of the textbox is verified to be correct
-        VersionNumber oldCemuExeVer, newCemuExeVer;
+        VersionNumber srcCemuExeVersion, destCemuExeVersion;
 
         public bool DownloadMode { get; }           // if true, newer version of Cemu will be downloaded before migrating
 
@@ -25,11 +25,23 @@ namespace CemuUpdateTool
             DownloadMode = downloadMode;
             progressHandler = new Progress<long>(UpdateProgressBarsAndLog);
 
-            // Set title according to the mode chosen
+            // Set controls according to the mode chosen
             if (DownloadMode)
+            {
                 lblTitle.Text = "Download & Migrate";
+                lblDestCemuVersion.Visible = true;
+                comboBoxVersion.SelectedIndex = 0;      // display "Latest" in combobox
+
+                // Place destination version label at the left of the combobox (otherwise the label would be covered by it)
+                var newLocation = lblDestCemuVersion.Location;
+                newLocation.X = comboBoxVersion.Location.X - lblDestCemuVersion.Size.Width - 3;
+                lblDestCemuVersion.Location = newLocation;
+            }
             else
+            {
                 lblTitle.Text = "Migrate";
+                comboBoxVersion.Visible = false;
+            }
 
             // Remove default (and useless) menu strips
             txtBoxSrcFolder.ContextMenuStrip = new ContextMenuStrip();
@@ -90,9 +102,9 @@ namespace CemuUpdateTool
                 errProviderFolders.SetError(txtBoxSrcFolder, "");
                 srcFolderTxtBoxValidated = true;
 
-                oldCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxSrcFolder.Text, "Cemu.exe")), 3);
+                srcCemuExeVersion = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxSrcFolder.Text, "Cemu.exe")), 3);
                 lblSrcCemuVersion.Visible = true;
-                lblSrcVersionNr.Text = oldCemuExeVer.ToString();
+                lblSrcVersionNr.Text = srcCemuExeVersion.ToString();
 
                 if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxSrcFolder.Text != txtBoxDestFolder.Text))
                     btnStart.Enabled = true;
@@ -122,8 +134,11 @@ namespace CemuUpdateTool
                 destFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
 
-                lblDestCemuVersion.Visible = false;
-                lblDestVersionNr.Text = "";
+                if (!DownloadMode)
+                {
+                    lblDestCemuVersion.Visible = false;
+                    lblDestVersionNr.Text = "";
+                }
             }
             // Display Cemu version label (only if the form is not in download mode) and verify if all user inputs are OK
             else
@@ -133,9 +148,9 @@ namespace CemuUpdateTool
 
                 if (!DownloadMode)
                 {
-                    newCemuExeVer = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")), 3);
+                    destCemuExeVersion = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")), 3);
                     lblDestCemuVersion.Visible = true;
-                    lblDestVersionNr.Text = newCemuExeVer.ToString();
+                    lblDestVersionNr.Text = destCemuExeVersion.ToString();
                 }
 
                 if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxSrcFolder.Text != txtBoxDestFolder.Text))
@@ -150,7 +165,7 @@ namespace CemuUpdateTool
             // If not in download mode, warn the user if old Cemu version is not older than new one
             if (!DownloadMode)
             {
-                if (oldCemuExeVer > newCemuExeVer)
+                if (srcCemuExeVersion > destCemuExeVersion)
                 {
                     DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
                         "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested",
@@ -175,7 +190,7 @@ namespace CemuUpdateTool
             }
 
             // Get the list of folders and files to copy telling the method if source Cemu version is >= 1.10..
-            List<string> foldersToCopy = opts.GetFoldersToCopy(oldCemuExeVer.Major > 1 || oldCemuExeVer.Minor >= 10);
+            List<string> foldersToCopy = opts.GetFoldersToCopy(srcCemuExeVersion.Major > 1 || srcCemuExeVersion.Minor >= 10);
             List<string> filesToCopy = opts.GetFilesToCopy();
 
             // ... and check if both lists are empty (no folders and files to copy)
@@ -199,13 +214,13 @@ namespace CemuUpdateTool
                 // Perform download operations if we are in download mode
                 if (DownloadMode)
                 {
-                    newCemuExeVer = await Task.Run(() => worker.PerformDownloadOperations(opts.Download, ChangeProgressLabelText, HandleDownloadProgress));
+                    destCemuExeVersion = await Task.Run(() => worker.PerformDownloadOperations(opts.Download, ChangeProgressLabelText, HandleDownloadProgress, destCemuExeVersion));
 
                     // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
                     VersionNumber.TryParse(opts.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
-                    if (previousLastKnownCemuVersion != newCemuExeVer)
+                    if (previousLastKnownCemuVersion != destCemuExeVersion)
                     {
-                        opts.Download[OptionsKeys.LastKnownCemuVersion] = newCemuExeVer.ToString();
+                        opts.Download[OptionsKeys.LastKnownCemuVersion] = destCemuExeVersion.ToString();
                         try
                         {
                             opts.WriteOptionsToFile();
@@ -282,9 +297,9 @@ namespace CemuUpdateTool
             if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.Migration[OptionsKeys.AskForDesktopShortcut])
             {
                 DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                bool isNewCemuVersionAtLeast110 = newCemuExeVer.Major > 1 || newCemuExeVer.Minor >= 10;
+                bool isNewCemuVersionAtLeast110 = destCemuExeVersion.Major > 1 || destCemuExeVersion.Minor >= 10;
                 if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
-                    worker.CreateDesktopShortcut(newCemuExeVer.ToString(),
+                    worker.CreateDesktopShortcut(destCemuExeVersion.ToString(),
                       (isNewCemuVersionAtLeast110 && opts.Migration[OptionsKeys.UseCustomMlcFolderIfSupported] == true) ? opts.CustomMlcFolderPath : null);
             }
 
@@ -298,11 +313,12 @@ namespace CemuUpdateTool
         {
             base.ResetState();
 
-            // Reset Cemu version label
-            lblSrcCemuVersion.Visible = false;
-            lblDestCemuVersion.Visible = false;
+            // Reset Cemu version labels
             lblSrcVersionNr.Text = "";
             lblDestVersionNr.Text = "";
+            lblSrcCemuVersion.Visible = false;
+            if (!DownloadMode)
+                lblDestCemuVersion.Visible = false;
 
             // Reset textboxes (I need to detach & reattach event handlers otherwise errorProviders will be triggered) and buttons
             txtBoxSrcFolder.TextChanged -= CheckSrcFolderTextboxContent;
@@ -332,6 +348,14 @@ namespace CemuUpdateTool
             lblPercent.Text = Math.Floor(overallProgressBar.Value / (double)overallProgressBar.Maximum * 100) + "%";
 
             logUpdater.UpdateTextBox();
+        }
+
+        private void ParseSuppliedVersionInCombobox(object sender, EventArgs e)
+        {
+            // If the parsing goes wrong, the combobox sets automatically its value to "Latest"
+            // And if the user selects "Latest", the parsing will obviously fail resetting destCemuExeVersion to null
+            if (!VersionNumber.TryParse(comboBoxVersion.Text, out destCemuExeVersion))
+                comboBoxVersion.SelectedIndex = 0;
         }
 
         private void OpenOptionsForm(object sender, EventArgs e)
