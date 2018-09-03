@@ -63,9 +63,12 @@ namespace CemuUpdateTool
             {
                 lock (logBuffer)
                 {
-                    string log = logBuffer.ToString();
-                    workDispatcher.InvokeAsync(() => logTextbox.AppendText(log));
-                    logBuffer.Clear();
+                    if (logBuffer.Length > 0)
+                    {
+                        string log = logBuffer.ToString();
+                        workDispatcher.InvokeAsync(() => logTextbox.AppendText(log));
+                        logBuffer.Clear();
+                    }
                 }
             }
         }

@@ -272,7 +272,7 @@
             // 
             this.lblTotalCustomFiles.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblTotalCustomFiles.AutoSize = true;
-            this.lblTotalCustomFiles.Location = new System.Drawing.Point(216, 62);
+            this.lblTotalCustomFiles.Location = new System.Drawing.Point(216, 61);
             this.lblTotalCustomFiles.Name = "lblTotalCustomFiles";
             this.lblTotalCustomFiles.Size = new System.Drawing.Size(36, 15);
             this.lblTotalCustomFiles.TabIndex = 17;
@@ -282,7 +282,7 @@
             // 
             this.lblCustomFilesCnt.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCustomFilesCnt.AutoSize = true;
-            this.lblCustomFilesCnt.Location = new System.Drawing.Point(250, 62);
+            this.lblCustomFilesCnt.Location = new System.Drawing.Point(250, 61);
             this.lblCustomFilesCnt.Name = "lblCustomFilesCnt";
             this.lblCustomFilesCnt.Size = new System.Drawing.Size(13, 15);
             this.lblCustomFilesCnt.TabIndex = 18;
@@ -291,7 +291,7 @@
             // btnManageFolders
             // 
             this.btnManageFolders.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnManageFolders.Location = new System.Drawing.Point(20, 23);
+            this.btnManageFolders.Location = new System.Drawing.Point(20, 22);
             this.btnManageFolders.Name = "btnManageFolders";
             this.btnManageFolders.Size = new System.Drawing.Size(145, 27);
             this.btnManageFolders.TabIndex = 14;
@@ -303,7 +303,7 @@
             // 
             this.lblTotalCustomFolders.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblTotalCustomFolders.AutoSize = true;
-            this.lblTotalCustomFolders.Location = new System.Drawing.Point(216, 29);
+            this.lblTotalCustomFolders.Location = new System.Drawing.Point(216, 28);
             this.lblTotalCustomFolders.Name = "lblTotalCustomFolders";
             this.lblTotalCustomFolders.Size = new System.Drawing.Size(36, 15);
             this.lblTotalCustomFolders.TabIndex = 12;
@@ -313,7 +313,7 @@
             // 
             this.lblCustomFoldersCnt.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCustomFoldersCnt.AutoSize = true;
-            this.lblCustomFoldersCnt.Location = new System.Drawing.Point(250, 29);
+            this.lblCustomFoldersCnt.Location = new System.Drawing.Point(250, 28);
             this.lblCustomFoldersCnt.Name = "lblCustomFoldersCnt";
             this.lblCustomFoldersCnt.Size = new System.Drawing.Size(13, 15);
             this.lblCustomFoldersCnt.TabIndex = 16;
@@ -322,7 +322,7 @@
             // btnManageFiles
             // 
             this.btnManageFiles.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnManageFiles.Location = new System.Drawing.Point(20, 56);
+            this.btnManageFiles.Location = new System.Drawing.Point(20, 55);
             this.btnManageFiles.Name = "btnManageFiles";
             this.btnManageFiles.Size = new System.Drawing.Size(145, 27);
             this.btnManageFiles.TabIndex = 15;

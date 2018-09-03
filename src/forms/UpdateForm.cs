@@ -47,23 +47,13 @@ namespace CemuUpdateTool
 
         protected override async void DoOperationsAsync(object sender, EventArgs e)
         {
-            // Start the textbox logger
-            logUpdater = new TextBoxLogger(txtBoxLog);
-
-            // Start preparing
-            txtBoxLog.Clear();
-            ChangeProgressLabelText("Preparing");
-            btnStart.Enabled = false;
-            btnBack.Enabled = false;
-            WorkOutcome result = WorkOutcome.Success;
+            WorkOutcome result;
+            PrepareControlsForOperations();
 
             // Create a new Worker instance and pass it all needed data
             // Worker's BaseDestinationPath is to a temporary folder to reuse correctly download operations method (see PerformUpdateOperations)
             ctSource = new CancellationTokenSource();
             worker = new Worker(Path.Combine(Path.GetTempPath(), "cemu_update"), ctSource.Token, logUpdater.AppendLogMessage);
-
-            // Starting from now, we can safely cancel operations without having problems
-            btnCancel.Enabled = true;
 
             stopwatch.Start();
             try
@@ -93,7 +83,10 @@ namespace CemuUpdateTool
                     result = WorkOutcome.CompletedWithErrors;
                 }
                 else
+                {
                     logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
+                    result = WorkOutcome.Success;
+                }
             }
             catch (Exception taskExc)
             {

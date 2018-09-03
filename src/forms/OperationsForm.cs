@@ -55,6 +55,18 @@ namespace CemuUpdateTool
 
         protected /*abstract*/ virtual void DoOperationsAsync(object sender, EventArgs e) { }
 
+        protected virtual void PrepareControlsForOperations()
+        {
+            // Start the textbox logger
+            logUpdater = new TextBoxLogger(txtBoxLog);
+
+            txtBoxLog.Clear();
+            ChangeProgressLabelText("Preparing");
+            btnStart.Enabled = false;
+            btnBack.Enabled = false;
+            btnCancel.Enabled = true;
+        }
+
         /*
          *  Resets the GUI and all Worker-related variables in order for the form to be ready for another task
          */

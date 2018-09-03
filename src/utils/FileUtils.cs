@@ -103,7 +103,6 @@ namespace CemuUpdateTool
 
         /*
          *  Method that deletes the contents of the passed folder without deleting the folder itself
-         *  If this method fails, it doesn't throw any exception but simply quits reporting the error to the Worker
          */
         public static DirectoryInfo RemoveDirContents(string folderPath, LogMessageHandler LogMessage, CancellationToken? cToken = null)
         {
@@ -113,6 +112,7 @@ namespace CemuUpdateTool
             if (!DirectoryExists(folderPath))
                 throw new DirectoryNotFoundException($"Directory {folderPath} doesn't exist!");
 
+            bool fullyEmptied = true;
             // Delete files
             foreach (FileInfo file in directory.GetFiles())
             {
@@ -137,19 +137,27 @@ namespace CemuUpdateTool
                         else if (choice == DialogResult.Ignore)
                         {
                             LogMessage($"Unable to delete {file.Name}: {exc.Message}", EventLogEntryType.Error);
+                            fullyEmptied = false;
                             break;
                         }
                     }
                 }
             }
-            LogMessage($"Contents of directory {folderPath} removed successfully.", EventLogEntryType.Information);
 
             // Delete subdirs recursively
             foreach (DirectoryInfo subdir in directory.GetDirectories())
             {
                 var emptiedFolder = RemoveDirContents(Path.Combine(folderPath, subdir.Name), LogMessage, cToken);
-                emptiedFolder.Delete();
+                if (DirectoryIsEmpty(emptiedFolder.FullName))
+                    emptiedFolder.Delete();
+                else
+                    fullyEmptied = false;
             }
+
+            if (fullyEmptied)
+                LogMessage($"Contents of directory {folderPath} removed successfully.", EventLogEntryType.Information);
+            else
+                LogMessage($"Contents of directory {folderPath} removed partially due to some errors.", EventLogEntryType.Information);
 
             return directory;       // return the DirectoryInfo object corresponding to this folder, so that the previous recursive call can delete it
         }

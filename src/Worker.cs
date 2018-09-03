@@ -212,7 +212,7 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Performs update operations, which include Cemu executable replacing, resources folder removal (avoids not updated translations) and, upon user request,
+         *  Performs update operations, which include Cemu executable replacing, resources folder update (avoids not updated translations) and, upon user request,
          *  precompiled removal and game profiles update.
          *  Returns the version number of the downloaded Cemu version in order to update the latest known Cemu version in options.
          *  Note: to reuse correctly PerformDownloadOperations(), BaseDestinationPath must be set to a temporary folder. From there, we copy only the files we need
@@ -228,15 +228,9 @@ namespace CemuUpdateTool
             var downloadedCemuExe = new FileInfo(Path.Combine(BaseDestinationPath, "Cemu.exe"));
             downloadedCemuExe.CopyToCustom(Path.Combine(cemuInstallationPath, "Cemu.exe"), HandleLogMessage);
 
-            // Remove 'resources' folder from the updated Cemu installation to avoid old translations being used
-            string resourcesFolder = Path.Combine(cemuInstallationPath, "resources");
-            if (FileUtils.DirectoryExists(resourcesFolder))
-            {
-                PerformingWork("Removing outdated translation files");
-                FileUtils.RemoveDirContents(resourcesFolder, HandleLogMessage, cancToken);
-                if (FileUtils.DirectoryIsEmpty(resourcesFolder))
-                    Directory.Delete(resourcesFolder);
-            }
+            // Copy 'resources' folder to the updated Cemu installation to avoid old translations being used
+            PerformingWork("Updating translation files");
+            FileUtils.CopyDir(Path.Combine(BaseDestinationPath, "resources"), Path.Combine(cemuInstallationPath, "resources"), HandleLogMessage, cancToken);
 
             // Remove precompiled caches
             if (removePrecompiledCaches)
