@@ -36,6 +36,15 @@ namespace CemuUpdateTool
                 var newLocation = lblDestCemuVersion.Location;
                 newLocation.X = comboBoxVersion.Location.X - lblDestCemuVersion.Size.Width - 3;
                 lblDestCemuVersion.Location = newLocation;
+
+                // Align source version labels
+                newLocation = lblSrcCemuVersion.Location;
+                newLocation.X = lblDestCemuVersion.Location.X;
+                lblSrcCemuVersion.Location = newLocation;
+
+                newLocation = lblSrcVersionNr.Location;
+                newLocation.X = comboBoxVersion.Location.X;
+                lblSrcVersionNr.Location = newLocation;
             }
             else
             {

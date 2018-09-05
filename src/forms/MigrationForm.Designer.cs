@@ -129,7 +129,7 @@
             this.btnOptions.Location = new System.Drawing.Point(16, 189);
             this.btnOptions.Name = "btnOptions";
             this.btnOptions.Size = new System.Drawing.Size(87, 27);
-            this.btnOptions.TabIndex = 5;
+            this.btnOptions.TabIndex = 6;
             this.btnOptions.Text = "Options...";
             this.btnOptions.UseVisualStyleBackColor = true;
             this.btnOptions.Click += new System.EventHandler(this.OpenOptionsForm);
@@ -139,7 +139,7 @@
             this.btnSelectDestFolder.Location = new System.Drawing.Point(419, 150);
             this.btnSelectDestFolder.Name = "btnSelectDestFolder";
             this.btnSelectDestFolder.Size = new System.Drawing.Size(89, 25);
-            this.btnSelectDestFolder.TabIndex = 4;
+            this.btnSelectDestFolder.TabIndex = 5;
             this.btnSelectDestFolder.Text = "Select";
             this.btnSelectDestFolder.UseVisualStyleBackColor = true;
             this.btnSelectDestFolder.Click += new System.EventHandler(this.SelectDestCemuFolder);
@@ -151,7 +151,7 @@
             this.txtBoxDestFolder.Location = new System.Drawing.Point(16, 151);
             this.txtBoxDestFolder.Name = "txtBoxDestFolder";
             this.txtBoxDestFolder.Size = new System.Drawing.Size(397, 23);
-            this.txtBoxDestFolder.TabIndex = 3;
+            this.txtBoxDestFolder.TabIndex = 4;
             this.txtBoxDestFolder.TextChanged += new System.EventHandler(this.CheckDestFolderTextboxContent);
             this.txtBoxDestFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
             this.txtBoxDestFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
@@ -201,12 +201,12 @@
             this.comboBoxVersion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxVersion.Items.AddRange(new object[] {
             "Latest"});
-            this.comboBoxVersion.Location = new System.Drawing.Point(443, 127);
+            this.comboBoxVersion.Location = new System.Drawing.Point(446, 127);
             this.comboBoxVersion.MaxDropDownItems = 1;
-            this.comboBoxVersion.MaxLength = 10;
+            this.comboBoxVersion.MaxLength = 9;
             this.comboBoxVersion.Name = "comboBoxVersion";
-            this.comboBoxVersion.Size = new System.Drawing.Size(65, 23);
-            this.comboBoxVersion.TabIndex = 14;
+            this.comboBoxVersion.Size = new System.Drawing.Size(62, 23);
+            this.comboBoxVersion.TabIndex = 3;
             this.comboBoxVersion.Leave += new System.EventHandler(this.ParseSuppliedVersionInCombobox);
             // 
             // MigrationForm

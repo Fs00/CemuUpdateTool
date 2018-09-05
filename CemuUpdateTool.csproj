@@ -203,6 +203,7 @@
     <Content Include="resources\icons\Settings.ico" />
     <Content Include="resources\icons\AppIcon.ico" />
     <Content Include="resources\icons\AppIcon.png" />
+    <Content Include="resources\icons\Update.png" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">

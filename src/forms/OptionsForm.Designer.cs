@@ -162,7 +162,7 @@
             this.btnSaveOpts.Location = new System.Drawing.Point(157, 418);
             this.btnSaveOpts.Name = "btnSaveOpts";
             this.btnSaveOpts.Size = new System.Drawing.Size(94, 29);
-            this.btnSaveOpts.TabIndex = 3;
+            this.btnSaveOpts.TabIndex = 2;
             this.btnSaveOpts.Text = "Save options";
             this.btnSaveOpts.UseVisualStyleBackColor = true;
             this.btnSaveOpts.Click += new System.EventHandler(this.SaveOptionsAndClose);
@@ -173,7 +173,7 @@
             this.btnDiscard.Location = new System.Drawing.Point(281, 418);
             this.btnDiscard.Name = "btnDiscard";
             this.btnDiscard.Size = new System.Drawing.Size(112, 29);
-            this.btnDiscard.TabIndex = 4;
+            this.btnDiscard.TabIndex = 3;
             this.btnDiscard.Text = "Discard changes";
             this.btnDiscard.UseVisualStyleBackColor = true;
             this.btnDiscard.Click += new System.EventHandler(this.DiscardAndClose);
@@ -202,7 +202,7 @@
             this.btnRestoreDefaultOpts.Location = new System.Drawing.Point(13, 418);
             this.btnRestoreDefaultOpts.Name = "btnRestoreDefaultOpts";
             this.btnRestoreDefaultOpts.Size = new System.Drawing.Size(111, 29);
-            this.btnRestoreDefaultOpts.TabIndex = 5;
+            this.btnRestoreDefaultOpts.TabIndex = 1;
             this.btnRestoreDefaultOpts.Text = "Restore defaults";
             this.btnRestoreDefaultOpts.UseVisualStyleBackColor = true;
             this.btnRestoreDefaultOpts.Click += new System.EventHandler(this.RestoreDefaultOptions);
@@ -230,7 +230,7 @@
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
             this.tabControl.Size = new System.Drawing.Size(381, 401);
-            this.tabControl.TabIndex = 6;
+            this.tabControl.TabIndex = 0;
             // 
             // foldersTab
             // 
@@ -294,7 +294,7 @@
             this.btnManageFolders.Location = new System.Drawing.Point(20, 22);
             this.btnManageFolders.Name = "btnManageFolders";
             this.btnManageFolders.Size = new System.Drawing.Size(145, 27);
-            this.btnManageFolders.TabIndex = 14;
+            this.btnManageFolders.TabIndex = 10;
             this.btnManageFolders.Text = "Manage custom folders";
             this.btnManageFolders.UseVisualStyleBackColor = true;
             this.btnManageFolders.Click += new System.EventHandler(this.OpenManageFoldersDialog);
@@ -325,7 +325,7 @@
             this.btnManageFiles.Location = new System.Drawing.Point(20, 55);
             this.btnManageFiles.Name = "btnManageFiles";
             this.btnManageFiles.Size = new System.Drawing.Size(145, 27);
-            this.btnManageFiles.TabIndex = 15;
+            this.btnManageFiles.TabIndex = 11;
             this.btnManageFiles.Text = "Manage custom files";
             this.btnManageFiles.UseVisualStyleBackColor = true;
             this.btnManageFiles.Click += new System.EventHandler(this.OpenManageFilesDialog);
@@ -423,7 +423,7 @@
             this.grpBoxMigration.Location = new System.Drawing.Point(14, 13);
             this.grpBoxMigration.Name = "grpBoxMigration";
             this.grpBoxMigration.Size = new System.Drawing.Size(342, 196);
-            this.grpBoxMigration.TabIndex = 10;
+            this.grpBoxMigration.TabIndex = 1;
             this.grpBoxMigration.TabStop = false;
             this.grpBoxMigration.Text = "Migration";
             // 
@@ -433,7 +433,7 @@
             this.chkBoxNoFullscreenOptimiz.Location = new System.Drawing.Point(36, 137);
             this.chkBoxNoFullscreenOptimiz.Name = "chkBoxNoFullscreenOptimiz";
             this.chkBoxNoFullscreenOptimiz.Size = new System.Drawing.Size(193, 19);
-            this.chkBoxNoFullscreenOptimiz.TabIndex = 13;
+            this.chkBoxNoFullscreenOptimiz.TabIndex = 12;
             this.chkBoxNoFullscreenOptimiz.Text = "Disable fullscreen optimizations";
             this.chkBoxNoFullscreenOptimiz.UseVisualStyleBackColor = true;
             // 
@@ -443,7 +443,7 @@
             this.chkBoxOverrideHiDPIBehaviour.Location = new System.Drawing.Point(36, 162);
             this.chkBoxOverrideHiDPIBehaviour.Name = "chkBoxOverrideHiDPIBehaviour";
             this.chkBoxOverrideHiDPIBehaviour.Size = new System.Drawing.Size(200, 19);
-            this.chkBoxOverrideHiDPIBehaviour.TabIndex = 12;
+            this.chkBoxOverrideHiDPIBehaviour.TabIndex = 13;
             this.chkBoxOverrideHiDPIBehaviour.Text = "Override HiDPI scaling behaviour";
             this.chkBoxOverrideHiDPIBehaviour.UseVisualStyleBackColor = true;
             // 
@@ -577,6 +577,7 @@
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(23, 23);
             this.btnHelp.TabIndex = 7;
+            this.btnHelp.TabStop = false;
             this.btnHelp.UseVisualStyleBackColor = true;
             this.btnHelp.Click += new System.EventHandler(this.OpenHelpForm);
             // 

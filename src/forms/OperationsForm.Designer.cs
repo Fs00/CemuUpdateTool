@@ -56,7 +56,7 @@
             this.btnCancel.Location = new System.Drawing.Point(326, 142);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(87, 27);
-            this.btnCancel.TabIndex = 6;
+            this.btnCancel.TabIndex = 7;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.CancelOperations);
@@ -67,7 +67,7 @@
             this.btnStart.Location = new System.Drawing.Point(419, 142);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(89, 27);
-            this.btnStart.TabIndex = 7;
+            this.btnStart.TabIndex = 8;
             this.btnStart.Text = "Start";
             this.btnStart.UseVisualStyleBackColor = true;
             this.btnStart.Click += new System.EventHandler(this.DoOperationsAsync);
@@ -127,7 +127,7 @@
             this.btnHelp.Location = new System.Drawing.Point(421, 10);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(87, 29);
-            this.btnHelp.TabIndex = 9;
+            this.btnHelp.TabIndex = 11;
             this.btnHelp.Text = "Help!";
             this.btnHelp.UseVisualStyleBackColor = true;
             this.btnHelp.Click += new System.EventHandler(this.OpenHelpForm);
@@ -138,7 +138,7 @@
             this.btnBack.Location = new System.Drawing.Point(16, 10);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(87, 29);
-            this.btnBack.TabIndex = 8;
+            this.btnBack.TabIndex = 10;
             this.btnBack.Text = "< Back";
             this.btnBack.UseVisualStyleBackColor = true;
             this.btnBack.Click += new System.EventHandler(this.Back);

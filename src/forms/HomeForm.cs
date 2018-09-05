@@ -24,6 +24,8 @@ namespace CemuUpdateTool
             btnMigrate.Image = new Bitmap(image, new Size((int)(125 * scaleFactor), (int)(125 * scaleFactor)));
             image = (Bitmap) resourceMgr.GetObject("btnDlMigrate.Image");
             btnDlMigrate.Image = new Bitmap(image, new Size((int)(125 * scaleFactor), (int)(125 * scaleFactor)));
+            image = (Bitmap)resourceMgr.GetObject("btnUpdate.Image");
+            btnUpdate.Image = new Bitmap(image, new Size((int)(125 * scaleFactor), (int)(125 * scaleFactor)));
         }
 
         private void ShowMigrateForm(object sender, EventArgs e)

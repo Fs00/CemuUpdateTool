@@ -48,7 +48,7 @@
             this.btnMigrate.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnMigrate.Image = ((System.Drawing.Image)(resources.GetObject("btnMigrate.Image")));
             this.btnMigrate.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.btnMigrate.Location = new System.Drawing.Point(78, 86);
+            this.btnMigrate.Location = new System.Drawing.Point(40, 86);
             this.btnMigrate.Name = "btnMigrate";
             this.btnMigrate.Size = new System.Drawing.Size(148, 153);
             this.btnMigrate.TabIndex = 1;
@@ -66,7 +66,7 @@
             this.btnDlMigrate.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnDlMigrate.Image = ((System.Drawing.Image)(resources.GetObject("btnDlMigrate.Image")));
             this.btnDlMigrate.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.btnDlMigrate.Location = new System.Drawing.Point(289, 86);
+            this.btnDlMigrate.Location = new System.Drawing.Point(218, 86);
             this.btnDlMigrate.Name = "btnDlMigrate";
             this.btnDlMigrate.Size = new System.Drawing.Size(148, 153);
             this.btnDlMigrate.TabIndex = 2;
@@ -80,10 +80,10 @@
             // 
             this.lnklblOpts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lnklblOpts.AutoSize = true;
-            this.lnklblOpts.Location = new System.Drawing.Point(281, 15);
+            this.lnklblOpts.Location = new System.Drawing.Point(367, 15);
             this.lnklblOpts.Name = "lnklblOpts";
             this.lnklblOpts.Size = new System.Drawing.Size(43, 13);
-            this.lnklblOpts.TabIndex = 3;
+            this.lnklblOpts.TabIndex = 4;
             this.lnklblOpts.TabStop = true;
             this.lnklblOpts.Text = "Options";
             this.lnklblOpts.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ShowOptionsForm);
@@ -92,7 +92,7 @@
             // 
             this.lnklblAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lnklblAbout.AutoSize = true;
-            this.lnklblAbout.Location = new System.Drawing.Point(424, 15);
+            this.lnklblAbout.Location = new System.Drawing.Point(510, 15);
             this.lnklblAbout.Name = "lnklblAbout";
             this.lnklblAbout.Size = new System.Drawing.Size(44, 13);
             this.lnklblAbout.TabIndex = 5;
@@ -104,10 +104,10 @@
             // 
             this.lnkLblHelp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lnkLblHelp.AutoSize = true;
-            this.lnkLblHelp.Location = new System.Drawing.Point(361, 15);
+            this.lnkLblHelp.Location = new System.Drawing.Point(447, 15);
             this.lnkLblHelp.Name = "lnkLblHelp";
             this.lnkLblHelp.Size = new System.Drawing.Size(32, 13);
-            this.lnkLblHelp.TabIndex = 4;
+            this.lnkLblHelp.TabIndex = 5;
             this.lnkLblHelp.TabStop = true;
             this.lnkLblHelp.Text = "Help!";
             this.lnkLblHelp.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ShowHelpForm);
@@ -121,16 +121,17 @@
             this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.bottomPanel.Location = new System.Drawing.Point(0, 325);
             this.bottomPanel.Name = "bottomPanel";
-            this.bottomPanel.Size = new System.Drawing.Size(504, 46);
+            this.bottomPanel.Size = new System.Drawing.Size(590, 46);
             this.bottomPanel.TabIndex = 0;
             // 
             // pnlBorder
             // 
+            this.pnlBorder.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.pnlBorder.BackColor = System.Drawing.SystemColors.Control;
             this.pnlBorder.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pnlBorder.Location = new System.Drawing.Point(-7, 325);
+            this.pnlBorder.Location = new System.Drawing.Point(0, 325);
             this.pnlBorder.Name = "pnlBorder";
-            this.pnlBorder.Size = new System.Drawing.Size(530, 2);
+            this.pnlBorder.Size = new System.Drawing.Size(600, 2);
             this.pnlBorder.TabIndex = 14;
             // 
             // btnUpdate
@@ -139,11 +140,14 @@
             this.btnUpdate.FlatAppearance.BorderSize = 2;
             this.btnUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnUpdate.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnUpdate.Location = new System.Drawing.Point(215, 257);
+            this.btnUpdate.Image = ((System.Drawing.Image)(resources.GetObject("btnUpdate.Image")));
+            this.btnUpdate.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.btnUpdate.Location = new System.Drawing.Point(396, 86);
             this.btnUpdate.Name = "btnUpdate";
-            this.btnUpdate.Size = new System.Drawing.Size(80, 44);
-            this.btnUpdate.TabIndex = 15;
+            this.btnUpdate.Size = new System.Drawing.Size(148, 153);
+            this.btnUpdate.TabIndex = 3;
             this.btnUpdate.Text = "Update";
+            this.btnUpdate.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.btnUpdate.UseVisualStyleBackColor = true;
             this.btnUpdate.Click += new System.EventHandler(this.ShowUpdateForm);
             // 
@@ -152,7 +156,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(504, 371);
+            this.ClientSize = new System.Drawing.Size(584, 371);
             this.Controls.Add(this.btnUpdate);
             this.Controls.Add(this.pnlBorder);
             this.Controls.Add(this.bottomPanel);

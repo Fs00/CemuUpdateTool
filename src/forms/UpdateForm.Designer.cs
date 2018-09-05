@@ -163,7 +163,7 @@
             this.chkBoxUpdGameProfiles.Location = new System.Drawing.Point(15, 138);
             this.chkBoxUpdGameProfiles.Name = "chkBoxUpdGameProfiles";
             this.chkBoxUpdGameProfiles.Size = new System.Drawing.Size(139, 19);
-            this.chkBoxUpdGameProfiles.TabIndex = 14;
+            this.chkBoxUpdGameProfiles.TabIndex = 3;
             this.chkBoxUpdGameProfiles.Text = "Update game profiles";
             this.chkBoxUpdGameProfiles.UseVisualStyleBackColor = true;
             // 
@@ -173,7 +173,7 @@
             this.chkBoxDeletePrecompiled.Location = new System.Drawing.Point(160, 138);
             this.chkBoxDeletePrecompiled.Name = "chkBoxDeletePrecompiled";
             this.chkBoxDeletePrecompiled.Size = new System.Drawing.Size(168, 19);
-            this.chkBoxDeletePrecompiled.TabIndex = 15;
+            this.chkBoxDeletePrecompiled.TabIndex = 4;
             this.chkBoxDeletePrecompiled.Text = "Delete precompiled caches";
             this.chkBoxDeletePrecompiled.UseVisualStyleBackColor = true;
             // 
