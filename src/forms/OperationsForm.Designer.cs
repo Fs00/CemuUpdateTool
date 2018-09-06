@@ -96,10 +96,11 @@
             // 
             // lblPercent
             // 
-            this.lblPercent.AutoSize = true;
-            this.lblPercent.Location = new System.Drawing.Point(485, 193);
+            this.lblPercent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblPercent.Location = new System.Drawing.Point(470, 193);
             this.lblPercent.Name = "lblPercent";
-            this.lblPercent.Size = new System.Drawing.Size(23, 15);
+            this.lblPercent.Size = new System.Drawing.Size(38, 15);
             this.lblPercent.TabIndex = 5;
             this.lblPercent.Text = "0%";
             this.lblPercent.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
