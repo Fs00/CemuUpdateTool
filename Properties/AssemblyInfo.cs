@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyReleaseDate(2018, 9, 1)]
+[assembly: AssemblyReleaseDate(2018, 9, 7)]
 
 // Se si imposta ComVisible su false, i tipi in questo assembly non saranno visibili
 // ai componenti COM. Se è necessario accedere a un tipo in questo assembly da
@@ -34,4 +34,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("2.1.0.0")]
 [assembly: AssemblyFileVersion("2.1.0.0")]
-[assembly: AssemblyInformationalVersion("2.1-dev")]
+[assembly: AssemblyInformationalVersion("2.1")]

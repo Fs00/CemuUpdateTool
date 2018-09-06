@@ -25,6 +25,8 @@ namespace CemuUpdateTool
                 loadedRtfString += textResources.GetString("migrationFormText");
             else if (launcher is OptionsForm)
                 loadedRtfString += textResources.GetString("optionsFormText");
+            else if (launcher is UpdateForm)
+                loadedRtfString += textResources.GetString("updateFormText");
             richTxtBoxHelp.Rtf = loadedRtfString;
 
             // Set textbox left/right padding
