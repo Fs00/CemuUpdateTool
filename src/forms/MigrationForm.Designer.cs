@@ -52,7 +52,7 @@
             // lblPercent
             // 
             this.lblPercent.Location = new System.Drawing.Point(471, 240);
-            this.lblPercent.Size = new System.Drawing.Size(37, 15);
+            this.lblPercent.Size = new System.Drawing.Size(40, 15);
             // 
             // overallProgressBar
             // 

@@ -58,8 +58,8 @@ namespace CemuUpdateTool
             OptionsManager opts;
             try
             {
-                // If the application is launched with the 'force-appdata-config' parameter, options are loaded from %AppData% even if local file exists
-                bool preferAppDataFile = args.Length > 0 && args[0].TrimStart('-', '/') == "force-appdata-config";
+                // If the application is launched with the 'prefer-appdata-config' parameter, options are loaded from %AppData% even if local file exists
+                bool preferAppDataFile = args.Length > 0 && args[0].TrimStart('-', '/') == "prefer-appdata-config";
                 string optionsFilePath = OptionsManager.LookForOptionsFile(preferAppDataFile);
                 opts = new OptionsManager(optionsFilePath);
             }
