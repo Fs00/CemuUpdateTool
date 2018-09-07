@@ -5,6 +5,10 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  OperationsForm
+     *  Form from which MigrationForm and UpdateForm inherit. It's designed to behave as an abstract class, but declaring it as abstract causes problems with VS Designer
+     */
     public /*abstract*/ partial class OperationsForm : Form
     {
         protected OptionsManager opts;
@@ -14,9 +18,9 @@ namespace CemuUpdateTool
         protected Stopwatch stopwatch;                        // used to measure how much time the task took to complete
         protected TextBoxLogger logUpdater;                   // used to update txtBoxLog asynchronously
 
-        public OperationsForm() : this(null) { }    // needed by VS Designer
+        private OperationsForm() : this(null) { }    // needed by VS Designer
 
-        public OperationsForm(OptionsManager opts)
+        protected OperationsForm(OptionsManager opts)
         {
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;

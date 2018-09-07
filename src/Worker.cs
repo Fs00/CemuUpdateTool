@@ -21,6 +21,11 @@ namespace CemuUpdateTool
         CancelledByUser
     }
 
+    /*
+     *  Worker
+     *  Contains all information about an ongoing task and the methods to perform it
+     *  It is designed to support logging and cancellation of tasks
+     */
     public class Worker
     {
         // Source and destination Cemu folders
@@ -31,8 +36,8 @@ namespace CemuUpdateTool
         public int ErrorsEncountered      { private set; get; }
 
         // Lists of files and directories that have been created by the Worker, necessary for restoring the original situation when operation is cancelled
-        public List<FileInfo> CreatedFiles            { get; }
-        public List<DirectoryInfo> CreatedDirectories { get; }
+        public List<FileInfo> CreatedFiles             { get; }
+        public List<DirectoryInfo> CreatedDirectories  { get; }
 
         // ValueTuple arrays containing names and sizes of the files and folders to be copied
         (string Name, long Size)[] foldersToCopy;
@@ -40,7 +45,7 @@ namespace CemuUpdateTool
 
         CancellationToken cancToken;
         MyWebClient client;
-        Action<string, bool> LoggerDelegate;    // callback that writes a message on an external log (in this case MigrationForm textbox)
+        Action<string, bool> LoggerDelegate;    // callback that writes a message on an external log (in this case OperationsForm textbox)
 
         // Constructor for update operations
         public Worker(string baseDestPath, CancellationToken cancToken, Action<string, bool> LoggerDelegate)
@@ -463,7 +468,7 @@ namespace CemuUpdateTool
                 logMessage += "WARNING: ";
 
             logMessage += message;
-            LoggerDelegate(logMessage, newLine);   // give the message to the MigrationForm
+            LoggerDelegate(logMessage, newLine);   // pass the message to the form
         }
 
         /*

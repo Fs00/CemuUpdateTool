@@ -508,7 +508,7 @@
             // lblHttp
             // 
             this.lblHttp.AutoSize = true;
-            this.lblHttp.Location = new System.Drawing.Point(25, 121);
+            this.lblHttp.Location = new System.Drawing.Point(24, 121);
             this.lblHttp.Name = "lblHttp";
             this.lblHttp.Size = new System.Drawing.Size(42, 15);
             this.lblHttp.TabIndex = 6;

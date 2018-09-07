@@ -11,6 +11,11 @@ using System.Linq;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  FileUtils
+     *  Static class which contains helper methods to operate on files, directories and zip archives
+     *  Methods are designed to optionally log events, keep track of the files created and be cancelled
+     */
     public static class FileUtils
     {
         /*

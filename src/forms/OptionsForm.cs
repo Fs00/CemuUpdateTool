@@ -6,6 +6,10 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  OptionsForm
+     *  Allows the user to edit the options of the program
+     */
     public partial class OptionsForm : Form
     {
         OptionsManager opts;
@@ -196,11 +200,8 @@ namespace CemuUpdateTool
 
         private void RefreshCustomEntriesStats()
         {
-            int foldersCounter = opts.CustomFolders().Count(),
-                filesCounter = opts.CustomFiles().Count();
-
-            lblCustomFoldersCnt.Text = foldersCounter.ToString();
-            lblCustomFilesCnt.Text = filesCounter.ToString();
+            lblCustomFoldersCnt.Text = opts.CustomFolders().Count().ToString();
+            lblCustomFilesCnt.Text = opts.CustomFiles().Count().ToString();
         }
 
         private void DeleteSettingsFile(object sender, EventArgs e)
@@ -278,7 +279,7 @@ namespace CemuUpdateTool
                     opts.Files.Remove(file);
 
                 // ... and add the updated ones
-                foreach (var file in updatedCustomFolders)
+                foreach (var file in updatedCustomFiles)
                     opts.Files.Add(file.Key, file.Value);
             }
         }

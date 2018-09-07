@@ -4,6 +4,10 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  HelpForm
+     *  Displays an RTF-formatted help text related to the form that opened it
+     */
     public partial class HelpForm : Form
     {
         public HelpForm(Form launcher)

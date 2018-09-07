@@ -8,6 +8,10 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  MigrationForm
+     *  Window that provides Migrate and Download & Migrate functionalities.
+     */
     public partial class MigrationForm : OperationsForm
     {
         Progress<long> progressHandler;             // used to send callbacks to UI thread
@@ -115,7 +119,7 @@ namespace CemuUpdateTool
                 lblSrcCemuVersion.Visible = true;
                 lblSrcVersionNr.Text = srcCemuExeVersion.ToString();
 
-                if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxSrcFolder.Text != txtBoxDestFolder.Text))
+                if (srcFolderTxtBoxValidated && destFolderTxtBoxValidated && (txtBoxSrcFolder.Text != txtBoxDestFolder.Text))
                     btnStart.Enabled = true;
                 else
                     btnStart.Enabled = false;

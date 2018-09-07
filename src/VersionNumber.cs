@@ -6,6 +6,10 @@ namespace CemuUpdateTool
 {
     #pragma warning disable CS0659
     #pragma warning disable CS0661
+    /*
+     *  VersionNumber
+     *  Provides a mutable data structure for version numbers, which can be of any length (even 0)
+     */
     public class VersionNumber : IEquatable<VersionNumber>, IComparable<VersionNumber>
     {
         private List<int> segments;            // list that contains each of the version segments
@@ -21,7 +25,7 @@ namespace CemuUpdateTool
             set
             {
                 if (value < 0)
-                    throw new ArgumentException("Segment values must not be negative.");
+                    throw new ArgumentOutOfRangeException("Segment values must not be negative.");
                 segments[i] = value;
             }
         }

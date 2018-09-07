@@ -124,7 +124,7 @@
     <value>{\b WHICH MODE DO I CHOOSE?}\par\fs19
 \sb100 {\i Migrate} mode is used to copy all data from a Cemu installation to another one. You can obviously control which data must be copied by editing settings in Options window. It is very useful if you want to keep both an older version and the last one to avoid regressions when they happen.\par
 \sb90 {\i Download and Migrate} mode works same as previous one, with the only difference that the program downloads and extracts the Cemu archive (by default the latest version, but you can choose an older one) in the destination folder you selected and then migrates all data. This spares you the procedure of downloading manually Cemu from the website.\par
-\sb90 {\i Update} mode, instead, lets you update an existing Cemu installation by simply replacing the executable and translation files with the ones from the latest version, plus some other user-selectable tasks.</value>
+{\i Update} mode, instead, lets you update an existing Cemu installation by simply replacing the executable and translation files with the ones from the latest version, plus some other user-selectable tasks.</value>
   </data>
   <data name="migrationFormText" xml:space="preserve">
     <value>{\b HOW DO I PROCEED?}\par\fs19

@@ -38,11 +38,16 @@ namespace CemuUpdateTool
         public const string LastKnownCemuVersion = "lastKnownCemuVersion";
     }
 
+    /*
+     *  OptionsManager
+     *  Stores program options. They can be loaded from a file (see WriteOptionsToFile() for details on the format)
+     *  Provides also methods and iterators to process options in order to get data in a more generic format (e.g. GetFilesToCopy() and similar)
+     */
     public class OptionsManager
     {
         public Dictionary<string, bool> Folders     { private set; get; }     // contains a list of Cemu subfolders and whether they have to be copied
         public Dictionary<string, bool> Files       { private set; get; }     // contains a list of files included in Cemu folder and whether they have to be copied
-        public Dictionary<string, bool> Migration   { private set; get; }     // contains a set of additional options for the migration
+        public Dictionary<string, bool> Migration   { private set; get; }     // contains a set of additional options for migration operations
         public Dictionary<string, string> Download  { private set; get; }     // contains a set of options for the download of Cemu versions
         public string CustomMlcFolderPath   { set; get; } = "";               // mlc01 folder's custom path for Cemu 1.10+
         public string OptionsFilePath       { set; get; }                     // the path of the settings file (is empty string when no file is used)

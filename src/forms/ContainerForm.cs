@@ -3,6 +3,11 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  ContainerForm
+     *  This is the main window of the program. The other forms are rendered inside a panel called formContainer
+     *  This class is designed to be instantiated only once and its operations must be globally available (that's why its public methods are static)
+     */
     public partial class ContainerForm : Form
     {
         private static ContainerForm activeInstance;  // this class will only have one instance at a time

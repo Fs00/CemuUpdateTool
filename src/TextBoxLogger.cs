@@ -7,6 +7,11 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  TextBoxLogger
+     *  Performs asynchronous logging on a TextBox using a Dispatcher
+     *  Messages are appended to the log buffer by using AppendLogMessage(). To write them on the textbox, UpdateTextBox() must be called from outside the class
+     */
     public class TextBoxLogger
     {
         StringBuilder logBuffer;        // buffer used to store log messages that must be written into textbox
@@ -14,7 +19,7 @@ namespace CemuUpdateTool
         TextBox logTextbox;             // textbox used as a log
 
         public bool IsReady => !(workDispatcher == null || workDispatcher.HasShutdownStarted);
-        public bool IsStopped => workDispatcher.HasShutdownStarted;
+        public bool IsStopped => workDispatcher.HasShutdownFinished;
 
         public TextBoxLogger(TextBox logTextbox)
         {

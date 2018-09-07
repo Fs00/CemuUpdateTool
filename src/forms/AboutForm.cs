@@ -4,6 +4,10 @@ using System.Reflection;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  AboutForm
+     *  Displays info about the program
+     */
     public partial class AboutForm : Form
     {
         public AboutForm()

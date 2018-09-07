@@ -83,7 +83,9 @@ namespace CemuUpdateTool
     }
 
     /*
-     *  This derived class is needed in order to guarantee the possibility to cancel the current WebRequest when checking latest version
+     *  MyWebClient
+     *  This derived class is needed in order to guarantee the ability to cancel the current WebRequest when checking latest version
+     *  and provide remote files existence check functionality
      */
     public class MyWebClient : WebClient
     {
@@ -121,7 +123,7 @@ namespace CemuUpdateTool
         }
 
         /*
-         *  Checks if a remote file exists checking the code of the server response
+         *  Checks if a remote file exists by checking the code of the server response
          */
         public bool RemoteFileExists(string relativeUrl)
         {

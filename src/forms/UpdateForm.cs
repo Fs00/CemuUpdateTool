@@ -7,6 +7,10 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  UpdateForm
+     *  Window that provides Update functionality.
+     */
     public partial class UpdateForm : OperationsForm
     {
         public UpdateForm(OptionsManager opts) : base(opts)
