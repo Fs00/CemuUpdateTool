@@ -79,6 +79,15 @@ namespace CemuUpdateTool
         }
 
         /*
+         *  Gets the corresponding scale factor to current screen DPI
+         */
+        public static float GetDPIScaleFactor()
+        {
+            using (var gfx = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+                return gfx.DpiX / 96;
+        }
+
+        /*
          *  Create and save a crash log with information on the thrown exception
          */
         private static void GenerateCrashlog(Exception exc)

@@ -5,6 +5,10 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool
 {
+    /*
+     *  DictionaryEditingForm
+     *  Allows the user to edit custom files and folders dictionaries by adding/removing entries and checking/unchecking them
+     */
     public partial class DictionaryEditingForm : Form
     {
         Dictionary<string, bool> dictionary;        // dictionary that is edited
@@ -25,6 +29,10 @@ namespace CemuUpdateTool
             }
         }
 
+        /*
+         *  Adds an element to the dictionary
+         *  Uses InputDialog to provide input and validation mechanism
+         */
         private void AddElement(object sender, EventArgs e)
         {
             var inputDialog = new InputDialog<string>(IsInputOK);
@@ -37,9 +45,11 @@ namespace CemuUpdateTool
             }
         }
 
+        /*
+         *  Removes the selected element from the ListView and from the dictionary
+         */
         private void RemoveElement(object sender, EventArgs e)
         {
-            // Removes the selected element from the ListView and from the dictionary
             if (listView.SelectedItems.Count > 0)
             {
                 ListViewItem selectedElement = listView.SelectedItems[0];
@@ -69,22 +79,22 @@ namespace CemuUpdateTool
             value = null;
             if (string.IsNullOrEmpty(input))
             {
-                reason = "The string is empty";
+                reason = "the string is empty";
                 return false;
             }
-            else if (input.IndexOfAny(System.IO.Path.GetInvalidPathChars()) > -1 || input.EndsWith(@"\"))
+            else if (input.IndexOfAny(System.IO.Path.GetInvalidPathChars()) > -1 || input.EndsWith(@"\") || input.EndsWith("/"))
             {
-                reason = "The string is not a valid file name";
+                reason = "the string is not a valid path or file name. Make sure that the path does not contain forbidden chars and that does not end with a backslash or a slash";
                 return false;
             }
             else if (forbiddenValues.Contains(input))
             {
-                reason = "This value is already included in default options";
+                reason = "this value is already included in default options";
                 return false;
             }
             else if (dictionary.ContainsKey(input))
             {
-                reason = "This value has already been added";
+                reason = "this value has already been added";
                 return false;
             }
 
