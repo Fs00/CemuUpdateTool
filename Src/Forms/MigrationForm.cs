@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CemuUpdateTool.Utils;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace CemuUpdateTool
+namespace CemuUpdateTool.Forms
 {
     /*
      *  MigrationForm

@@ -2,7 +2,7 @@
 using System.Resources;
 using System.Windows.Forms;
 
-namespace CemuUpdateTool
+namespace CemuUpdateTool.Forms
 {
     /*
      *  HelpForm

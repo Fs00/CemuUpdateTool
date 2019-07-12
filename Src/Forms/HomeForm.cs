@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace CemuUpdateTool
+namespace CemuUpdateTool.Forms
 {
     /*
      *  HomeForm

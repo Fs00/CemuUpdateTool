@@ -8,7 +8,6 @@
 *.user
 *.userosscache
 *.sln.docstates
-*.sln
 .vs/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
@@ -35,3 +34,5 @@ packages/
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+
+[Tt]est[Ff]older*/

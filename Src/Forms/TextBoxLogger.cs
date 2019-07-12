@@ -5,7 +5,7 @@ using System.Threading;
 using System.Windows.Threading;
 using System.Windows.Forms;
 
-namespace CemuUpdateTool
+namespace CemuUpdateTool.Forms
 {
     /*
      *  TextBoxLogger

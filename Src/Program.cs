@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Globalization;
 using System.Reflection;
+using CemuUpdateTool.Forms;
 
 namespace CemuUpdateTool
 {

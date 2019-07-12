@@ -1,4 +1,4 @@
-﻿namespace CemuUpdateTool
+﻿namespace CemuUpdateTool.Forms
 {
     partial class ContainerForm
     {

@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Reflection;
 
-namespace CemuUpdateTool
+namespace CemuUpdateTool.Forms
 {
     /*
      *  AboutForm

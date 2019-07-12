@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading;
 
-namespace CemuUpdateTool
+namespace CemuUpdateTool.Utils
 {
     public static class WebUtils
     {

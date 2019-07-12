@@ -1,9 +1,10 @@
-﻿using System;
+﻿using CemuUpdateTool.Utils;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace CemuUpdateTool
+namespace CemuUpdateTool.Forms
 {
     /*
      *  OperationsForm

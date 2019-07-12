@@ -8,6 +8,7 @@ using System.Threading;
 using System.Net;
 using Microsoft.Win32;
 using IWshRuntimeLibrary;
+using CemuUpdateTool.Utils;
 
 namespace CemuUpdateTool
 {
