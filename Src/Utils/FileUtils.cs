@@ -264,9 +264,6 @@ namespace CemuUpdateTool.Utils
          */
         public static bool DirectoryIsEmpty(string dirPath)
         {
-            if (!DirectoryExists(dirPath))
-                throw new DirectoryNotFoundException();
-
             return !Directory.EnumerateFileSystemEntries(dirPath).Any();
         }
 

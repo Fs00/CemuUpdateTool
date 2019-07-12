@@ -4,6 +4,7 @@ using System.Linq;
 using System.Drawing;
 using System.Windows.Forms;
 using CemuUpdateTool.Utils;
+using CemuUpdateTool.Settings;
 
 namespace CemuUpdateTool.Forms
 {
@@ -13,17 +14,15 @@ namespace CemuUpdateTool.Forms
      */
     public partial class OptionsForm : Form
     {
-        OptionsManager opts;
         bool optionsFileLocationChanged;
 
         // These will contain the unsaved changes made to custom files/folders if the user edits them
         Dictionary<string, bool> updatedCustomFolders,
                                  updatedCustomFiles;
 
-        public OptionsForm(OptionsManager optsInstance)
+        public OptionsForm()
         {
             InitializeComponent();
-            opts = optsInstance;
             SetCheckboxesAccordingToOptions();
 
             // Draw the icon in the help button according to its size
@@ -41,31 +40,31 @@ namespace CemuUpdateTool.Forms
             txtBoxBaseUrl.ContextMenuStrip = new ContextMenuStrip();
         }
 
-        public void SetCheckboxesAccordingToOptions()   // Name is self-explanatory
+        public void SetCheckboxesAccordingToOptions()
         {
             // FOLDER OPTIONS
-            chkBoxControllerProfiles.Checked = opts.Folders[OptionsKeys.ControllerProfiles];
-            chkBoxGameProfiles.Checked = opts.Folders[OptionsKeys.GameProfiles];
-            chkBoxGfxPacks.Checked = opts.Folders[OptionsKeys.GraphicPacks];
+            chkBoxControllerProfiles.Checked = Options.FoldersToMigrate.IsEnabled(OptionsFolder.ControllerProfiles);
+            chkBoxGameProfiles.Checked = Options.FoldersToMigrate.IsEnabled(OptionsFolder.GameProfiles);
+            chkBoxGfxPacks.Checked = Options.FoldersToMigrate.IsEnabled(OptionsFolder.GraphicPacks);
             // The program sets the saves' checkbox as indeterminate if only one of the two save folders is set to true
-            if (opts.Folders[OptionsKeys.OldSavegames] == true)
+            if (Options.FoldersToMigrate.IsEnabled(OptionsFolder.OldSavegames))
                 chkBoxSavegames.CheckState = CheckState.Indeterminate;
-            if (opts.Folders[OptionsKeys.Savegames] == true)
+            if (Options.FoldersToMigrate.IsEnabled(OptionsFolder.Savegames))
             {
                 if (chkBoxSavegames.CheckState == CheckState.Indeterminate)
                     chkBoxSavegames.CheckState = CheckState.Checked;
                 else
                     chkBoxSavegames.CheckState = CheckState.Indeterminate;
             }
-            chkBoxDLCUpds.Checked = opts.Folders[OptionsKeys.DLCUpdates];
-            chkBoxShaderCaches.Checked = opts.Folders[OptionsKeys.TransferableCaches];
+            chkBoxDLCUpds.Checked = Options.FoldersToMigrate.IsEnabled(OptionsFolder.DLCUpdates);
+            chkBoxShaderCaches.Checked = Options.FoldersToMigrate.IsEnabled(OptionsFolder.TransferableCaches);
             RefreshCustomEntriesStats();
 
             // FILE OPTIONS
             // As above, the settings' checkbox is set as indeterminate if only one of the two options files is set to true
-            if (opts.Files[OptionsKeys.SettingsBin] == true)
+            if (Options.FilesToMigrate.IsEnabled(OptionsFile.SettingsBin))
                 chkBoxCemuSettings.CheckState = CheckState.Indeterminate;
-            if (opts.Files[OptionsKeys.SettingsXml] == true)
+            if (Options.FilesToMigrate.IsEnabled(OptionsFile.SettingsXml))
             {
                 if (chkBoxCemuSettings.CheckState == CheckState.Indeterminate)
                     chkBoxCemuSettings.CheckState = CheckState.Checked;
@@ -74,22 +73,22 @@ namespace CemuUpdateTool.Forms
             }
 
             // MIGRATION OPTIONS
-            chkBoxDeletePrevContent.Checked = opts.Migration[OptionsKeys.DeleteDestinationFolderContents];
-            chkBoxDesktopShortcut.Checked = opts.Migration[OptionsKeys.AskForDesktopShortcut];
+            chkBoxDeletePrevContent.Checked = Options.Migration[OptionsKeys.DeleteDestinationFolderContents];
+            chkBoxDesktopShortcut.Checked = Options.Migration[OptionsKeys.AskForDesktopShortcut];
             // Custom mlc01 folder
-            chkBoxCustomMlc01Path.Checked = opts.Migration[OptionsKeys.UseCustomMlcFolderIfSupported];
-            if (!string.IsNullOrWhiteSpace(opts.CustomMlcFolderPath))
-                txtBoxCustomMlc01Path.Text = opts.CustomMlcFolderPath;
+            chkBoxCustomMlc01Path.Checked = Options.Migration[OptionsKeys.UseCustomMlcFolderIfSupported];
+            if (!string.IsNullOrWhiteSpace(Options.CustomMlcFolderPath))
+                txtBoxCustomMlc01Path.Text = Options.CustomMlcFolderPath;
             UpdateCustomMlc01PathTextboxState();   // make sure that textbox state is correct in relation to the checkbox
             // Compatibility options
-            chkBoxCompatOpts.Checked = opts.Migration[OptionsKeys.SetCompatibilityOptions];
-            chkBoxRunAsAdmin.Checked = opts.Migration[OptionsKeys.CompatibilityRunAsAdmin];
-            chkBoxNoFullscreenOptimiz.Checked = opts.Migration[OptionsKeys.CompatibilityNoFullscreenOptimizations];
-            chkBoxOverrideHiDPIBehaviour.Checked = opts.Migration[OptionsKeys.CompatibilityOverrideHiDPIBehaviour];
+            chkBoxCompatOpts.Checked = Options.Migration[OptionsKeys.SetCompatibilityOptions];
+            chkBoxRunAsAdmin.Checked = Options.Migration[OptionsKeys.CompatibilityRunAsAdmin];
+            chkBoxNoFullscreenOptimiz.Checked = Options.Migration[OptionsKeys.CompatibilityNoFullscreenOptimizations];
+            chkBoxOverrideHiDPIBehaviour.Checked = Options.Migration[OptionsKeys.CompatibilityOverrideHiDPIBehaviour];
             UpdateCompatOptionsCheckboxesState();
 
             // SETTINGS FILE LOCATION
-            if (opts.OptionsFilePath == "")
+            if (Options.CurrentOptionsFilePath == "")
             {
                 chkBoxSettingsOnFile.Checked = false;
                 UpdateOptionsFileLocationRadioButtons();    // disables file location radio buttons
@@ -97,54 +96,54 @@ namespace CemuUpdateTool.Forms
             else
             {
                 chkBoxSettingsOnFile.Checked = true;
-                if (opts.OptionsFilePath == OptionsManager.LocalFilePath)
+                if (Options.CurrentOptionsFilePath == Options.LocalOptionsFilePath)
                     radioBtnExecFolder.Checked = true;
-                else if (opts.OptionsFilePath == OptionsManager.AppDataFilePath)
+                else if (Options.CurrentOptionsFilePath == Options.AppDataOptionsFilePath)
                     radioBtnAppDataFolder.Checked = true;
             }
 
             // DOWNLOAD OPTIONS
-            txtBoxBaseUrl.Text = opts.Download[OptionsKeys.CemuBaseUrl].Remove(0,7);    // remove "http://" because there's a label for it
-            txtBoxUrlSuffix.Text = opts.Download[OptionsKeys.CemuUrlSuffix];
+            txtBoxBaseUrl.Text = Options.Download[OptionsKeys.CemuBaseUrl].Remove(0,7);    // remove "http://" because there's a label for it
+            txtBoxUrlSuffix.Text = Options.Download[OptionsKeys.CemuUrlSuffix];
         }
 
         private void SetOptionsAccordingToCheckboxes()
         {
             // FOLDER OPTIONS
-            opts.Folders[OptionsKeys.ControllerProfiles] = chkBoxControllerProfiles.Checked;
-            opts.Folders[OptionsKeys.GameProfiles] = chkBoxGameProfiles.Checked;
-            opts.Folders[OptionsKeys.GraphicPacks] = chkBoxGfxPacks.Checked;
+            Options.FoldersToMigrate[OptionsFolder.ControllerProfiles] = chkBoxControllerProfiles.Checked;
+            Options.FoldersToMigrate[OptionsFolder.GameProfiles] = chkBoxGameProfiles.Checked;
+            Options.FoldersToMigrate[OptionsFolder.GraphicPacks] = chkBoxGfxPacks.Checked;
             if (chkBoxSavegames.CheckState != CheckState.Indeterminate)
             {
-                opts.Folders[OptionsKeys.OldSavegames] = chkBoxSavegames.Checked;
-                opts.Folders[OptionsKeys.Savegames] = chkBoxSavegames.Checked;
+                Options.FoldersToMigrate[OptionsFolder.OldSavegames] = chkBoxSavegames.Checked;
+                Options.FoldersToMigrate[OptionsFolder.Savegames] = chkBoxSavegames.Checked;
             }
-            opts.Folders[OptionsKeys.DLCUpdates] = chkBoxDLCUpds.Checked;
-            opts.Folders[OptionsKeys.TransferableCaches] = chkBoxShaderCaches.Checked;
+            Options.FoldersToMigrate[OptionsFolder.DLCUpdates] = chkBoxDLCUpds.Checked;
+            Options.FoldersToMigrate[OptionsFolder.TransferableCaches] = chkBoxShaderCaches.Checked;
 
             // FILE OPTIONS
             if (chkBoxCemuSettings.CheckState != CheckState.Indeterminate)
             {
-                opts.Files[OptionsKeys.SettingsBin] = chkBoxCemuSettings.Checked;
-                opts.Files[OptionsKeys.SettingsXml] = chkBoxCemuSettings.Checked;
+                Options.FilesToMigrate[OptionsFile.SettingsBin] = chkBoxCemuSettings.Checked;
+                Options.FilesToMigrate[OptionsFile.SettingsXml] = chkBoxCemuSettings.Checked;
             }
 
             // MIGRATION OPTIONS
-            opts.Migration[OptionsKeys.DeleteDestinationFolderContents] = chkBoxDeletePrevContent.Checked;
-            opts.Migration[OptionsKeys.AskForDesktopShortcut] = chkBoxDesktopShortcut.Checked;
+            Options.Migration[OptionsKeys.DeleteDestinationFolderContents] = chkBoxDeletePrevContent.Checked;
+            Options.Migration[OptionsKeys.AskForDesktopShortcut] = chkBoxDesktopShortcut.Checked;
 
             // Custom mlc01 path
-            opts.Migration[OptionsKeys.UseCustomMlcFolderIfSupported] = chkBoxCustomMlc01Path.Checked;
+            Options.Migration[OptionsKeys.UseCustomMlcFolderIfSupported] = chkBoxCustomMlc01Path.Checked;
             if (!string.IsNullOrWhiteSpace(txtBoxCustomMlc01Path.Text) && errProviderMlcFolder.GetError(txtBoxCustomMlc01Path) == "")
-                opts.CustomMlcFolderPath = txtBoxCustomMlc01Path.Text;
+                Options.CustomMlcFolderPath = txtBoxCustomMlc01Path.Text;
             else
-                opts.CustomMlcFolderPath = "";
+                Options.CustomMlcFolderPath = "";
 
             // Compatibility options
-            opts.Migration[OptionsKeys.SetCompatibilityOptions] = chkBoxCompatOpts.Checked;
-            opts.Migration[OptionsKeys.CompatibilityRunAsAdmin] = chkBoxRunAsAdmin.Checked;
-            opts.Migration[OptionsKeys.CompatibilityNoFullscreenOptimizations] = chkBoxNoFullscreenOptimiz.Checked;
-            opts.Migration[OptionsKeys.CompatibilityOverrideHiDPIBehaviour] = chkBoxOverrideHiDPIBehaviour.Checked;
+            Options.Migration[OptionsKeys.SetCompatibilityOptions] = chkBoxCompatOpts.Checked;
+            Options.Migration[OptionsKeys.CompatibilityRunAsAdmin] = chkBoxRunAsAdmin.Checked;
+            Options.Migration[OptionsKeys.CompatibilityNoFullscreenOptimizations] = chkBoxNoFullscreenOptimiz.Checked;
+            Options.Migration[OptionsKeys.CompatibilityOverrideHiDPIBehaviour] = chkBoxOverrideHiDPIBehaviour.Checked;
 
             // SETTINGS FILE LOCATION
             try
@@ -153,16 +152,16 @@ namespace CemuUpdateTool.Forms
                 {
                     if (optionsFileLocationChanged)
                     {
-                        opts.DeleteOptionsFile();        // delete current settings file
+                        Options.DeleteOptionsFile();
 
                         // Apply requested setting
                         if (radioBtnExecFolder.Checked)
-                            opts.OptionsFilePath = OptionsManager.LocalFilePath;
+                            Options.CurrentOptionsFilePath = Options.LocalOptionsFilePath;
                         else if (radioBtnAppDataFolder.Checked)
-                            opts.OptionsFilePath = OptionsManager.AppDataFilePath;
+                            Options.CurrentOptionsFilePath = Options.AppDataOptionsFilePath;
 
                         // If another settings file has been found in the selected directory, ask if the user wants to load it
-                        if (FileUtils.FileExists(opts.OptionsFilePath))
+                        if (FileUtils.FileExists(Options.CurrentOptionsFilePath))
                         {
                             DialogResult choice = MessageBox.Show("Another options file has been found in the folder you selected. Do you want to load it?",
                                                                   "Settings file found", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
@@ -170,7 +169,7 @@ namespace CemuUpdateTool.Forms
                             {
                                 try
                                 {
-                                    opts.ReadOptionsFromFile();
+                                    Options.LoadFromCurrentlySelectedFile();
                                 }
                                 catch
                                 {
@@ -182,8 +181,8 @@ namespace CemuUpdateTool.Forms
                 }
                 else
                 {
-                    opts.DeleteOptionsFile();
-                    opts.OptionsFilePath = "";
+                    Options.DeleteOptionsFile();
+                    Options.CurrentOptionsFilePath = "";
                 }
             }
             catch (Exception exc)       // handles exceptions in DeleteOptionsFile()
@@ -194,15 +193,15 @@ namespace CemuUpdateTool.Forms
             // DOWNLOAD OPTIONS
             if (!lblUriError.Visible)
             {
-                opts.Download[OptionsKeys.CemuBaseUrl] = "http://" + txtBoxBaseUrl.Text;
-                opts.Download[OptionsKeys.CemuUrlSuffix] = txtBoxUrlSuffix.Text;
+                Options.Download[OptionsKeys.CemuBaseUrl] = "http://" + txtBoxBaseUrl.Text;
+                Options.Download[OptionsKeys.CemuUrlSuffix] = txtBoxUrlSuffix.Text;
             }
         }
 
         private void RefreshCustomEntriesStats()
         {
-            lblCustomFoldersCnt.Text = opts.CustomFolders().Count().ToString();
-            lblCustomFilesCnt.Text = opts.CustomFiles().Count().ToString();
+            lblCustomFoldersCnt.Text = Options.CustomFoldersToMigrate().Count().ToString();
+            lblCustomFilesCnt.Text = Options.CustomFilesToMigrate().Count().ToString();
         }
 
         private void DeleteSettingsFile(object sender, EventArgs e)
@@ -210,10 +209,10 @@ namespace CemuUpdateTool.Forms
             string msgBoxMessage = "";
             try
             {
-                bool optionsFileFound = opts.DeleteOptionsFile();
+                bool optionsFileFound = Options.DeleteOptionsFile();
 
                 // Build message telling if options file has been found and deleted or not
-                msgBoxMessage += optionsFileFound ? $"Deleted options file in {opts.OptionsFilePath}.\r\n\r\n" : "No options file found.\r\n\r\n";
+                msgBoxMessage += optionsFileFound ? $"Deleted options file in {Options.CurrentOptionsFilePath}.\r\n\r\n" : "No options file found.\r\n\r\n";
             }
             catch (Exception exc)
             {
@@ -231,7 +230,7 @@ namespace CemuUpdateTool.Forms
                                                   "Confirmation requested", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (choice == DialogResult.Yes)
             {
-                opts.SetDefaultOptions();
+                Options.ApplyDefaultOptions();
                 SetCheckboxesAccordingToOptions();
             }
         }
@@ -244,7 +243,7 @@ namespace CemuUpdateTool.Forms
             try
             {
                 if (chkBoxSettingsOnFile.Checked)
-                    opts.WriteOptionsToFile();
+                    Options.WriteOptionsToCurrentlySelectedFile();
                 else
                     MessageBox.Show("Please take note that if you don't store options in a file, they'll be lost as soon as you exit the application.",
                                     "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -263,25 +262,31 @@ namespace CemuUpdateTool.Forms
             if (updatedCustomFolders != null)
             {
                 // Delete the old custom folder options from the dictionary
-                List<string> oldCustomFolders = opts.CustomFolders().ToList();
+                List<string> oldCustomFolders = Options.CustomFoldersToMigrate().ToList();
                 foreach (string folder in oldCustomFolders)
-                    opts.Folders.Remove(folder);
+                    Options.FoldersToMigrate.Remove(folder);
 
                 // ... and add the updated ones
                 foreach (var folder in updatedCustomFolders)
-                    opts.Folders.Add(folder.Key, folder.Value);
+                {
+                    Options.FoldersToMigrate.Add(folder.Key);
+                    Options.FoldersToMigrate[folder.Key] = folder.Value;
+                }
             }
 
             if (updatedCustomFiles != null)
             {
                 // Delete the old custom files options from the dictionary
-                List<string> oldCustomFiles = opts.CustomFiles().ToList();
+                List<string> oldCustomFiles = Options.CustomFilesToMigrate().ToList();
                 foreach (string file in oldCustomFiles)
-                    opts.Files.Remove(file);
+                    Options.FilesToMigrate.Remove(file);
 
                 // ... and add the updated ones
                 foreach (var file in updatedCustomFiles)
-                    opts.Files.Add(file.Key, file.Value);
+                {
+                    Options.FilesToMigrate.Add(file.Key);
+                    Options.FilesToMigrate[file.Key] = file.Value;
+                }
             }
         }
 
@@ -292,20 +297,20 @@ namespace CemuUpdateTool.Forms
 
         /*
          *  Triggered when the user changes one of the options file location radio buttons.
-         *  Checks if the selected path is different than the one set in OptionsManager and if so,
+         *  Checks if the selected path is different than the one set in Options and if so,
          *  set the corresponding flag.
          */
         private void CheckIfOptionsFileLocationHasChanged(object sender, EventArgs e)
         {
             // Evaluate whether settings file location has been changed looking at its current value
-            if (opts.OptionsFilePath == OptionsManager.LocalFilePath)
+            if (Options.CurrentOptionsFilePath == Options.LocalOptionsFilePath)
             {
                 if (!radioBtnExecFolder.Checked)
                     optionsFileLocationChanged = true;
                 else
                     optionsFileLocationChanged = false;
             }
-            else if (opts.OptionsFilePath == OptionsManager.AppDataFilePath)
+            else if (Options.CurrentOptionsFilePath == Options.AppDataOptionsFilePath)
             {
                 if (!radioBtnAppDataFolder.Checked)
                     optionsFileLocationChanged = true;
@@ -335,7 +340,7 @@ namespace CemuUpdateTool.Forms
                 btnDeleteSettingsFile.Enabled = true;
 
                 // Obviously, if current options file path is not set, tell the program to change it before writing the file on disk
-                if (opts.OptionsFilePath == "")
+                if (Options.CurrentOptionsFilePath == "")
                     optionsFileLocationChanged = true;
             }
         }
@@ -393,11 +398,11 @@ namespace CemuUpdateTool.Forms
             if (updatedCustomFolders == null)
             {
                 updatedCustomFolders = new Dictionary<string, bool>();
-                foreach (string folder in opts.CustomFolders())
-                    updatedCustomFolders.Add(folder, opts.Folders[folder]);
+                foreach (string folder in Options.CustomFoldersToMigrate())
+                    updatedCustomFolders.Add(folder, Options.FoldersToMigrate[folder]);
             }
 
-            new DictionaryEditingForm(updatedCustomFolders, opts.DefaultFolders()).ShowDialog();
+            new DictionaryEditingForm(updatedCustomFolders, Options.DefaultFoldersToMigrate()).ShowDialog();
             lblCustomFoldersCnt.Text = updatedCustomFolders.Count.ToString();     // update custom folders counter
         }
 
@@ -407,11 +412,11 @@ namespace CemuUpdateTool.Forms
             if (updatedCustomFiles == null)
             {
                 updatedCustomFiles = new Dictionary<string, bool>();
-                foreach (string file in opts.CustomFiles())
-                    updatedCustomFiles.Add(file, opts.Files[file]);
+                foreach (string file in Options.CustomFilesToMigrate())
+                    updatedCustomFiles.Add(file, Options.FilesToMigrate[file]);
             }
 
-            new DictionaryEditingForm(updatedCustomFiles, opts.DefaultFiles()).ShowDialog();
+            new DictionaryEditingForm(updatedCustomFiles, Options.DefaultFilesToMigrate()).ShowDialog();
             lblCustomFilesCnt.Text = updatedCustomFiles.Count.ToString();         // update custom files counter
         }
 

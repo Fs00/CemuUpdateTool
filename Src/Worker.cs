@@ -9,6 +9,7 @@ using System.Net;
 using Microsoft.Win32;
 using IWshRuntimeLibrary;
 using CemuUpdateTool.Utils;
+using CemuUpdateTool.Settings;
 
 namespace CemuUpdateTool
 {
@@ -82,18 +83,18 @@ namespace CemuUpdateTool
          *  Downloads and extracts the latest Cemu version.
          *  Returns the version number of the downloaded Cemu version (needed to update the latest known Cemu version in options)
          */
-        public VersionNumber PerformDownloadOperations(Dictionary<string, string> downloadOptions, Action<string> PerformingWork,
+        public VersionNumber PerformDownloadOperations(Action<string> PerformingWork,
                                                        DownloadProgressChangedEventHandler progressHandler, VersionNumber cemuVersionToBeDownloaded = null)
         {
             // Get data from dictionary
             PerformingWork("Downloading Cemu archive");
-            client.BaseAddress = downloadOptions[OptionsKeys.CemuBaseUrl];
-            string cemuUrlSuffix = downloadOptions[OptionsKeys.CemuUrlSuffix];
+            client.BaseAddress = Options.Download[OptionsKeys.CemuBaseUrl];
+            string cemuUrlSuffix = Options.Download[OptionsKeys.CemuUrlSuffix];
 
             // If no Cemu version to be downloaded is specified, discover which is the latest one
             if (cemuVersionToBeDownloaded == null)
             {
-                VersionNumber.TryParse(downloadOptions[OptionsKeys.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in downloadOptions is malformed
+                VersionNumber.TryParse(Options.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in download options is malformed
                 cemuVersionToBeDownloaded = DiscoverLatestCemuVersion(cemuUrlSuffix, lastKnownCemuVersion);
                 if (cemuVersionToBeDownloaded == null)       // if this condition is true, it's much likely caused by wrong Cemu website set
                     throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");
@@ -161,7 +162,7 @@ namespace CemuUpdateTool
          *  Performs all the migration operations requested by user.
          *  To be run in a separate thread.
          */
-        public void PerformMigrationOperations(Dictionary<string, bool> migrationOptions, Action<string> PerformingWork, IProgress<long> progressHandler)
+        public void PerformMigrationOperations(Action<string> PerformingWork, IProgress<long> progressHandler)
         {
             if (string.IsNullOrWhiteSpace(BaseSourcePath) || string.IsNullOrWhiteSpace(BaseDestinationPath))
                 throw new ArgumentException("Source and/or destination Cemu folder are set incorrectly!");
@@ -170,7 +171,7 @@ namespace CemuUpdateTool
             foreach (var folder in foldersToCopy)
             {
                 // Destination folder contents removal
-                if (migrationOptions[OptionsKeys.DeleteDestinationFolderContents])
+                if (Options.Migration[OptionsKeys.DeleteDestinationFolderContents])
                 {
                     string destFolderPath = Path.Combine(BaseDestinationPath, folder.Name);
                     if (FileUtils.DirectoryExists(destFolderPath))
@@ -212,15 +213,15 @@ namespace CemuUpdateTool
             }
 
             // SET COMPATIBILITY OPTIONS for new Cemu executable
-            if (migrationOptions[OptionsKeys.SetCompatibilityOptions])
+            if (Options.Migration[OptionsKeys.SetCompatibilityOptions])
             {
                 // Build the key value
                 string keyValue = "";
-                if (migrationOptions[OptionsKeys.CompatibilityRunAsAdmin])
+                if (Options.Migration[OptionsKeys.CompatibilityRunAsAdmin])
                     keyValue += "RUNASADMIN ";
-                if (migrationOptions[OptionsKeys.CompatibilityNoFullscreenOptimizations])
+                if (Options.Migration[OptionsKeys.CompatibilityNoFullscreenOptimizations])
                     keyValue += "DISABLEDXMAXIMIZEDWINDOWEDMODE ";
-                if (migrationOptions[OptionsKeys.CompatibilityOverrideHiDPIBehaviour])
+                if (Options.Migration[OptionsKeys.CompatibilityOverrideHiDPIBehaviour])
                     keyValue += "HIGHDPIAWARE";
 
                 // Write the value in the registry
@@ -254,10 +255,10 @@ namespace CemuUpdateTool
          *        to the cemuInstallationPath passed by parameter.
          */
         public VersionNumber PerformUpdateOperations(string cemuInstallationPath, bool removePrecompiledCaches, bool updateGameProfiles,
-                                                     Dictionary<string, string> downloadOptions, Action<string> PerformingWork, DownloadProgressChangedEventHandler progressHandler)
+                                                     Action<string> PerformingWork, DownloadProgressChangedEventHandler progressHandler)
         {
             // Download the latest version of Cemu to BaseDestinationPath
-            VersionNumber downloadedCemuVer = PerformDownloadOperations(downloadOptions, PerformingWork, progressHandler);
+            VersionNumber downloadedCemuVer = PerformDownloadOperations(PerformingWork, progressHandler);
 
             // Replace Cemu.exe from the downloaded Cemu version
             var downloadedCemuExe = new FileInfo(Path.Combine(BaseDestinationPath, "Cemu.exe"));

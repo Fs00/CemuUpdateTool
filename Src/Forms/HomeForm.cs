@@ -10,12 +10,9 @@ namespace CemuUpdateTool.Forms
      */
     public partial class HomeForm : Form
     {
-        OptionsManager options;
-
-        public HomeForm(OptionsManager opts)
+        public HomeForm()
         {
             InitializeComponent();
-            options = opts;
 
             float scaleFactor = Program.GetDPIScaleFactor();
             var resourceMgr = new System.ComponentModel.ComponentResourceManager(GetType());
@@ -32,22 +29,22 @@ namespace CemuUpdateTool.Forms
 
         private void ShowMigrateForm(object sender, EventArgs e)
         {
-            ContainerForm.ShowForm(new MigrationForm(options, false));
+            ContainerForm.ShowForm(new MigrationForm(false));
         }
 
         private void ShowDownloadMigrateForm(object sender, EventArgs e)
         {
-            ContainerForm.ShowForm(new MigrationForm(options, true));
+            ContainerForm.ShowForm(new MigrationForm(true));
         }
 
         private void ShowUpdateForm(object sender, EventArgs e)
         {
-            ContainerForm.ShowForm(new UpdateForm(options));
+            ContainerForm.ShowForm(new UpdateForm());
         }
 
         private void ShowOptionsForm(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            new OptionsForm(options).ShowDialog();
+            new OptionsForm().ShowDialog();
         }
 
         private void ShowAboutForm(object sender, LinkLabelLinkClickedEventArgs e)

@@ -4,6 +4,7 @@ using System.IO;
 using System.Globalization;
 using System.Reflection;
 using CemuUpdateTool.Forms;
+using CemuUpdateTool.Settings;
 
 namespace CemuUpdateTool
 {
@@ -55,14 +56,12 @@ namespace CemuUpdateTool
                 }; 
             }
 
-            // Load options
-            OptionsManager opts;
             try
             {
                 // If the application is launched with the 'prefer-appdata-config' parameter, options are loaded from %AppData% even if local file exists
                 bool preferAppDataFile = args.Length > 0 && args[0].TrimStart('-', '/') == "prefer-appdata-config";
-                string optionsFilePath = OptionsManager.LookForOptionsFile(preferAppDataFile);
-                opts = new OptionsManager(optionsFilePath);
+                if (Options.OptionsFileFound(preferAppDataFile))
+                    Options.LoadFromCurrentlySelectedFile();
             }
             catch (Exception exc)
             {
@@ -73,10 +72,9 @@ namespace CemuUpdateTool
                     message = exc.Message;
 
                 MessageBox.Show(message + "\r\nDefault settings will be loaded instead.", "Error in settings.dat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                opts = new OptionsManager();
             }
 
-            Application.Run(new ContainerForm(new HomeForm(opts)));
+            Application.Run(new ContainerForm(new HomeForm()));
         }
 
         /*

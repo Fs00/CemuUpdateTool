@@ -1,4 +1,5 @@
-﻿using CemuUpdateTool.Utils;
+﻿using CemuUpdateTool.Settings;
+using CemuUpdateTool.Utils;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -14,7 +15,7 @@ namespace CemuUpdateTool.Forms
      */
     public partial class UpdateForm : OperationsForm
     {
-        public UpdateForm(OptionsManager opts) : base(opts)
+        public UpdateForm() : base()
         {
             InitializeComponent();
             txtBoxCemuFolder.ContextMenuStrip = new ContextMenuStrip();     // remove default menu strip
@@ -64,15 +65,15 @@ namespace CemuUpdateTool.Forms
             try
             {
                 VersionNumber downloadedCemuVersion = await Task.Run(() => worker.PerformUpdateOperations(txtBoxCemuFolder.Text, chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked,
-                                                                                                          opts.Download, ChangeProgressLabelText, HandleDownloadProgress));
+                                                                                                          ChangeProgressLabelText, HandleDownloadProgress));
                 // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
-                VersionNumber.TryParse(opts.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
+                VersionNumber.TryParse(Options.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
                 if (previousLastKnownCemuVersion != downloadedCemuVersion)
                 {
-                    opts.Download[OptionsKeys.LastKnownCemuVersion] = downloadedCemuVersion.ToString();
+                    Options.Download[OptionsKeys.LastKnownCemuVersion] = downloadedCemuVersion.ToString();
                     try
                     {
-                        opts.WriteOptionsToFile();
+                        Options.WriteOptionsToCurrentlySelectedFile();
                     }
                     catch (Exception optionsUpdateExc)
                     {

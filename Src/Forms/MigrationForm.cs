@@ -1,8 +1,10 @@
-﻿using CemuUpdateTool.Utils;
+﻿using CemuUpdateTool.Settings;
+using CemuUpdateTool.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,7 +15,7 @@ namespace CemuUpdateTool.Forms
      *  MigrationForm
      *  Window that provides Migrate and Download & Migrate functionalities.
      */
-    public partial class MigrationForm : OperationsForm
+    partial class MigrationForm : OperationsForm
     {
         Progress<long> progressHandler;             // used to send callbacks to UI thread
         bool progressBarMaxDivided = false;         /* if overall size to copy > int.MaxValue (maximum possible ProgressBar value), progress bar maximum
@@ -24,7 +26,7 @@ namespace CemuUpdateTool.Forms
 
         public bool DownloadMode { get; }           // if true, newer version of Cemu will be downloaded before migrating
 
-        public MigrationForm(OptionsManager opts, bool downloadMode) : base(opts)
+        public MigrationForm(bool downloadMode) : base()
         {
             InitializeComponent();
             DownloadMode = downloadMode;
@@ -203,11 +205,16 @@ namespace CemuUpdateTool.Forms
                 }
             }
 
-            // Get the list of folders and files to copy telling the method if source Cemu version is >= 1.10..
-            List<string> foldersToCopy = opts.GetFoldersToCopy(srcCemuExeVersion.Major > 1 || srcCemuExeVersion.Minor >= 10);
-            List<string> filesToCopy = opts.GetFilesToCopy();
+            List<string> foldersToCopy = Options.FoldersToMigrate.GetAllEnabled().ToList();
+            // TODO: move this logic inside Worker
+            if (srcCemuExeVersion.Major > 1 || srcCemuExeVersion.Minor >= 10 && Options.Migration[OptionsKeys.UseCustomMlcFolderIfSupported])
+            {
+                foldersToCopy.Remove(OptionsFolder.OldSavegames);
+                foldersToCopy.Remove(OptionsFolder.Savegames);
+                foldersToCopy.Remove(OptionsFolder.DLCUpdates);
+            }
+            List<string> filesToCopy = Options.FilesToMigrate.GetAllEnabled().ToList();
 
-            // ... and check if both lists are empty (no folders and files to copy)
             if (foldersToCopy.Count == 0 && filesToCopy.Count == 0)
             {
                 MessageBox.Show("It seems that there are neither folders nor single files to copy. Probably you set up options incorrectly.",
@@ -228,16 +235,16 @@ namespace CemuUpdateTool.Forms
                 // Perform download operations if we are in download mode
                 if (DownloadMode)
                 {
-                    destCemuExeVersion = await Task.Run(() => worker.PerformDownloadOperations(opts.Download, ChangeProgressLabelText, HandleDownloadProgress, destCemuExeVersion));
+                    destCemuExeVersion = await Task.Run(() => worker.PerformDownloadOperations(ChangeProgressLabelText, HandleDownloadProgress, destCemuExeVersion));
 
                     // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
-                    VersionNumber.TryParse(opts.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
+                    VersionNumber.TryParse(Options.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
                     if (previousLastKnownCemuVersion != destCemuExeVersion)
                     {
-                        opts.Download[OptionsKeys.LastKnownCemuVersion] = destCemuExeVersion.ToString();
+                        Options.Download[OptionsKeys.LastKnownCemuVersion] = destCemuExeVersion.ToString();
                         try
                         {
-                            opts.WriteOptionsToFile();
+                            Options.WriteOptionsToCurrentlySelectedFile();
                         }
                         catch (Exception optionsUpdateExc)
                         {
@@ -257,7 +264,7 @@ namespace CemuUpdateTool.Forms
                 overallProgressBar.Maximum = (int)overallSize;
 
                 // Start migration operations in a secondary thread
-                var migrationTask = Task.Run(() => worker.PerformMigrationOperations(opts.Migration, ChangeProgressLabelText, progressHandler));
+                var migrationTask = Task.Run(() => worker.PerformMigrationOperations(ChangeProgressLabelText, progressHandler));
                 await migrationTask;
 
                 stopwatch.Stop();
@@ -311,13 +318,13 @@ namespace CemuUpdateTool.Forms
             logUpdater.StopAndWaitShutdown();
 
             // Ask if user wants to create Cemu desktop shortcut
-            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && opts.Migration[OptionsKeys.AskForDesktopShortcut])
+            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && Options.Migration[OptionsKeys.AskForDesktopShortcut])
             {
                 DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 bool isNewCemuVersionAtLeast110 = destCemuExeVersion.Major > 1 || destCemuExeVersion.Minor >= 10;
                 if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
                     worker.CreateDesktopShortcut(destCemuExeVersion.ToString(),
-                      (isNewCemuVersionAtLeast110 && opts.Migration[OptionsKeys.UseCustomMlcFolderIfSupported] == true) ? opts.CustomMlcFolderPath : null);
+                      (isNewCemuVersionAtLeast110 && Options.Migration[OptionsKeys.UseCustomMlcFolderIfSupported] == true) ? Options.CustomMlcFolderPath : null);
             }
 
             ShowWorkResultDialog(result);
@@ -375,7 +382,7 @@ namespace CemuUpdateTool.Forms
 
         private void OpenOptionsForm(object sender, EventArgs e)
         {
-            new OptionsForm(opts).ShowDialog();
+            new OptionsForm().ShowDialog();
         }
 
         // These "fake overrides" are needed to avoid VS designer errors

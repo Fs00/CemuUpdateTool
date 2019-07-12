@@ -12,20 +12,16 @@ namespace CemuUpdateTool.Forms
      */
     public /*abstract*/ partial class OperationsForm : Form
     {
-        protected OptionsManager opts;
         protected Worker worker;
 
         protected CancellationTokenSource ctSource;           // handles task cancellation
         protected Stopwatch stopwatch;                        // used to measure how much time the task took to complete
         protected TextBoxLogger logUpdater;                   // used to update txtBoxLog asynchronously
 
-        private OperationsForm() : this(null) { }    // needed by VS Designer
-
-        protected OperationsForm(OptionsManager opts)
+        protected OperationsForm()
         {
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;
-            this.opts = opts;
 
             stopwatch = new Stopwatch();
 
