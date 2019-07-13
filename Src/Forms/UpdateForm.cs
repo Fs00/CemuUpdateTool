@@ -67,10 +67,10 @@ namespace CemuUpdateTool.Forms
                 VersionNumber downloadedCemuVersion = await Task.Run(() => worker.PerformUpdateOperations(txtBoxCemuFolder.Text, chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked,
                                                                                                           ChangeProgressLabelText, HandleDownloadProgress));
                 // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
-                VersionNumber.TryParse(Options.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
+                VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
                 if (previousLastKnownCemuVersion != downloadedCemuVersion)
                 {
-                    Options.Download[OptionsKeys.LastKnownCemuVersion] = downloadedCemuVersion.ToString();
+                    Options.Download[OptionKey.LastKnownCemuVersion] = downloadedCemuVersion.ToString();
                     try
                     {
                         Options.WriteOptionsToCurrentlySelectedFile();

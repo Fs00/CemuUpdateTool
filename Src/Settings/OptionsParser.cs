@@ -14,6 +14,7 @@ namespace CemuUpdateTool.Settings
         FilesToMigrate = 4
     }
 
+    // See OptionsSerializer for details on the options file format.
     static partial class Options
     {
         private class OptionsParser
@@ -27,6 +28,15 @@ namespace CemuUpdateTool.Settings
             private LineCountingStreamReader optionsFileStream;
 
             private const int CR = 13, LF = 10;
+
+            public void ApplyParsedOptions()
+            {
+                Options.FoldersToMigrate = new ToggleableOptionsListDictionaryAdapter(parsedFoldersToMigrate);
+                Options.FilesToMigrate = new ToggleableOptionsListDictionaryAdapter(parsedFilesToMigrate);
+                Options.Migration = new OptionsGroupDictionaryAdapter<bool>(parsedMigrationOptions);
+                Options.Download = new OptionsGroupDictionaryAdapter<string>(parsedDownloadOptions);
+                Options.CustomMlcFolderPath = parsedCustomMlcFolderPath;
+            }
 
             public void ReadFromFile(string optionsFilePath)
             {
@@ -53,6 +63,9 @@ namespace CemuUpdateTool.Settings
                     {
                         throw GetWrappedExceptionWithCurrentLineNumber(exc);
                     }
+
+                    if (NoDataHasBeenParsed())
+                        throw new InvalidDataException("Options file didn't contain any useful information.");
 
                     AddMissingOptionsWithDefaultValue();
                 }
@@ -94,10 +107,7 @@ namespace CemuUpdateTool.Settings
             private void ParseCustomMlcFolderPath()
             {
                 if (IsNextCharacterSectionMarker() || optionsFileStream.EndOfStream)
-                {
-                    parsedCustomMlcFolderPath = "";
                     return;
-                }
 
                 string path = optionsFileStream.ReadLine();
                 if (path.IndexOfAny(Path.GetInvalidPathChars()) == -1)
@@ -144,16 +154,25 @@ namespace CemuUpdateTool.Settings
                 return new OptionsParsingException(exc.Message, optionsFileStream.CurrentLine);
             }
 
-            // If default folder/files were missing, they're configured not to be copied
+            private bool NoDataHasBeenParsed()
+            {
+                return parsedFoldersToMigrate.Count == 0 &&
+                       parsedFilesToMigrate.Count == 0 &&
+                       parsedMigrationOptions.Count == 0 &&
+                       parsedDownloadOptions.Count == 0 &&
+                       string.IsNullOrEmpty(parsedCustomMlcFolderPath);
+            }
+
+            // If default folder/files were missing, they are configured not to be copied
             private void AddMissingOptionsWithDefaultValue()
             {
-                foreach (string folder in Options.DefaultFoldersToMigrate())
+                foreach (string folder in Options.AllDefaultFoldersToMigrate())
                 {
                     if (!parsedFoldersToMigrate.ContainsKey(folder))
                         parsedFoldersToMigrate.Add(folder, false);
                 }
 
-                foreach (string file in Options.DefaultFilesToMigrate())
+                foreach (string file in Options.AllDefaultFilesToMigrate())
                 {
                     if (!parsedFilesToMigrate.ContainsKey(file))
                         parsedFilesToMigrate.Add(file, false);
@@ -170,15 +189,6 @@ namespace CemuUpdateTool.Settings
                     if (!parsedDownloadOptions.ContainsKey(option.Key))
                         parsedDownloadOptions.Add(option.Key, option.Value);
                 }
-            }
-
-            public void ApplyParsedOptions()
-            {
-                Options.FoldersToMigrate = new ToggleableOptionsListDictionaryAdapter(parsedFoldersToMigrate);
-                Options.FilesToMigrate = new ToggleableOptionsListDictionaryAdapter(parsedFilesToMigrate);
-                Options.Migration = new OptionsGroupDictionaryAdapter<bool>(parsedMigrationOptions);
-                Options.Download = new OptionsGroupDictionaryAdapter<string>(parsedDownloadOptions);
-                Options.CustomMlcFolderPath = parsedCustomMlcFolderPath;
             }
         }
     }

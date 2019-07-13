@@ -1,10 +1,15 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 
 namespace CemuUpdateTool.Settings
 {
     static partial class Options
     {
+        /*
+         * Options are written in the file under several sections, one for each options group.
+         * Every section is introduced by the section marker, followed by the section's numeric ID.
+         * Every group entry is serialized in the format "key,value".
+         * Section 3 is different from the others since it contains only one line for the custom MLC path.
+         */
         private class OptionsSerializer
         {
             private StringBuilder serializedOptions;

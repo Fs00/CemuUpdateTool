@@ -207,11 +207,11 @@ namespace CemuUpdateTool.Forms
 
             List<string> foldersToCopy = Options.FoldersToMigrate.GetAllEnabled().ToList();
             // TODO: move this logic inside Worker
-            if (srcCemuExeVersion.Major > 1 || srcCemuExeVersion.Minor >= 10 && Options.Migration[OptionsKeys.UseCustomMlcFolderIfSupported])
+            if (srcCemuExeVersion.Major > 1 || srcCemuExeVersion.Minor >= 10 && Options.Migration[OptionKey.UseCustomMlcFolderIfSupported])
             {
-                foldersToCopy.Remove(OptionsFolder.OldSavegames);
-                foldersToCopy.Remove(OptionsFolder.Savegames);
-                foldersToCopy.Remove(OptionsFolder.DLCUpdates);
+                foldersToCopy.Remove(FolderOption.OldSavegames);
+                foldersToCopy.Remove(FolderOption.Savegames);
+                foldersToCopy.Remove(FolderOption.DLCUpdates);
             }
             List<string> filesToCopy = Options.FilesToMigrate.GetAllEnabled().ToList();
 
@@ -238,10 +238,10 @@ namespace CemuUpdateTool.Forms
                     destCemuExeVersion = await Task.Run(() => worker.PerformDownloadOperations(ChangeProgressLabelText, HandleDownloadProgress, destCemuExeVersion));
 
                     // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
-                    VersionNumber.TryParse(Options.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
+                    VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
                     if (previousLastKnownCemuVersion != destCemuExeVersion)
                     {
-                        Options.Download[OptionsKeys.LastKnownCemuVersion] = destCemuExeVersion.ToString();
+                        Options.Download[OptionKey.LastKnownCemuVersion] = destCemuExeVersion.ToString();
                         try
                         {
                             Options.WriteOptionsToCurrentlySelectedFile();
@@ -318,13 +318,13 @@ namespace CemuUpdateTool.Forms
             logUpdater.StopAndWaitShutdown();
 
             // Ask if user wants to create Cemu desktop shortcut
-            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && Options.Migration[OptionsKeys.AskForDesktopShortcut])
+            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && Options.Migration[OptionKey.AskForDesktopShortcut])
             {
                 DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 bool isNewCemuVersionAtLeast110 = destCemuExeVersion.Major > 1 || destCemuExeVersion.Minor >= 10;
                 if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
                     worker.CreateDesktopShortcut(destCemuExeVersion.ToString(),
-                      (isNewCemuVersionAtLeast110 && Options.Migration[OptionsKeys.UseCustomMlcFolderIfSupported] == true) ? Options.CustomMlcFolderPath : null);
+                      (isNewCemuVersionAtLeast110 && Options.Migration[OptionKey.UseCustomMlcFolderIfSupported] == true) ? Options.CustomMlcFolderPath : null);
             }
 
             ShowWorkResultDialog(result);

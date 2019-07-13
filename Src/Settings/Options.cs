@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using Env = System.Environment;
@@ -7,8 +8,9 @@ using CemuUpdateTool.Utils;
 namespace CemuUpdateTool.Settings
 {
     /*
-     *  Options
-     *  Stores program options. They can be loaded from a file (see WriteOptionsToFile() for details on the format)
+     *  Provides global access to the options of the application.
+     *  By default, the class is initialized with default settings.
+     *  If CurrentOptionsFilePath is set, options can be read from and written to the specified file.
      */
     static partial class Options
     {
@@ -22,10 +24,10 @@ namespace CemuUpdateTool.Settings
         private const string OPTIONS_FILE_NAME = "settings.dat";
         public static readonly string LocalOptionsFilePath = $@".\{OPTIONS_FILE_NAME}";
         public static readonly string AppDataOptionsFilePath = Path.Combine(Env.GetFolderPath(Env.SpecialFolder.ApplicationData),
-                                                                $@"Fs00\CemuUpdateTool\{OPTIONS_FILE_NAME}");
+                                                                "Fs00", "CemuUpdateTool", OPTIONS_FILE_NAME);
 
-        private static readonly IOptionsGroup<bool> defaultFoldersToMigrate;
-        private static readonly IOptionsGroup<bool> defaultFilesToMigrate;
+        private static readonly IToggleableOptionsList defaultFoldersToMigrate;
+        private static readonly IToggleableOptionsList defaultFilesToMigrate;
         private static readonly IOptionsGroup<bool> migrationDefaults;
         private static readonly IOptionsGroup<string> downloadDefaults;
 
@@ -34,43 +36,42 @@ namespace CemuUpdateTool.Settings
 
         static Options()
         {
-            defaultFoldersToMigrate = new OptionsGroupDictionaryAdapter<bool>(
+            defaultFoldersToMigrate = new ToggleableOptionsListDictionaryAdapter(
                 new Dictionary<string, bool> {
-                    { OptionsFolder.ControllerProfiles, true },
-                    { OptionsFolder.GameProfiles, false },
-                    { OptionsFolder.GraphicPacks, true },
-                    { OptionsFolder.OldSavegames, true },
-                    { OptionsFolder.Savegames, true },
-                    { OptionsFolder.DLCUpdates, true },
-                    { OptionsFolder.TransferableCaches, true }
+                    { FolderOption.ControllerProfiles, true },
+                    { FolderOption.GameProfiles, false },
+                    { FolderOption.GraphicPacks, true },
+                    { FolderOption.OldSavegames, true },
+                    { FolderOption.Savegames, true },
+                    { FolderOption.DLCUpdates, true },
+                    { FolderOption.TransferableCaches, true }
                 }
             );
 
-            defaultFilesToMigrate = new OptionsGroupDictionaryAdapter<bool>(
+            defaultFilesToMigrate = new ToggleableOptionsListDictionaryAdapter(
                 new Dictionary<string, bool> {
-                    { OptionsFile.SettingsBin, true },       // Cemu settings file
-                    { OptionsFile.SettingsXml, true }        // file containing game list data
+                    { FileOption.SettingsBin, true },
+                    { FileOption.SettingsXml, true }
                 }
             );
 
             migrationDefaults = new OptionsGroupDictionaryAdapter<bool>(
                 new Dictionary<string, bool> {
-                    { OptionsKeys.DeleteDestinationFolderContents, false },
-                    { OptionsKeys.UseCustomMlcFolderIfSupported, false },
-                    { OptionsKeys.AskForDesktopShortcut, true },
-                    // Compatibility options for new Cemu installation
-                    { OptionsKeys.SetCompatibilityOptions, true },
-                    { OptionsKeys.CompatibilityRunAsAdmin, false },
-                    { OptionsKeys.CompatibilityNoFullscreenOptimizations, true },
-                    { OptionsKeys.CompatibilityOverrideHiDPIBehaviour, true }
+                    { OptionKey.DeleteDestinationFolderContents, false },
+                    { OptionKey.UseCustomMlcFolderIfSupported, false },
+                    { OptionKey.AskForDesktopShortcut, true },
+                    { OptionKey.SetCompatibilityOptions, true },
+                    { OptionKey.CompatibilityRunAsAdmin, false },
+                    { OptionKey.CompatibilityNoFullscreenOptimizations, true },
+                    { OptionKey.CompatibilityOverrideHiDPIBehaviour, true }
                 }
             );
 
             downloadDefaults = new OptionsGroupDictionaryAdapter<string>(
                 new Dictionary<string, string> {
-                    { OptionsKeys.CemuBaseUrl, "http://cemu.info/releases/cemu_" },
-                    { OptionsKeys.CemuUrlSuffix, ".zip" },
-                    { OptionsKeys.LastKnownCemuVersion, "1.0.0" },
+                    { OptionKey.CemuBaseUrl, "http://cemu.info/releases/cemu_" },
+                    { OptionKey.CemuUrlSuffix, ".zip" },
+                    { OptionKey.LastKnownCemuVersion, "1.0.0" },
                 }
             );
 
@@ -95,8 +96,8 @@ namespace CemuUpdateTool.Settings
         }
 
         /*
-         *  Looks for options file in executable and in %AppData% folder
-         *  Priority is given to the file in the local folder, unless preferAppDataFile is set to true
+         *  Looks for options file and sets CurrentOptionsFilePath with the path to the found file.
+         *  Priority is given to the file in the local folder, unless preferAppDataFile is set to true.
          */
         public static bool OptionsFileFound(bool preferAppDataFile = false)
         {
@@ -127,6 +128,9 @@ namespace CemuUpdateTool.Settings
 
         public static void LoadFromCurrentlySelectedFile()
         {
+            if (string.IsNullOrEmpty(CurrentOptionsFilePath))
+                throw new InvalidOperationException("Options file path has not been set.");
+
             var parser = new OptionsParser();
             parser.ReadFromFile(CurrentOptionsFilePath);
             parser.ApplyParsedOptions();
@@ -171,31 +175,26 @@ namespace CemuUpdateTool.Settings
         }
 
         /*
-         *  Iterators on default files/folders dictionaries
+         *  Iterators to avoid breaking encapsulation
          */
-        public static IEnumerable<string> DefaultFoldersToMigrate()
+        public static IEnumerable<string> AllDefaultFoldersToMigrate()
         {
-            foreach (var option in defaultFoldersToMigrate)
-                yield return option.Key;
+            return defaultFoldersToMigrate.GetAll();
         }
 
-        public static IEnumerable<string> DefaultFilesToMigrate()
+        public static IEnumerable<string> AllDefaultFilesToMigrate()
         {
-            foreach (var option in defaultFilesToMigrate)
-                yield return option.Key;
+            return defaultFilesToMigrate.GetAll();
         }
 
-        /*
-         *  Iterators that return only custom user folders/files (the ones that aren't in default dictionary)
-         */
-        public static IEnumerable<string> CustomFoldersToMigrate()
+        public static IEnumerable<string> AllCustomFoldersToMigrate()
         {
-            return FoldersToMigrate.GetAll().Except(DefaultFoldersToMigrate());
+            return FoldersToMigrate.GetAll().Except(AllDefaultFoldersToMigrate());
         }
 
-        public static IEnumerable<string> CustomFilesToMigrate()
+        public static IEnumerable<string> AllCustomFilesToMigrate()
         {
-            return FilesToMigrate.GetAll().Except(DefaultFilesToMigrate());
+            return FilesToMigrate.GetAll().Except(AllDefaultFilesToMigrate());
         }
     }
 }

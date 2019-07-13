@@ -88,13 +88,13 @@ namespace CemuUpdateTool
         {
             // Get data from dictionary
             PerformingWork("Downloading Cemu archive");
-            client.BaseAddress = Options.Download[OptionsKeys.CemuBaseUrl];
-            string cemuUrlSuffix = Options.Download[OptionsKeys.CemuUrlSuffix];
+            client.BaseAddress = Options.Download[OptionKey.CemuBaseUrl];
+            string cemuUrlSuffix = Options.Download[OptionKey.CemuUrlSuffix];
 
             // If no Cemu version to be downloaded is specified, discover which is the latest one
             if (cemuVersionToBeDownloaded == null)
             {
-                VersionNumber.TryParse(Options.Download[OptionsKeys.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in download options is malformed
+                VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in download options is malformed
                 cemuVersionToBeDownloaded = DiscoverLatestCemuVersion(cemuUrlSuffix, lastKnownCemuVersion);
                 if (cemuVersionToBeDownloaded == null)       // if this condition is true, it's much likely caused by wrong Cemu website set
                     throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");
@@ -171,7 +171,7 @@ namespace CemuUpdateTool
             foreach (var folder in foldersToCopy)
             {
                 // Destination folder contents removal
-                if (Options.Migration[OptionsKeys.DeleteDestinationFolderContents])
+                if (Options.Migration[OptionKey.DeleteDestinationFolderContents])
                 {
                     string destFolderPath = Path.Combine(BaseDestinationPath, folder.Name);
                     if (FileUtils.DirectoryExists(destFolderPath))
@@ -213,15 +213,15 @@ namespace CemuUpdateTool
             }
 
             // SET COMPATIBILITY OPTIONS for new Cemu executable
-            if (Options.Migration[OptionsKeys.SetCompatibilityOptions])
+            if (Options.Migration[OptionKey.SetCompatibilityOptions])
             {
                 // Build the key value
                 string keyValue = "";
-                if (Options.Migration[OptionsKeys.CompatibilityRunAsAdmin])
+                if (Options.Migration[OptionKey.CompatibilityRunAsAdmin])
                     keyValue += "RUNASADMIN ";
-                if (Options.Migration[OptionsKeys.CompatibilityNoFullscreenOptimizations])
+                if (Options.Migration[OptionKey.CompatibilityNoFullscreenOptimizations])
                     keyValue += "DISABLEDXMAXIMIZEDWINDOWEDMODE ";
-                if (Options.Migration[OptionsKeys.CompatibilityOverrideHiDPIBehaviour])
+                if (Options.Migration[OptionKey.CompatibilityOverrideHiDPIBehaviour])
                     keyValue += "HIGHDPIAWARE";
 
                 // Write the value in the registry

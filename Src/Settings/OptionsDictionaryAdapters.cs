@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CemuUpdateTool.Settings
 {
@@ -43,24 +44,19 @@ namespace CemuUpdateTool.Settings
             dictionary.Remove(optionKey);
         }
 
-        public IEnumerable<string> GetAllEnabled()
+        public bool IsEnabled(string optionKey)
         {
-            foreach (KeyValuePair<string, bool> option in dictionary)
-            {
-                if (option.Value == true)
-                    yield return option.Key;
-            }
+            return dictionary[optionKey] == true;
         }
 
         public IEnumerable<string> GetAll()
         {
-            foreach (KeyValuePair<string, bool> option in dictionary)
-                yield return option.Key;
+            return dictionary.Keys;
         }
 
-        public bool IsEnabled(string optionKey)
+        public IEnumerable<string> GetAllEnabled()
         {
-            return dictionary[optionKey] == true;
+            return dictionary.Keys.Where(key => IsEnabled(key));
         }
     }
 }
