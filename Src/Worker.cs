@@ -57,7 +57,8 @@ namespace CemuUpdateTool
             this.LoggerDelegate = LoggerDelegate;
 
             client = new MyWebClient();
-            cancToken.Register(StopPendingWebOperation);    // register the action to be performed when cancellation is requested
+            cancToken.Register(() => client?.CancelAsync());    // register the action to be performed when cancellation is requested
+
             CreatedFiles = new List<FileInfo>();
             CreatedDirectories = new List<DirectoryInfo>();
         }
@@ -88,14 +89,12 @@ namespace CemuUpdateTool
         {
             // Get data from dictionary
             PerformingWork("Downloading Cemu archive");
-            client.BaseAddress = Options.Download[OptionKey.CemuBaseUrl];
-            string cemuUrlSuffix = Options.Download[OptionKey.CemuUrlSuffix];
 
             // If no Cemu version to be downloaded is specified, discover which is the latest one
             if (cemuVersionToBeDownloaded == null)
             {
                 VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);    // avoid errors if version string in download options is malformed
-                cemuVersionToBeDownloaded = DiscoverLatestCemuVersion(cemuUrlSuffix, lastKnownCemuVersion);
+                cemuVersionToBeDownloaded = DiscoverLatestCemuVersion(lastKnownCemuVersion);
                 if (cemuVersionToBeDownloaded == null)       // if this condition is true, it's much likely caused by wrong Cemu website set
                     throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");
 
@@ -109,7 +108,12 @@ namespace CemuUpdateTool
                 {
                     try
                     {
-                        if (!client.RemoteFileExists(cemuVersionToBeDownloaded.ToString() + cemuUrlSuffix))
+                        var versionChecker = new RemoteVersionChecker(
+                            Options.Download[OptionKey.CemuBaseUrl],
+                            Options.Download[OptionKey.CemuUrlSuffix],
+                            maxVersionLength: 3
+                        );
+                        if (!versionChecker.RemoteVersionExists(cemuVersionToBeDownloaded, client))
                             throw new ArgumentException("The Cemu version you supplied does not exist.");
 
                         versionChecked = true;
@@ -131,8 +135,12 @@ namespace CemuUpdateTool
             client.DownloadProgressChanged += progressHandler;
 
             // DOWNLOAD THE FILE
-            HandleLogMessage($"Downloading file {client.BaseAddress + cemuVersionToBeDownloaded.ToString() + cemuUrlSuffix}... ", EventLogEntryType.Information, false);
-            string downloadedFile = DownloadCemuArchive(cemuVersionToBeDownloaded, cemuUrlSuffix);
+            HandleLogMessage(
+                $"Downloading file {Options.Download[OptionKey.CemuBaseUrl] + cemuVersionToBeDownloaded.ToString() + Options.Download[OptionKey.CemuUrlSuffix]}... ",
+                EventLogEntryType.Information,
+                false
+            );
+            string downloadedFile = DownloadCemuArchive(cemuVersionToBeDownloaded);
             HandleLogMessage("Done!", EventLogEntryType.Information);
 
             // EXTRACT CONTENTS
@@ -295,7 +303,7 @@ namespace CemuUpdateTool
             return downloadedCemuVer;
         }
 
-        private VersionNumber DiscoverLatestCemuVersion(string cemuUrlSuffix, VersionNumber lastKnownCemuVersion = null)
+        private VersionNumber DiscoverLatestCemuVersion(VersionNumber lastKnownCemuVersion = null)
         {
             VersionNumber latestCemuVersion = null;
             bool versionObtained = false;
@@ -303,8 +311,12 @@ namespace CemuUpdateTool
             {
                 try
                 {
-                    latestCemuVersion = WebUtils.GetLatestRemoteVersionInBranch(VersionNumber.Empty, client, cemuUrlSuffix,
-                                                                                maxVersionLength: 3, lastKnownCemuVersion, cancToken);
+                    var versionChecker = new RemoteVersionChecker(
+                        Options.Download[OptionKey.CemuBaseUrl],
+                        Options.Download[OptionKey.CemuUrlSuffix],
+                        maxVersionLength: 3
+                    );
+                    latestCemuVersion = versionChecker.GetLatestRemoteVersionInBranch(VersionNumber.Empty, lastKnownCemuVersion, cancToken);
                     versionObtained = true;
                 }
                 // Handle web request cancellation
@@ -331,7 +343,7 @@ namespace CemuUpdateTool
          *  Performs the download of the selected Cemu version.
          *  The file is downloaded in %Temp% directory (%UserProfile%\AppData\Local\Temp)
          */
-        private string DownloadCemuArchive(VersionNumber cemuVersion, string urlSuffix)
+        private string DownloadCemuArchive(VersionNumber cemuVersion)
         {
             string destinationFile = Path.Combine(Path.GetTempPath(), $"cemu_{cemuVersion.ToString()}.zip");
             bool fileDownloaded = false;
@@ -339,7 +351,10 @@ namespace CemuUpdateTool
             {
                 try
                 {
-                    client.DownloadFileTaskAsync(client.BaseAddress + cemuVersion.ToString() + urlSuffix, destinationFile).Wait();
+                    client.DownloadFileTaskAsync(
+                        Options.Download[OptionKey.CemuBaseUrl] + cemuVersion.ToString() + Options.Download[OptionKey.CemuUrlSuffix], 
+                        destinationFile
+                    ).Wait();
                     fileDownloaded = true;
                 }
                 catch (AggregateException exc)    // DownloadFileTaskAsync wraps all its exceptions in an AggregateException
@@ -441,16 +456,6 @@ namespace CemuUpdateTool
                 copiedDir.Delete();
 
             HandleLogMessage("Created files and directories deleted successfully.", EventLogEntryType.Information);
-        }
-
-        /*
-         *  Checks if eventually there's a web operation pending and stops it
-         *  Executed automatically when cancellation is requested (see constructor)
-         */
-        private void StopPendingWebOperation()
-        {
-            client?.CancelAsync();
-            client?.MyUnderlyingWebRequest?.Abort();
         }
 
         /*
