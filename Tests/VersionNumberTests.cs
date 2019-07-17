@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CemuUpdateTool.Tests
 {
+    [DeploymentItem(@"Resources\versionTest.exe")]
     [TestClass]
     public class VersionNumberTests
     {
@@ -19,59 +20,45 @@ namespace CemuUpdateTool.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void PropertyAccessViolation()
         {
             string vNumber = "1.5";
             VersionNumber version = new VersionNumber(vNumber);
-            Console.WriteLine(version.Build);   // should throw InvalidOperationException
+            Console.WriteLine(version.Build);   // should throw
         }
 
         [TestMethod]
         public void ValidFileVersionInfoConstructor_StandardLength()
         {
-            FileVersionInfo testFile = null;
-            try
-            {
-                testFile = FileVersionInfo.GetVersionInfo("./versionTest.exe");
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                Assert.Inconclusive("Test file not found.");
-            }
+            FileVersionInfo testFile = FileVersionInfo.GetVersionInfo("./versionTest.exe");
 
             VersionNumber version = new VersionNumber(testFile);
+
             Assert.AreEqual(version.Length, 4);
             Assert.AreEqual(version.Major, 1);
-            Assert.AreEqual(version.Minor, 11);
-            Assert.AreEqual(version.Build, 2);
-            Assert.AreEqual(version.Revision, 0);
+            Assert.AreEqual(version.Minor, 2);
+            Assert.AreEqual(version.Build, 3);
+            Assert.AreEqual(version[3], 0);
         }
 
         [TestMethod]
         public void ValidFileVersionInfoConstructor_CustomLength()
         {
-            FileVersionInfo testFile = null;
-            try
-            {
-                testFile = FileVersionInfo.GetVersionInfo("./versionTest.exe");
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                Assert.Inconclusive("Test file not found.");
-            }
+            FileVersionInfo testFile = FileVersionInfo.GetVersionInfo("./versionTest.exe");
 
             VersionNumber version = new VersionNumber(testFile, 2);
+
             Assert.AreEqual(version.Length, 2);
             Assert.AreEqual(version.Major, 1);
-            Assert.AreEqual(version.Minor, 11);
+            Assert.AreEqual(version.Minor, 2);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ErraticParamsIntArrayConstructor()
         {
-            VersionNumber version = new VersionNumber(-1,0,5);  // must throw ArgumentException because of -1
+            new VersionNumber(-1,0,5);  // must throw ArgumentException because of -1
         }
 
         [TestMethod()]
@@ -83,8 +70,8 @@ namespace CemuUpdateTool.Tests
             VersionNumber version1 = new VersionNumber(vNumber1);
             VersionNumber version2 = new VersionNumber(vNumber2);
 
-            Assert.AreEqual(version1.ToString(), vNumber1, "Failed version1.ToString()");
-            Assert.AreEqual(version2.ToString(), vNumber2, "Failed version2.ToString()");
+            Assert.AreEqual(version1.ToString(), vNumber1);
+            Assert.AreEqual(version2.ToString(), vNumber2);
         }
 
         [TestMethod()]
@@ -92,82 +79,107 @@ namespace CemuUpdateTool.Tests
         {
             VersionNumber version = new VersionNumber(1,7,1);
 
-            Assert.AreEqual(version.ToString(2), "1.7", "Failed version.ToString(2)");
-            Assert.AreEqual(version.ToString(5), "1.7.1.0.0", "Failed version.ToString(5)");
-            Assert.AreEqual(version.ToString(0), "", "Failed version.ToString(0)");
+            Assert.AreEqual("1.7", version.ToString(2));
+            Assert.AreEqual("1.7.1.0.0", version.ToString(5));
+            Assert.AreEqual(string.Empty, version.ToString(0));
         }
 
         [TestMethod()]
-        [ExpectedException(typeof(ArgumentException))]
+        public void ToStringEmpty()
+        {
+            VersionNumber empty = VersionNumber.Empty;
+            Assert.AreEqual(string.Empty, empty.ToString(3));
+            Assert.AreEqual(string.Empty, empty.ToString());
+        }
+
+        [TestMethod()]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void IncrementDecrementOperatorsTest()
         {
             VersionNumber version1 = new VersionNumber(1,1,2);
             VersionNumber version2 = new VersionNumber(2,0,0);
 
             version1++;
-            version2--;     // throws ArgumentException
 
             Assert.AreEqual(version1.ToString(), "1.1.3");
+            version2--;     // throws because last segment is 0
         }
 
         [TestMethod()]
-        public void MajorVersionBump()
+        public void CompareTo_SameLength()
         {
-            VersionNumber version = new VersionNumber(1, 1, 5, 6);
-
-            version.Bump(1);
-
-            Assert.AreEqual(version.ToString(), "1.2.0.0");
-        }
-
-        [TestMethod()]
-        public void CompareToTest()
-        {
-            // Same length
-            VersionNumber version1 = new VersionNumber(1,5,4);
-            VersionNumber version2 = new VersionNumber(1,8,3);
-            // Different length, same value
-            VersionNumber version3 = new VersionNumber(1,3);
-            VersionNumber version4 = new VersionNumber(1,3,0,0);
-            // Different length, same common fields
-            VersionNumber version5 = new VersionNumber(1,7,0,1);
-            VersionNumber version6 = new VersionNumber(1,7);
-
-            int sameLengthResult = version1.CompareTo(version2);
-            int diffLengthSameValueResult = version3.CompareTo(version4);
-            int diffLengthDiffValueResult = version5.CompareTo(version6);
-            int equalsResult = version1.CompareTo(version1);
-
-            Assert.AreEqual(-3, sameLengthResult);
-            Assert.AreEqual(0, diffLengthSameValueResult);
-            Assert.AreEqual(1, diffLengthDiffValueResult);
-            Assert.AreEqual(0, equalsResult);
-        }
-
-        #pragma warning disable CS1718
-        [TestMethod()]
-        public void ComparisonOperatorsTest()
-        {
-            // Same length
             VersionNumber version1 = new VersionNumber(1, 5, 4);
             VersionNumber version2 = new VersionNumber(1, 8, 3);
-            // Different length, same value
-            VersionNumber version3 = new VersionNumber(1, 3);
-            VersionNumber version4 = new VersionNumber(1, 3, 0, 0);
-            // Different length, same common fields
-            VersionNumber version5 = new VersionNumber(1, 7, 0, 1);
-            VersionNumber version6 = new VersionNumber(1, 7);
 
-            bool gtResult = version1 < version2;
-            bool notEqualsResult = version3 != version4;
-            bool leResult = version6 <= version5;
-            bool geResult = version1 >= version1;
-
-            Assert.IsTrue(gtResult);
-            Assert.IsFalse(notEqualsResult);
-            Assert.IsTrue(leResult);
-            Assert.IsTrue(geResult);
+            Assert.AreEqual(-1, version1.CompareTo(version2));
+            Assert.AreEqual(1, version2.CompareTo(version1));
+            Assert.AreEqual(0, version1.CompareTo(version1));
         }
-        #pragma warning restore CS1718
+
+        [TestMethod()]
+        public void CompareTo_DifferentLengthSameValue()
+        {
+            VersionNumber version1 = new VersionNumber(1, 3);
+            VersionNumber version2 = new VersionNumber(1, 3, 0, 0);
+
+            Assert.AreEqual(0, version1.CompareTo(version2));
+            Assert.AreEqual(0, version2.CompareTo(version1));
+        }
+
+        [TestMethod()]
+        public void CompareTo_DifferentLengthSameCommonSegments()
+        {
+            VersionNumber version1 = new VersionNumber(1, 7, 0, 1);
+            VersionNumber version2 = new VersionNumber(1, 7);
+
+            Assert.AreEqual(1, version1.CompareTo(version2));
+            Assert.AreEqual(-1, version2.CompareTo(version1));
+        }
+
+        [TestMethod()]
+        public void ComparisonOperators_NullsLeft()
+        {
+            VersionNumber versionNumber = new VersionNumber(1, 0);
+
+            Assert.IsTrue(null != versionNumber);
+            Assert.IsTrue(null < versionNumber);
+
+            Assert.IsFalse(null == versionNumber);
+            Assert.IsFalse(null > versionNumber);
+        }
+
+        [TestMethod()]
+        public void ComparisonOperators_NullsRight()
+        {
+            VersionNumber versionNumber = new VersionNumber(1, 0);
+
+            Assert.IsTrue(versionNumber != null);
+            Assert.IsTrue(versionNumber > null);
+
+            Assert.IsFalse(versionNumber == null);
+            Assert.IsFalse(versionNumber < null);
+        }
+
+        [TestMethod()]
+        public void IsSubVersion()
+        {
+            VersionNumber version = new VersionNumber(1, 5);
+            VersionNumber subVersion = new VersionNumber(1, 5, 3, 1);
+            VersionNumber randomVersion = new VersionNumber(1, 7);
+
+            Assert.IsTrue(subVersion.IsSubVersionOf(version));
+            Assert.IsFalse(version.IsSubVersionOf(subVersion));
+            Assert.IsFalse(version.IsSubVersionOf(version));
+            Assert.IsFalse(subVersion.IsSubVersionOf(randomVersion));
+        }
+
+        [TestMethod()]
+        public void IsSubVersion_EmptyAndNull()
+        {
+            VersionNumber subVersion = new VersionNumber(1, 5, 3, 1);
+
+            Assert.IsTrue(subVersion.IsSubVersionOf(VersionNumber.Empty));
+            Assert.IsFalse(subVersion.IsSubVersionOf(null));
+        }
     }
 }

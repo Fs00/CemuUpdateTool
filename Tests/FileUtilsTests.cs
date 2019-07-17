@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using CemuUpdateTool;
 using System.IO;
 using System.Diagnostics;
+using CemuUpdateTool.Utils;
 
 namespace CemuUpdateTool.Tests
 {
