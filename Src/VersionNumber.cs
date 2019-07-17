@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 
 namespace CemuUpdateTool
 {
@@ -8,16 +9,18 @@ namespace CemuUpdateTool
     #pragma warning disable CS0661
     /*
      *  VersionNumber
-     *  Provides a mutable data structure for version numbers, which can be of any length (even 0)
+     *  Provides a mutable data structure for version numbers, which can have any number of segments (e.g. 1.6.5 has 3 segments)
      */
     public class VersionNumber : IEquatable<VersionNumber>, IComparable<VersionNumber>
     {
-        private List<int> segments;            // list that contains each of the version segments
-        public int Length => segments.Count;   // returns the number of segments of the version number (e.g. 1.6.4 has length 3)
-        
+        public static VersionNumber Empty { get => new VersionNumber(); }
+
+        private readonly List<int> segments;
+        public int Length => segments.Count;
+
         /*
          *  Indexer for segments list
-         *  Input values are checked only here, so every value assignation to segments MUST BE DONE FROM HERE
+         *  Every value assignation to segments list must be done using this indexer, since values are checked only here
          */
         public int this[int i]
         {
@@ -30,77 +33,28 @@ namespace CemuUpdateTool
             }
         }
 
-        /*
-         *  "Alias" properties for first, second, third and fourth segment, like Microsoft does in Version class
-         */
+        #region Alias properties for first, second and third segment, like Microsoft does in Version class
         public int Major {
-            get
-            {
-                if (Length < 1)
-                    throw new InvalidOperationException("Major segment does not exist: Length is 0.");
-                return segments[0];
-            }
-            set
-            {
-                if (Length < 1)
-                    throw new InvalidOperationException("Major segment does not exist: Length is 0.");
-                this[0] = value;
-            }
+            get => this[0];
+            set => this[0] = value;
         }
 
         public int Minor {
-            get
-            {
-                if (Length < 2)
-                    throw new InvalidOperationException("Minor segment does not exist: Length is less than 2.");
-                return segments[1];
-            }
-            set
-            {
-                if (Length < 2)
-                    throw new InvalidOperationException("Minor segment does not exist: Length is less than 2.");
-                this[1] = value;
-            }
+            get => this[1];
+            set => this[1] = value;
         }
 
         public int Build {
-            get
-            {
-                if (Length < 3)
-                    throw new InvalidOperationException("Build segment does not exist: Length is less than 3.");
-                return segments[2];
-            }
-            set
-            {
-                if (Length < 3)
-                    throw new InvalidOperationException("Build segment does not exist: Length is less than 3.");
-                this[2] = value;
-            }
+            get => this[2];
+            set => this[2] = value;
         }
+        #endregion
 
-        public int Revision {
-            get
-            {
-                if (Length < 4)
-                    throw new InvalidOperationException("Revision segment does not exist: Length is less than 4.");
-                return segments[3];
-            }
-            set
-            {
-                if (Length < 4)
-                    throw new InvalidOperationException("Revision segment does not exist: Length is less than 4.");
-                this[3] = value;
-            }
-        }
-
-        // Default constructor (used only internally)
+        #region Constructor methods
         private VersionNumber()
         {
             segments = new List<int>();
         }
-
-        // Calls default private constructor to get an instance with 0 segments
-        public static VersionNumber Empty { get => new VersionNumber(); }
 
         // Copy constructor
         public VersionNumber(VersionNumber copy)
@@ -130,7 +84,7 @@ namespace CemuUpdateTool
         public VersionNumber(FileVersionInfo versionInfo, int length = 4)
         {
             if (length < 1 || length > 4)
-                throw new ArgumentOutOfRangeException("Length value is not valid.");
+                throw new ArgumentOutOfRangeException(nameof(length));
 
             segments = new List<int>(length);
             segments.Add(versionInfo.FileMajorPart);
@@ -156,145 +110,10 @@ namespace CemuUpdateTool
             foreach (int number in segments)
                 AppendSegment(number);
         }
+        #endregion
 
         /*
-         *  ToString() methods
-         *  Custom ToString(char) method allows to supply a custom separator between segments (even '' if you want).
-         *  Custom ToString(int[, char]) allows to supply a custom length in order to print only a part of the version number (e.g. 1.6 for 1.6.2)
-         *    or an arbitrary number of ".0"s after the version number (e.g. 1.0.0 for 1.0)
-         *  Overridden ToString() uses ToString(char) with default separator (which is '.')
-         */
-        public string ToString(char separator)
-        {
-            if (Length == 0)
-                return "[empty]";
-
-            string output = "";
-            for (int i = 0; i < Length; i++)
-            {
-                output += segments[i];
-                if (i < Length-1)
-                    output += separator;
-            }
-            return output;
-        }
-
-        public string ToString(int customLength, char separator = '.')
-        {
-            string output = "";
-            if (customLength == Length)
-                return ToString(separator);
-            else if (customLength > Length)
-            {
-                // adds an extra number of ".0"s until i reaches customLength
-                output += ToString(separator) + separator;
-                for (int i = Length; i < customLength; i++)
-                {
-                    output += "0";
-                    if (i < customLength-1)
-                        output += separator;
-                }
-            }
-            else
-            {
-                // like ToString(char), but it stops at customLength index
-                for (int i = 0; i < customLength; i++)
-                {
-                    output += segments[i];
-                    if (i < customLength - 1)
-                        output += separator;
-                }
-            }
-            return output;
-        }
-
-        public override string ToString()
-        {
-            return ToString('.');
-        }
-
-        /*
-         *  Methods for increasing/decreasing length
-         */
-        public void AppendSegment(int number)
-        {
-            if (number < 0)
-                throw new ArgumentException("Segment values must not be negative.");
-            segments.Add(number);
-        }
-
-        public void RemoveLastSegment()
-        {
-            if (Length == 0)
-                throw new InvalidOperationException("There are no segments in this instance.");
-            segments.RemoveAt(Length-1);
-        }
-
-        /*
-         *  Methods for bumping up/down version number
-         *  You can also do major version bumps (e.g. 1.1.5 => 1.2.0)
-         */
-        public void Bump(int segmentIndex)
-        {
-            if (segmentIndex < 0 || segmentIndex >= Length)
-                throw new ArgumentOutOfRangeException($"Segment at index {segmentIndex} doesn't exist.");
-
-            segments[segmentIndex]++;
-            if (segmentIndex < Length-1)   // if you're doing a major version bump
-            {
-                for (int i = segmentIndex+1; i < Length; i++)
-                    segments[i] = 0;
-            }
-        }
-
-        public void Bump()
-        {
-            Bump(Length-1);
-        }
-
-        public void BumpDown()
-        {
-            this[Length-1] -= 1;
-        }
-
-        /*
-         *  Method used to check if a version is a sub-version of another (e.g. 1.5.3 is a subversion of 1 and 1.5)
-         *  Take note that a version is not a sub-version of itself and that every version is a sub-version of an empty instance
-         */
-        public bool IsSubVersionOf(VersionNumber other)
-        {
-            if (other is null)
-                return false;
-            if (this.Length <= other.Length)
-                return false;
-
-            // Check if the common segments of both instances contain the same values
-            for (int i = 0; i < other.Length; i++)
-            {
-                if (this[i] != other[i])
-                    return false;
-            }
-
-            return true;
-        }
-
-        /*
-         *  Increment/decrement operators overload
-         */
-        public static VersionNumber operator ++(VersionNumber instance)
-        {
-            instance.Bump();
-            return instance;
-        }
-
-        public static VersionNumber operator --(VersionNumber instance)
-        {
-            instance.BumpDown();
-            return instance;
-        }
-
-        /*
-         *  TryParse method to safely check if a string is a valid VersionNumber
+         *  Safely checks if a string is a valid VersionNumber
          */
         public static bool TryParse(string input, out VersionNumber result)
         {
@@ -310,61 +129,156 @@ namespace CemuUpdateTool
             }
         }
 
+        #region Methods for increasing/decreasing length
+        public void AppendSegment(int number)
+        {
+            if (number < 0)
+                throw new ArgumentException("Segment values must not be negative.");
+            segments.Add(number);
+        }
+
+        public void RemoveLastSegment()
+        {
+            if (Length == 0)
+                throw new InvalidOperationException("There are no segments in this instance.");
+            segments.RemoveAt(Length - 1);
+        }
+        #endregion
+
+        #region Methods for bumping up/down version number
+        public void Bump()
+        {
+            segments[Length-1]++;
+        }
+
+        public void BumpDown()
+        {
+            this[Length-1] -= 1;
+        }
+        #endregion
+
         /*
-         *  CompareTo() method.
-         *  Returns a negative number if this < other, 0 if other == this, a positive number if this > other
+         *  Method used to check if a version is a sub-version of another (e.g. 1.5.3 is a subversion of 1 and 1.5)
+         *  Take note that a version is not a sub-version of itself and that every version is a sub-version of an empty instance
+         */
+        public bool IsSubVersionOf(VersionNumber other)
+        {
+            if (other is null)
+                return false;
+            if (this.Length <= other.Length)
+                return false;
+
+            return CompareCommonSegmentsWith(other) == ComparisonResult.BothInstancesAreEquivalent;
+        }
+
+        #region Comparison methods
+        private enum ComparisonResult
+        {
+            BothInstancesAreEquivalent = 0,
+            ThisIsGreater = 1,
+            OtherIsGreater = -1
+        }
+
+        /*
+         *  Returns -1 if this < other, 0 if other == this, or 1 if this > other
          *  Please take note that 1.3 is considered equal to 1.3.0.0!
          */
         public int CompareTo(VersionNumber other)
         {
-            // It's useless to compare the exact same object
             if (ReferenceEquals(this, other))
-                return 0;
+                return (int) ComparisonResult.BothInstancesAreEquivalent;
 
             if (other is null)
-                return 1;
+                return (int) ComparisonResult.ThisIsGreater;
 
-            int commonLength = Length;
-            // See if both VersionNumber objects have the same length, if not set as common length the lesser between the two
-            bool differentLengths = (this.Length != other.Length);
-            if (differentLengths)
-                commonLength = (this.Length > other.Length) ? other.Length : this.Length;
+            ComparisonResult commonSegmentsComparisonResult = CompareCommonSegmentsWith(other);
+            if (this.Length == other.Length)
+                return (int) commonSegmentsComparisonResult;
 
-            // Compare the common segments. If a pair of segments is different, their difference will be the return value
-            for (int i = 0; i < commonLength; i++)
+            int lengthInCommon = FindLengthInCommonBetweenThisAnd(other);
+            VersionNumber longerNumber = (this.Length > other.Length) ? this : other;
+            if (longerNumber.AreLastSegmentsEqualToZero(startingFrom: lengthInCommon))
+                return (int) ComparisonResult.BothInstancesAreEquivalent;
+            else if (ReferenceEquals(longerNumber, this))
+                return (int) ComparisonResult.ThisIsGreater;
+            else
+                return (int) ComparisonResult.OtherIsGreater;
+        }
+
+        private ComparisonResult CompareCommonSegmentsWith(VersionNumber other)
+        {
+            int lengthInCommon = FindLengthInCommonBetweenThisAnd(other);
+            for (int i = 0; i < lengthInCommon; i++)
             {
-                if (this[i] != other[i])
-                    return this[i] - other[i];
+                if (this[i] > other[i])
+                    return ComparisonResult.ThisIsGreater;
+                if (this[i] < other[i])
+                    return ComparisonResult.OtherIsGreater;
             }
+            return ComparisonResult.BothInstancesAreEquivalent;
+        }
 
-            // See if the extra segments in the object with the higher length are equal to 0, if not it will mean that the instance is > than the other
-            if (differentLengths)
+        private int FindLengthInCommonBetweenThisAnd(VersionNumber other)
+        {
+            return (this.Length > other.Length) ? other.Length : this.Length;
+        }
+
+        private bool AreLastSegmentsEqualToZero(int startingFrom)
+        {
+            if (startingFrom >= Length)
+                throw new ArgumentOutOfRangeException(nameof(startingFrom));
+
+            for (int i = startingFrom; i < Length; i++)
             {
-                if (this.Length > other.Length)
-                {
-                    for (int i = commonLength; i < this.Length; i++)
-                    {
-                        if (this[i] > 0)
-                            return 1;
-                    }
-                }
-                else
-                {
-                    for (int i = commonLength; i < other.Length; i++)
-                    {
-                        if (other[i] > 0)
-                            return -1;
-                    }
-                }
+                if (this[i] != 0)
+                    return false;
             }
-            // If both objects have same length or the extra segments are equal to 0, it means that they're equal
-            return 0;
+            return true;
+        }
+        #endregion
+
+        #region ToString() methods
+        public override string ToString()
+        {
+            return ToString('.');
         }
 
         /*
+         *  Overload that allows to supply a custom separator between segments
+         */
+        public string ToString(char separator)
+        {
+            return ToString(Length, separator);
+        }
+
+        /*
+         *  Overload that allows to supply an arbitrary number of segments to print only a part of the version number (e.g. 1.6 for 1.6.2)
+         *  or some extra ".0"s after the version number (e.g. 1.2.0 for 1.2)
+         */
+        public string ToString(int segmentsCount, char separator = '.')
+        {
+            if (Length == 0 || segmentsCount == 0)
+                return string.Empty;
+
+            StringBuilder output = new StringBuilder();
+            for (int i = 0; i < segmentsCount; i++)
+            {
+                if (i >= Length)
+                    output.Append("0");
+                else
+                    output.Append(segments[i]);
+
+                if (i < segmentsCount - 1)
+                    output.Append(separator);
+            }
+
+            return output.ToString();
+        }
+        #endregion
+
+        #region Equals() methods
+        /*
          *  IEquatable<T>.Equals method
-         *  Uses CompareTo to determine if two Version number objects are equal.
-         *  Remember that 1.3 is considered equal to 1.3.0.0!
          */
         public bool Equals(VersionNumber other)
         {
@@ -378,15 +292,28 @@ namespace CemuUpdateTool
         {
             if (obj == null)
                 return false;
-            if (obj is VersionNumber o)
-                return Equals(o);
+            if (obj is VersionNumber versionNumber)
+                return Equals(versionNumber);
             return base.Equals(obj);
         }
+        #endregion
 
-        /*
-         *  Comparison operators overloads
-         *  In case the left term is null, there's only a simple rule: null is minor than any VersionNumber instance
-         */
+        #region Increment/decrement operators overloads
+        public static VersionNumber operator ++(VersionNumber instance)
+        {
+            instance.Bump();
+            return instance;
+        }
+
+        public static VersionNumber operator --(VersionNumber instance)
+        {
+            instance.BumpDown();
+            return instance;
+        }
+        #endregion
+
+        #region Comparison operators overloads
+        // In case the left term is null, there's only a simple rule: null is minor than any VersionNumber instance
         public static bool operator >(VersionNumber left, VersionNumber right)
         {
             if (left is null)
@@ -441,5 +368,6 @@ namespace CemuUpdateTool
         {
             return !(left == right);
         }
+        #endregion
     }
 }
