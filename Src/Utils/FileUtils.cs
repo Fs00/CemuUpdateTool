@@ -177,28 +177,7 @@ namespace CemuUpdateTool.Utils
                                                               List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             string extractionPath = Path.GetDirectoryName(zipPath);
-            ZipArchive archive = null;
-
-            // Open the archive file with read permission
-            bool archiveOpeningSuccessful = false;
-            while (!archiveOpeningSuccessful)
-            {
-                try
-                {
-                    archive = ZipFile.OpenRead(zipPath);
-                    archiveOpeningSuccessful = true;
-                }
-                catch (Exception exc)
-                {
-                    DialogResult choice = MessageBox.Show($"Unexpected error when trying to open Zip file {Path.GetFileName(zipPath)}: {exc.Message} " +
-                                    "Do you want to retry or cancel the operation?", "Error during Zip archive opening", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
-
-                    if (choice == DialogResult.Cancel)
-                        throw;
-                }
-            }
-
-            using (archive)
+            using (ZipArchive archive = ZipFile.OpenRead(zipPath))
             {
                 // Extract all archive files
                 bool entryWrittenSuccessfully = false;
