@@ -1,20 +1,27 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
+using System.Linq;
 using System.Diagnostics;
 using CemuUpdateTool.Utils;
 
 namespace CemuUpdateTool.Tests
 {
-    [TestClass()]
+    [TestClass]
     public class FileUtilsTests
     {
+        [ClassCleanup]
+        public static void RemoveExtractedFiles()
+        {
+            Directory.Delete(@".\Resources\ZipExtractTest", recursive: true);
+        }
+
+        #region These tests work only if executed singularly (DeploymentItem seems not to work well with folders)
+        [DeploymentItem(@"Resources\ZipExtractTest\testArchive.zip")]
         [TestMethod()]
         public void ExtractZipFileContentsTest()
         {
-            string testZip = @".\testFiles\test.zip";
-
-            if (!File.Exists(testZip))
-                Assert.Inconclusive("Missing test archive");
+            // The archive contains 1 directory and 2 files
+            string testZip = @".\Resources\ZipExtractTest\testArchive.zip";
 
             FileUtils.ExtractZipArchiveInSameDirectory(testZip, (msg, type, newLine) =>
             {
@@ -30,15 +37,17 @@ namespace CemuUpdateTool.Tests
                 }
                 Debug.WriteLine(msg);
             });
+
+            string currentDirectory = Path.GetDirectoryName(testZip);
+            Assert.AreEqual(1, Directory.EnumerateDirectories(currentDirectory).Count());
+            Assert.AreEqual(3, Directory.EnumerateFiles(currentDirectory).Count());    // 2 extracted files + zip
         }
 
+        [DeploymentItem(@"Resources\DirectoryContentsTest\")]
         [TestMethod()]
         public void RemoveDirContentsTest()
         {
-            string testDir = @".\testFiles\testDir\";
-
-            if (!Directory.Exists(testDir))
-                Assert.Inconclusive("Missing test directory");
+            string testDir = @".\Resources\DirectoryContentsTest";
 
             FileUtils.RemoveDirectoryContents(testDir, (msg, type, newLine) =>
             {
@@ -54,7 +63,9 @@ namespace CemuUpdateTool.Tests
                 }
                 Debug.WriteLine(msg);
             });
-            Assert.AreEqual(new DirectoryInfo(testDir).GetDirectories().Length, 0);
+
+            Assert.AreEqual(0, new DirectoryInfo(testDir).GetDirectories().Length);
         }
+        #endregion
     }
 }

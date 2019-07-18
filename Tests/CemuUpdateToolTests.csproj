@@ -55,6 +55,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\ZipExtractTest\testArchive.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Resources\versionTest.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -67,6 +70,21 @@
       <Version>1.4.0</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\DirectoryContentsTest\file1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\DirectoryContentsTest\file2.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\DirectoryContentsTest\folder1\file1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\DirectoryContentsTest\folder1\folder2\file.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
