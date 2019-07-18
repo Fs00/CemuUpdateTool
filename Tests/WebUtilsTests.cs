@@ -1,4 +1,5 @@
-﻿using CemuUpdateTool.Utils;
+﻿using System;
+using CemuUpdateTool.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CemuUpdateTool.Tests
@@ -12,11 +13,22 @@ namespace CemuUpdateTool.Tests
         private readonly string cemuUrlPrefix = "http://cemu.info/releases/cemu_";
         private readonly string cemuUrlSuffix = ".zip";
 
-        private RemoteVersionChecker versionChecker;
+        private readonly RemoteVersionChecker versionChecker;
 
         public WebUtilsTests()
         {
             versionChecker = new RemoteVersionChecker(cemuUrlPrefix, cemuUrlSuffix, 3);
+        }
+
+        [TestMethod()]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public void RemoteVersionCheckTest_CancelledBeforeStarting()
+        {
+            versionChecker.GetLatestRemoteVersionInBranch(
+                VersionNumber.Empty,
+                null,
+                new System.Threading.CancellationToken(true)
+            );
         }
 
         [TestMethod()]

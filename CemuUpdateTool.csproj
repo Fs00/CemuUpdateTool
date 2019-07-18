@@ -124,9 +124,7 @@
     <Compile Include="Src\Settings\OptionsSerializer.cs" />
     <Compile Include="Src\Utils\FileUtils.cs" />
     <Compile Include="Src\Utils\RemoteVersionChecker.cs" />
-    <Compile Include="Src\Utils\MyWebClient.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Src\Utils\WebUtils.cs" />
     <Compile Include="Src\Worker.cs" />
     <Compile Include="Src\Forms\HelpForm.cs">
       <SubType>Form</SubType>

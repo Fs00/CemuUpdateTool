@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http;
 using System.Threading;
 
 namespace CemuUpdateTool.Utils
@@ -11,8 +12,7 @@ namespace CemuUpdateTool.Utils
         private readonly string urlPrefix, urlSuffix;
         private readonly int maxVersionLength;
 
-        private CancellationToken cancToken;
-        private MyWebClient webClient;
+        private CancellationToken cancellationToken;
 
         public RemoteVersionChecker(string urlPrefix, string urlSuffix, int maxVersionLength)
         {
@@ -28,26 +28,20 @@ namespace CemuUpdateTool.Utils
          */
         public VersionNumber GetLatestRemoteVersionInBranch(VersionNumber branch,
                                                             VersionNumber startingVersion = null,
-                                                            CancellationToken? cancToken = null)
+                                                            CancellationToken? cancellationToken = null)
         {
-            using (webClient = new MyWebClient())
+            if (cancellationToken != null)
+                this.cancellationToken = cancellationToken.Value;
+            else
+                this.cancellationToken = CancellationToken.None;
+
+            if (startingVersion != null)
             {
-                if (cancToken != null)
-                {
-                    this.cancToken = cancToken.Value;
-                    this.cancToken.Register(() => webClient.CancelAsync());
-                }
-                else
-                    this.cancToken = CancellationToken.None;
-
-                if (startingVersion != null)
-                {
-                    if (!RemoteVersionExists(startingVersion))
-                        startingVersion = null;
-                }
-
-                return RecursiveGetLatestRemoteVersionInBranch(new VersionNumber(branch), startingVersion);
+                if (!RemoteVersionExists(startingVersion, this.cancellationToken))
+                    startingVersion = null;
             }
+
+            return RecursiveGetLatestRemoteVersionInBranch(new VersionNumber(branch), startingVersion);
         }
 
         private VersionNumber RecursiveGetLatestRemoteVersionInBranch(VersionNumber branch, VersionNumber startingVersion = null)
@@ -78,7 +72,7 @@ namespace CemuUpdateTool.Utils
         /*
          * latestKnownVersion parameter gets updated with the latest version found.
          * This method assumes that the initial value of latestKnownVersion represents an existing version, since:
-         *   - in the first recursive call, branch must belong to an existing branch
+         *   - in the first recursive call, branch and startingVersion (or defaultStartingVersion) must belong to an existing branch
          *   - in the subsequent recursive calls, latestKnownVersion has already been checked
          *     in the loop of the previous recursive call
          */
@@ -88,23 +82,18 @@ namespace CemuUpdateTool.Utils
             VersionNumber nextVersionToCheck = new VersionNumber(latestKnownVersion);
             while (!latestVersionFound)
             {
-                cancToken.ThrowIfCancellationRequested();
                 nextVersionToCheck++;
-                if (RemoteVersionExists(nextVersionToCheck))
+                if (RemoteVersionExists(nextVersionToCheck, cancellationToken))
                     latestKnownVersion++;
                 else
                     latestVersionFound = true;
             }
         }
 
-        private bool RemoteVersionExists(VersionNumber version)
+        public bool RemoteVersionExists(VersionNumber version, CancellationToken cancellationToken)
         {
-            return RemoteVersionExists(version, webClient);
-        }
-
-        public bool RemoteVersionExists(VersionNumber version, MyWebClient webClient)
-        {
-            using (HttpWebResponse response = webClient.GetWebResponseHead(urlPrefix + version.ToString(maxVersionLength) + urlSuffix))
+            string requestUrl = urlPrefix + version.ToString(maxVersionLength) + urlSuffix;
+            using (HttpWebResponse response = WebUtils.SendHttpRequest(HttpMethod.Head, requestUrl, cancellationToken))
             {
                 return response.StatusCode == HttpStatusCode.OK;
             }

@@ -46,7 +46,7 @@ namespace CemuUpdateTool
         (string Name, long Size)[] filesToCopy;
 
         CancellationToken cancToken;
-        MyWebClient client;
+        WebClient client;
         Action<string, bool> LoggerDelegate;    // callback that writes a message on an external log (in this case OperationsForm textbox)
 
         // Constructor for update operations
@@ -56,7 +56,7 @@ namespace CemuUpdateTool
             this.cancToken = cancToken;
             this.LoggerDelegate = LoggerDelegate;
 
-            client = new MyWebClient();
+            client = new WebClient();
             cancToken.Register(() => client?.CancelAsync());    // register the action to be performed when cancellation is requested
 
             CreatedFiles = new List<FileInfo>();
@@ -113,7 +113,7 @@ namespace CemuUpdateTool
                             Options.Download[OptionKey.CemuUrlSuffix],
                             maxVersionLength: 3
                         );
-                        if (!versionChecker.RemoteVersionExists(cemuVersionToBeDownloaded, client))
+                        if (!versionChecker.RemoteVersionExists(cemuVersionToBeDownloaded, cancToken))
                             throw new ArgumentException("The Cemu version you supplied does not exist.");
 
                         versionChecked = true;
