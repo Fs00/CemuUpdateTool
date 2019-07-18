@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using CemuUpdateTool.Utils;
 using CemuUpdateTool.Settings;
+using System.IO;
 
 namespace CemuUpdateTool.Forms
 {
@@ -161,7 +162,7 @@ namespace CemuUpdateTool.Forms
                             Options.CurrentOptionsFilePath = Options.AppDataOptionsFilePath;
 
                         // If another settings file has been found in the selected directory, ask if the user wants to load it
-                        if (FileUtils.FileExists(Options.CurrentOptionsFilePath))
+                        if (File.Exists(Options.CurrentOptionsFilePath))
                         {
                             DialogResult choice = MessageBox.Show("Another options file has been found in the folder you selected. Do you want to load it?",
                                                                   "Settings file found", MessageBoxButtons.YesNo, MessageBoxIcon.Information);

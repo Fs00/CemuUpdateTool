@@ -59,7 +59,7 @@ namespace CemuUpdateTool.Workers
             for (int i = 0; i < filesToCopy.Length; i++)
             {
                 string filePath = Path.Combine(sourceCemuInstallationPath, filesToCopy[i].Name);
-                if (FileUtils.FileExists(filePath))
+                if (System.IO.File.Exists(filePath))
                     filesToCopy[i].Size = new FileInfo(filePath).Length;
             }
         }
@@ -98,7 +98,7 @@ namespace CemuUpdateTool.Workers
                 if (Options.Migration[OptionKey.DeleteDestinationFolderContents])
                 {
                     string destFolderPath = Path.Combine(destinationCemuInstallationPath, folder.Name);
-                    if (FileUtils.DirectoryExists(destFolderPath))
+                    if (Directory.Exists(destFolderPath))
                     {
                         PerformingWork($"Removing destination {folder.Name} folder previous contents");
                         try

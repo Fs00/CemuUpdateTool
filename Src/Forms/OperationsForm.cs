@@ -2,6 +2,7 @@
 using CemuUpdateTool.Workers;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -44,7 +45,7 @@ namespace CemuUpdateTool.Forms
             // Open folder picker in Computer or in the currently selected folder (if it exists)
             var folderPicker = new FolderBrowserDialog();
             folderPicker.RootFolder = Environment.SpecialFolder.MyComputer;
-            if (!string.IsNullOrEmpty(previouslySelectedFolder) && FileUtils.DirectoryExists(previouslySelectedFolder))
+            if (!string.IsNullOrEmpty(previouslySelectedFolder) && Directory.Exists(previouslySelectedFolder))
                 folderPicker.SelectedPath = previouslySelectedFolder;
 
             DialogResult result = folderPicker.ShowDialog();

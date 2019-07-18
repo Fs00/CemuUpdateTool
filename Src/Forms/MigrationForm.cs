@@ -139,7 +139,7 @@ namespace CemuUpdateTool.Forms
             // Otherwise, check if the folder is also a valid Cemu installation
             if (DownloadMode)
             {
-                contentOk = txtBoxDestFolder.Text != "" && FileUtils.DirectoryExists(txtBoxDestFolder.Text);
+                contentOk = txtBoxDestFolder.Text != "" && Directory.Exists(txtBoxDestFolder.Text);
                 reason = "Directory does not exist";
             }
             else
@@ -195,7 +195,7 @@ namespace CemuUpdateTool.Forms
             // If in download mode, warn the user if the destination folder contains a Cemu installation
             else
             {
-                if (FileUtils.FileExists(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")))
+                if (File.Exists(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")))
                 {
                     DialogResult choice = MessageBox.Show("The chosen destination folder already contains a Cemu installation. " +
                         "Do you want to overwrite it?", "Cemu installation already present",

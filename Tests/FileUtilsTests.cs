@@ -13,7 +13,7 @@ namespace CemuUpdateTool.Tests
         {
             string testZip = @".\testFiles\test.zip";
 
-            if (!FileUtils.FileExists(testZip))
+            if (!File.Exists(testZip))
                 Assert.Inconclusive("Missing test archive");
 
             FileUtils.ExtractZipArchiveInSameDirectory(testZip, (msg, type, newLine) =>
@@ -37,7 +37,7 @@ namespace CemuUpdateTool.Tests
         {
             string testDir = @".\testFiles\testDir\";
 
-            if (!FileUtils.DirectoryExists(testDir))
+            if (!Directory.Exists(testDir))
                 Assert.Inconclusive("Missing test directory");
 
             FileUtils.RemoveDirectoryContents(testDir, (msg, type, newLine) =>

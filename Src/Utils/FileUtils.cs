@@ -27,7 +27,7 @@ namespace CemuUpdateTool.Utils
             long dirSize = 0;
 
             // Check if target folder exists, if not exit
-            if (!DirectoryExists(folderPath))
+            if (!Directory.Exists(folderPath))
             {
                 LogMessage($"Unable to find folder {folderPath}. It will be skipped.", EventLogEntryType.Warning);
                 return 0;
@@ -55,7 +55,7 @@ namespace CemuUpdateTool.Utils
             DirectoryInfo sourceDir = new DirectoryInfo(srcFolderPath);
 
             // Check if destination folder exists, if not create it
-            if (!DirectoryExists(destFolderPath))
+            if (!Directory.Exists(destFolderPath))
             {
                 var newFolder = Directory.CreateDirectory(destFolderPath);
                 createdDirectories?.Add(newFolder);
@@ -116,7 +116,7 @@ namespace CemuUpdateTool.Utils
             DirectoryInfo directory = new DirectoryInfo(folderPath);
 
             // Check if destination folder exists, if not throw exception
-            if (!DirectoryExists(folderPath))
+            if (!Directory.Exists(folderPath))
                 throw new DirectoryNotFoundException($"Directory {folderPath} doesn't exist!");
 
             bool fullyEmptied = true;
@@ -253,9 +253,9 @@ namespace CemuUpdateTool.Utils
         public static bool IsValidCemuInstallation(string path, out string reason)
         {
             reason = null;
-            if (string.IsNullOrWhiteSpace(path) || !DirectoryExists(path))
+            if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
                 reason = "Directory does not exist";
-            else if (!FileExists(Path.Combine(path, "Cemu.exe")))
+            else if (!File.Exists(Path.Combine(path, "Cemu.exe")))
                 reason = "Not a valid Cemu installation (Cemu.exe is missing)";
 
             return reason == null;
@@ -267,35 +267,6 @@ namespace CemuUpdateTool.Utils
         public static bool IsDirectoryEmpty(string dirPath)
         {
             return !Directory.EnumerateFileSystemEntries(dirPath).Any();
-        }
-
-        /*
-         * Custom case-sensitive implementations of File.Exists() and Directory.Exists() -- based on original solution by Eric Bole-Feysot
-         */
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        private static extern int GetLongPathName(string path, StringBuilder longPath, int longPathLength);
-        public static bool FileExists(string filePath)
-        {
-            if (string.IsNullOrEmpty(filePath))
-                throw new ArgumentException("Empty argument!");
-
-            StringBuilder longPath = new StringBuilder(255);
-            if (GetLongPathName(Path.GetDirectoryName(filePath), longPath, longPath.Capacity) == 0) // if file's directory doesn't exist, file doesn't exist!
-                return false;
-
-            return Array.Exists(Directory.GetFiles(longPath.ToString()), s => s == filePath);
-        }
-
-        public static bool DirectoryExists(string dirPath)
-        {
-            if (string.IsNullOrEmpty(dirPath))
-                throw new ArgumentException("Empty argument!");
-
-            StringBuilder longPath = new StringBuilder(255);
-            if (GetLongPathName(dirPath, longPath, longPath.Capacity) != 0 && dirPath == longPath.ToString())
-                return true;
-            else
-                return false;
         }
     }
 }

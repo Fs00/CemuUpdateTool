@@ -130,7 +130,7 @@ namespace CemuUpdateTool.Workers
                     // Delete temporary download file if present, since it won't be used
                     try
                     {
-                        if (FileUtils.FileExists(destinationFile))
+                        if (File.Exists(destinationFile))
                             File.Delete(destinationFile);
                     }
                     catch (Exception deletionExc)
