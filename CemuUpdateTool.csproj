@@ -125,7 +125,10 @@
     <Compile Include="Src\Utils\FileUtils.cs" />
     <Compile Include="Src\Utils\RemoteVersionChecker.cs" />
     <Compile Include="Src\Utils\WebUtils.cs" />
-    <Compile Include="Src\Worker.cs" />
+    <Compile Include="Src\Workers\Downloader.cs" />
+    <Compile Include="Src\Workers\Migrator.cs" />
+    <Compile Include="Src\Workers\Updater.cs" />
+    <Compile Include="Src\Workers\Worker.cs" />
     <Compile Include="Src\Forms\HelpForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -232,5 +235,6 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

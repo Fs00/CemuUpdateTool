@@ -1,4 +1,5 @@
 ﻿using CemuUpdateTool.Utils;
+using CemuUpdateTool.Workers;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -8,12 +9,11 @@ namespace CemuUpdateTool.Forms
 {
     /*
      *  OperationsForm
-     *  Form from which MigrationForm and UpdateForm inherit. It's designed to behave as an abstract class, but declaring it as abstract causes problems with VS Designer
+     *  Form from which MigrationForm and UpdateForm inherit.
+     *  It's designed to behave as an abstract class, but declaring it as abstract causes problems with VS Designer
      */
-    public /*abstract*/ partial class OperationsForm : Form
+    /*abstract*/ partial class OperationsForm : Form
     {
-        protected Worker worker;
-
         protected CancellationTokenSource ctSource;           // handles task cancellation
         protected Stopwatch stopwatch;                        // used to measure how much time the task took to complete
         protected TextBoxLogger logUpdater;                   // used to update txtBoxLog asynchronously

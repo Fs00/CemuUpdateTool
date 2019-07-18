@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Linq;
+using CemuUpdateTool.Workers;
 
 namespace CemuUpdateTool.Utils
 {
@@ -48,8 +49,8 @@ namespace CemuUpdateTool.Utils
          *  Copies a directory recursively to a destination folder (can be unexisting)
          *  Reports progress and keeps track of the created files and directories.
          */
-        public static void CopyDir(string srcFolderPath, string destFolderPath, LogMessageHandler LogMessage, CancellationToken? cToken = null,
-                                   IProgress<long> progressHandler = null, List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
+        public static void CopyDirectory(string srcFolderPath, string destFolderPath, LogMessageHandler LogMessage, CancellationToken? cToken = null,
+                                         IProgress<long> progressHandler = null, List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             DirectoryInfo sourceDir = new DirectoryInfo(srcFolderPath);
 
@@ -64,18 +65,18 @@ namespace CemuUpdateTool.Utils
             foreach (FileInfo file in sourceDir.GetFiles())
             {
                 cToken?.ThrowIfCancellationRequested();
-                file.CopyToCustom(Path.Combine(destFolderPath, file.Name), LogMessage, progressHandler, createdFiles);
+                file.CopyTo(Path.Combine(destFolderPath, file.Name), LogMessage, progressHandler, createdFiles);
             }
 
             // Copy subdirs recursively
             foreach (DirectoryInfo subdir in sourceDir.GetDirectories())
-                CopyDir(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), LogMessage, cToken, progressHandler, createdFiles, createdDirectories);
+                CopyDirectory(Path.Combine(srcFolderPath, subdir.Name), Path.Combine(destFolderPath, subdir.Name), LogMessage, cToken, progressHandler, createdFiles, createdDirectories);
         }
 
         /*
          *  Extension method to reuse advanced file copy logic in different parts of the program
          */
-        public static void CopyToCustom(this FileInfo srcFile, string destFilePath, LogMessageHandler LogMessage, IProgress<long> progressHandler = null, List<FileInfo> createdFiles = null)
+        public static void CopyTo(this FileInfo srcFile, string destFilePath, LogMessageHandler LogMessage, IProgress<long> progressHandler = null, List<FileInfo> createdFiles = null)
         {
             LogMessage($"Copying {srcFile.FullName}... ", EventLogEntryType.Information, false);
             bool copySuccessful = false;
@@ -107,9 +108,10 @@ namespace CemuUpdateTool.Utils
         }
 
         /*
-         *  Method that deletes the contents of the passed folder without deleting the folder itself
+         *  Method that deletes the contents (including subfolders recursively) of the passed folder without deleting the folder itself
+         *  Return the DirectoryInfo corresponding to the folder being emptied, so that the previous recursive call can delete it
          */
-        public static DirectoryInfo RemoveDirContents(string folderPath, LogMessageHandler LogMessage, CancellationToken? cToken = null)
+        public static DirectoryInfo RemoveDirectoryContents(string folderPath, LogMessageHandler LogMessage, CancellationToken? cToken = null)
         {
             DirectoryInfo directory = new DirectoryInfo(folderPath);
 
@@ -152,8 +154,8 @@ namespace CemuUpdateTool.Utils
             // Delete subdirs recursively
             foreach (DirectoryInfo subdir in directory.GetDirectories())
             {
-                var emptiedFolder = RemoveDirContents(Path.Combine(folderPath, subdir.Name), LogMessage, cToken);
-                if (DirectoryIsEmpty(emptiedFolder.FullName))
+                var emptiedFolder = RemoveDirectoryContents(Path.Combine(folderPath, subdir.Name), LogMessage, cToken);
+                if (IsDirectoryEmpty(emptiedFolder.FullName))
                     emptiedFolder.Delete();
                 else
                     fullyEmptied = false;
@@ -164,15 +166,15 @@ namespace CemuUpdateTool.Utils
             else
                 LogMessage($"Contents of directory {folderPath} removed partially due to some errors.", EventLogEntryType.Information);
 
-            return directory;       // return the DirectoryInfo object corresponding to this folder, so that the previous recursive call can delete it
+            return directory;
         }
 
         /*
-         *  Extracts all the contents of a given Zip file in the same directory as the archive, keeping its internal folder structure
-         *  Returns the path to the folder where the archive is extracted
+         *  Extracts all the contents of a given Zip file in the same directory as the archive, keeping its internal folder structure.
+         *  Returns the path to the folder where the archive is extracted.
          */
-        public static string ExtractZipFileContents(string zipPath, LogMessageHandler LogMessage, CancellationToken? cToken = null,
-                                                    List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
+        public static string ExtractZipArchiveInSameDirectory(string zipPath, LogMessageHandler LogMessage, CancellationToken? cToken = null,
+                                                              List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
         {
             string extractionPath = Path.GetDirectoryName(zipPath);
             ZipArchive archive = null;
@@ -262,7 +264,7 @@ namespace CemuUpdateTool.Utils
         /*
          *  Checks if a given directory has no elements inside.
          */
-        public static bool DirectoryIsEmpty(string dirPath)
+        public static bool IsDirectoryEmpty(string dirPath)
         {
             return !Directory.EnumerateFileSystemEntries(dirPath).Any();
         }

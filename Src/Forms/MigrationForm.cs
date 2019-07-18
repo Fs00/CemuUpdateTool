@@ -1,5 +1,6 @@
 ﻿using CemuUpdateTool.Settings;
 using CemuUpdateTool.Utils;
+using CemuUpdateTool.Workers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -222,20 +223,19 @@ namespace CemuUpdateTool.Forms
                 return;
             }
 
-            WorkOutcome result;
             PrepareControlsForOperations();
-
-            // Create a new Worker instance and pass it all needed data
             ctSource = new CancellationTokenSource();
-            worker = new Worker(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, foldersToCopy, filesToCopy, ctSource.Token, logUpdater.AppendLogMessage);
+            Migrator migrator = new Migrator(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, foldersToCopy, filesToCopy, ctSource.Token, logUpdater.AppendLogMessage);
 
+            WorkOutcome result;
             stopwatch.Start();
             try
             {
                 // Perform download operations if we are in download mode
                 if (DownloadMode)
                 {
-                    destCemuExeVersion = await Task.Run(() => worker.PerformDownloadOperations(ChangeProgressLabelText, HandleDownloadProgress, destCemuExeVersion));
+                    var downloader = new Downloader(txtBoxDestFolder.Text, ctSource.Token, logUpdater.AppendLogMessage);
+                    destCemuExeVersion = await Task.Run(() => downloader.PerformDownloadOperations(ChangeProgressLabelText, HandleDownloadProgress, destCemuExeVersion));
 
                     // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
                     VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
@@ -254,7 +254,7 @@ namespace CemuUpdateTool.Forms
                 }
 
                 // Set maximum progress bar value according to overall size to copy
-                long overallSize = worker.GetOverallSizeToCopy();
+                long overallSize = migrator.GetOverallSizeToCopy();
                 if (overallSize > int.MaxValue)
                 {
                     overallSize /= 1000;
@@ -264,15 +264,15 @@ namespace CemuUpdateTool.Forms
                 overallProgressBar.Maximum = (int)overallSize;
 
                 // Start migration operations in a secondary thread
-                var migrationTask = Task.Run(() => worker.PerformMigrationOperations(ChangeProgressLabelText, progressHandler));
+                var migrationTask = Task.Run(() => migrator.PerformMigrationOperations(ChangeProgressLabelText, progressHandler));
                 await migrationTask;
 
                 stopwatch.Stop();
 
                 // If there have been errors during operations, update result
-                if (worker.ErrorsEncountered > 0)
+                if (migrator.ErrorsEncountered > 0)
                 {
-                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {worker.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
+                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {migrator.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     result = WorkOutcome.CompletedWithErrors;
                 }
                 else
@@ -287,12 +287,16 @@ namespace CemuUpdateTool.Forms
                 stopwatch.Stop();
                 try
                 {
-                    if (worker.CreatedFiles.Count > 0 || worker.CreatedDirectories.Count > 0)
+                    if (migrator.CreatedFiles.Count > 0 || migrator.CreatedDirectories.Count > 0)
                     {
                         // Ask if the user wants to remove files that have been created
                         DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
                         if (choice == DialogResult.Yes)
-                            worker.DeleteCreatedFiles();
+                        {
+                            migrator.DeleteCreatedFilesAndFolders();
+                            if (DownloadMode)
+                                FileUtils.RemoveDirectoryContents(txtBoxDestFolder.Text, delegate {});
+                        }
                     }
                 }
                 catch (Exception cleanupExc)
@@ -323,7 +327,7 @@ namespace CemuUpdateTool.Forms
                 DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 bool isNewCemuVersionAtLeast110 = destCemuExeVersion.Major > 1 || destCemuExeVersion.Minor >= 10;
                 if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
-                    worker.CreateDesktopShortcut(destCemuExeVersion.ToString(),
+                    migrator.CreateDesktopShortcut(destCemuExeVersion.ToString(),
                       (isNewCemuVersionAtLeast110 && Options.Migration[OptionKey.UseCustomMlcFolderIfSupported] == true) ? Options.CustomMlcFolderPath : null);
             }
 

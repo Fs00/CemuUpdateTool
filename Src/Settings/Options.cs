@@ -170,7 +170,7 @@ namespace CemuUpdateTool.Settings
         {
             Directory.Delete(Path.GetDirectoryName(AppDataOptionsFilePath), recursive: true);
             string fs00AppDataFolder = Path.Combine(Env.GetFolderPath(Env.SpecialFolder.ApplicationData), "Fs00");
-            if (FileUtils.DirectoryIsEmpty(fs00AppDataFolder))
+            if (FileUtils.IsDirectoryEmpty(fs00AppDataFolder))
                 Directory.Delete(fs00AppDataFolder);
         }
 

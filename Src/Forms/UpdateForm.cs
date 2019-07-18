@@ -1,5 +1,6 @@
 ﻿using CemuUpdateTool.Settings;
 using CemuUpdateTool.Utils;
+using CemuUpdateTool.Workers;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -13,7 +14,7 @@ namespace CemuUpdateTool.Forms
      *  UpdateForm
      *  Window that provides Update functionality.
      */
-    public partial class UpdateForm : OperationsForm
+    partial class UpdateForm : OperationsForm
     {
         public UpdateForm() : base()
         {
@@ -53,18 +54,16 @@ namespace CemuUpdateTool.Forms
 
         protected override async void DoOperationsAsync(object sender, EventArgs e)
         {
-            WorkOutcome result;
             PrepareControlsForOperations();
 
-            // Create a new Worker instance and pass it all needed data
-            // Worker's BaseDestinationPath is to a temporary folder to reuse correctly download operations method (see PerformUpdateOperations)
             ctSource = new CancellationTokenSource();
-            worker = new Worker(Path.Combine(Path.GetTempPath(), "cemu_update"), ctSource.Token, logUpdater.AppendLogMessage);
+            var updater = new Updater(txtBoxCemuFolder.Text, ctSource.Token, logUpdater.AppendLogMessage);
 
+            WorkOutcome result;
             stopwatch.Start();
             try
             {
-                VersionNumber downloadedCemuVersion = await Task.Run(() => worker.PerformUpdateOperations(txtBoxCemuFolder.Text, chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked,
+                VersionNumber downloadedCemuVersion = await Task.Run(() => updater.PerformUpdateOperations(chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked,
                                                                                                           ChangeProgressLabelText, HandleDownloadProgress));
                 // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
                 VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
@@ -83,9 +82,9 @@ namespace CemuUpdateTool.Forms
 
                 stopwatch.Stop();
 
-                if (worker.ErrorsEncountered > 0)
+                if (updater.ErrorsEncountered > 0)
                 {
-                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {worker.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
+                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {updater.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
                     result = WorkOutcome.CompletedWithErrors;
                 }
                 else
