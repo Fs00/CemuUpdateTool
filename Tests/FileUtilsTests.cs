@@ -12,16 +12,15 @@ namespace CemuUpdateTool.Tests
         [ClassCleanup]
         public static void RemoveExtractedFiles()
         {
-            Directory.Delete(@".\Resources\ZipExtractTest", recursive: true);
+            Directory.Delete(@".\ZipExtractTest", recursive: true);
         }
 
-        #region These tests work only if executed singularly (DeploymentItem seems not to work well with folders)
-        [DeploymentItem(@"Resources\ZipExtractTest\testArchive.zip")]
+        [DeploymentItem(@"Resources\ZipExtractTest\", @"ZipExtractTest\")]
         [TestMethod()]
         public void ExtractZipFileContentsTest()
         {
             // The archive contains 1 directory and 2 files
-            string testZip = @".\Resources\ZipExtractTest\testArchive.zip";
+            string testZip = @".\ZipExtractTest\testArchive.zip";
 
             FileUtils.ExtractZipArchiveInSameDirectory(testZip, (msg, type, newLine) =>
             {
@@ -43,11 +42,11 @@ namespace CemuUpdateTool.Tests
             Assert.AreEqual(3, Directory.EnumerateFiles(currentDirectory).Count());    // 2 extracted files + zip
         }
 
-        [DeploymentItem(@"Resources\DirectoryContentsTest\")]
+        [DeploymentItem(@"Resources\DirectoryContentsTest\", @"DirectoryContentsTest\")]
         [TestMethod()]
         public void RemoveDirContentsTest()
         {
-            string testDir = @".\Resources\DirectoryContentsTest";
+            string testDir = @".\DirectoryContentsTest";
 
             FileUtils.RemoveDirectoryContents(testDir, (msg, type, newLine) =>
             {
@@ -66,6 +65,5 @@ namespace CemuUpdateTool.Tests
 
             Assert.AreEqual(0, new DirectoryInfo(testDir).GetDirectories().Length);
         }
-        #endregion
     }
 }

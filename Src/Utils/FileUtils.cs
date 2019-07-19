@@ -173,57 +173,55 @@ namespace CemuUpdateTool.Utils
          *  Extracts all the contents of a given Zip file in the same directory as the archive, keeping its internal folder structure.
          *  Returns the path to the folder where the archive is extracted.
          */
-        public static string ExtractZipArchiveInSameDirectory(string zipPath, LogMessageHandler LogMessage, CancellationToken? cToken = null,
-                                                              List<FileInfo> createdFiles = null, List<DirectoryInfo> createdDirectories = null)
+        public static string ExtractZipArchiveInSameDirectory(string zipPath, LogMessageHandler LogMessage, CancellationToken? cToken = null)
         {
-            string extractionPath = Path.GetDirectoryName(zipPath);
+            string archiveExtractionPath = Path.GetDirectoryName(zipPath);
             using (ZipArchive archive = ZipFile.OpenRead(zipPath))
             {
-                // Extract all archive files
-                bool entryWrittenSuccessfully = false;
-                foreach (ZipArchiveEntry entry in archive.Entries)
+                foreach (ZipArchiveEntry zipEntry in archive.Entries)
                 {
                     cToken?.ThrowIfCancellationRequested();
-                    entryWrittenSuccessfully = false;
+
+                    bool entryWrittenSuccessfully = false;
                     while (!entryWrittenSuccessfully)
                     {
                         try
                         {
-                            string entryRelativePath = entry.FullName.Replace('/', Path.DirectorySeparatorChar);    // replace all occurrencies of '/' with '\'
-                            string extractedFilePath = Path.Combine(extractionPath, entryRelativePath);
+                            string entryRelativePath = zipEntry.FullName.Replace('/', Path.DirectorySeparatorChar);
+                            string entryExtractionPath = Path.Combine(archiveExtractionPath, entryRelativePath);
 
-                            // If the entry is a folder, create it
-                            if (entryRelativePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                            {
-                                var newFolder = Directory.CreateDirectory(extractedFilePath);
-                                createdDirectories?.Add(newFolder);
-                            }
-                            // Otherwise, if it's a file, extract it
+                            if (zipEntry.IsDirectory())
+                                Directory.CreateDirectory(entryExtractionPath);
                             else
-                            {
-                                entry.ExtractToFile(extractedFilePath, true);
-                                //LogMessage($"Entry {entry.Name} extracted successfully in {Path.GetDirectoryName(extractedFilePath)}.", EventLogEntryType.Information);
-                                createdFiles?.Add(new FileInfo(extractedFilePath));
-                            }
+                                zipEntry.ExtractToFile(entryExtractionPath, overwrite: true);
+
                             entryWrittenSuccessfully = true;
                         }
                         catch (Exception exc)
                         {
-                            DialogResult choice = MessageBox.Show($"Unexpected error when extracting file {entry.Name} from {Path.GetFileName(zipPath)}: {exc.Message}" +
-                                                  "What do you want to do?", "Error during file extraction", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
+                            DialogResult choice = MessageBox.Show(
+                                $"Unexpected error when extracting file {zipEntry.Name} from {Path.GetFileName(zipPath)}: {exc.Message}" +
+                                "What do you want to do?", "Error during file extraction",
+                                MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error
+                            );
 
                             if (choice == DialogResult.Abort)
                                 throw;
                             else if (choice == DialogResult.Ignore)
                             {
-                                LogMessage($"Unable to extract file {entry.Name}: {exc.Message}", EventLogEntryType.Error);
+                                LogMessage($"Unable to extract file {zipEntry.Name}: {exc.Message}", EventLogEntryType.Error);
                                 break;
                             }
                         }
                     }
                 }
             }
-            return extractionPath;
+            return archiveExtractionPath;
+        }
+
+        private static bool IsDirectory(this ZipArchiveEntry entry)
+        {
+            return entry.FullName.EndsWith("/");
         }
 
         /*
