@@ -14,7 +14,7 @@ namespace CemuUpdateTool.Forms
         {
             InitializeComponent();
 
-            float scaleFactor = Program.GetDPIScaleFactor();
+            float scaleFactor = Program.GetScreenDPIScaleFactor();
             var resourceMgr = new System.ComponentModel.ComponentResourceManager(GetType());
 
             // Set button icons with the correct size according to current system DPI

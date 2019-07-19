@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyReleaseDateAttribute.cs" />
+    <Compile Include="Src\CrashlogGenerator.cs" />
     <Compile Include="Src\Forms\AboutForm.cs">
       <SubType>Form</SubType>
     </Compile>

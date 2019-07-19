@@ -21,7 +21,7 @@ namespace CemuUpdateTool.Forms
             InputIsValidated = validationDelegate;
 
             // Set minimum and maximum size according to scale factor to avoid vertical resizing of the window
-            float scaleFactor = Program.GetDPIScaleFactor();
+            float scaleFactor = Program.GetScreenDPIScaleFactor();
             MinimumSize = new System.Drawing.Size((int)(240 * scaleFactor), Size.Height);
             MaximumSize = new System.Drawing.Size((int)(600 * scaleFactor), Size.Height);
         }

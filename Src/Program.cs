@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.IO;
 using System.Globalization;
 using System.Reflection;
 using CemuUpdateTool.Forms;
@@ -18,11 +17,7 @@ namespace CemuUpdateTool
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en");
 
             #if !DEBUG
-            // Attach event handler to generate a crashlog when an unhandled exception is thrown
-            AppDomain.CurrentDomain.UnhandledException += (o, e) => {
-                GenerateCrashlog(e.ExceptionObject as Exception);
-                Environment.Exit(0);
-            };
+            AppDomain.CurrentDomain.UnhandledException += HandleFatalExceptionAndExit;
             #endif
 
             try
@@ -58,72 +53,77 @@ namespace CemuUpdateTool
 
             try
             {
-                // If the application is launched with the 'prefer-appdata-config' parameter, options are loaded from %AppData% even if local file exists
+                // If the application is launched with the 'prefer-appdata-config' parameter, options are loaded
+                // from %AppData% folder even if local file exists
                 bool preferAppDataFile = args.Length > 0 && args[0].TrimStart('-', '/') == "prefer-appdata-config";
                 if (Options.OptionsFileFound(preferAppDataFile))
                     Options.LoadFromCurrentlySelectedFile();
             }
             catch (Exception exc)
             {
-                string message;
-                if (exc is OptionsParsingException parsingExc)
-                    message = $"An unexpected error occurred when parsing options file: {parsingExc.Message.TrimEnd('.')} at line {parsingExc.CurrentLine}.";
-                else
-                    message = exc.Message;
-
-                MessageBox.Show(message + "\r\nDefault settings will be loaded instead.", "Error in settings.dat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ShowOptionsLoadErrorDialog(exc);
             }
 
             Application.Run(new ContainerForm(new HomeForm()));
         }
 
-        /*
-         *  Gets the corresponding scale factor to current screen DPI
-         */
-        public static float GetDPIScaleFactor()
+        public static float GetScreenDPIScaleFactor()
         {
             using (var gfx = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
                 return gfx.DpiX / 96;
         }
 
-        /*
-         *  Create and save a crash log with information on the thrown exception
-         */
-        private static void GenerateCrashlog(Exception exc)
+        private static void ShowOptionsLoadErrorDialog(Exception optionsLoadException)
         {
-            DateTime thisMoment = DateTime.Now;
-            string exceptionName = exc.GetType().ToString();
-            string crashlogContent = "";
-
-            // Show fatal error dialog
-            MessageBox.Show($"Unhandled {exceptionName.Substring(exceptionName.LastIndexOf(".") + 1)} thrown in method {exc.TargetSite.Name}: {exc.Message}" +
-                "\nFor detailed information check the produced crash log in executable folder.", "Fatal error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-            // Build crashlog file content
-            crashlogContent += $"Cemu Update Tool v{Application.ProductVersion} crashlog - {thisMoment.ToString(@"yyyy/MM/dd HH:mm:ss")}" +
-                               "\r\n------------------------------------------------------------\r\n\r\n" +
-                               $"Method \"{exc.TargetSite}\" threw a {exceptionName} due to the following reason:\r\n{exc.Message}" +
-                               "\r\n\r\nAdditional error information\r\n" +
-                               "------------------------------\r\n" +
-                               "Inner exception: ";
-
-            if (exc.InnerException == null)
-                crashlogContent += "none\r\n";
+            string message;
+            if (optionsLoadException is OptionsParsingException parsingExc)
+                message = "An unexpected error occurred when parsing options file: " +
+                          $"{parsingExc.Message.TrimEnd('.')} at line {parsingExc.CurrentLine}.";
             else
-                crashlogContent += $"{exc.InnerException.GetType().ToString()} in method \"{exc.InnerException.TargetSite}\": {exc.InnerException.Message}\r\n";
+                message = optionsLoadException.Message;
 
-            crashlogContent += string.Format("HResult: 0x{0:X8}\r\n", exc.HResult) +
-                               $"Stack trace:\r\n{exc.StackTrace}";
+            MessageBox.Show(
+                message + "\r\nDefault settings will be loaded instead.", "Error in settings.dat",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning
+            );
+        }
 
+        private static void HandleFatalExceptionAndExit(object _, UnhandledExceptionEventArgs eventArgs)
+        {
+            var fatalException = (Exception) eventArgs.ExceptionObject;
+            ShowFatalErrorDialog(fatalException);
             try
             {
-                // Write crashlog content on file
-                File.WriteAllText($@".\cemuUpdateTool-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt", crashlogContent);
+                ProduceCrashlog(fatalException);
             }
-            catch (Exception fileWriteExc)
+            catch (Exception crashlogCreationExc)
             {
-                MessageBox.Show($"Error when writing crash log on file: {fileWriteExc.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    $"An error occurred when producing crash log: {crashlogCreationExc.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error
+                );
             }
+
+            Environment.Exit(-1);
+        }
+
+        private static void ShowFatalErrorDialog(Exception exc)
+        {
+            string fullExceptionName = exc.GetType().ToString();
+            string shortExceptionName = fullExceptionName.Substring(fullExceptionName.LastIndexOf(".") + 1);
+
+            MessageBox.Show(
+                $"Unhandled {shortExceptionName} thrown in method {exc.TargetSite.Name}: {exc.Message}\r\n" +
+                "For detailed information check the produced crash log in the executable folder.",
+                "Fatal error", MessageBoxButtons.OK, MessageBoxIcon.Error
+            );
+        }
+
+        private static void ProduceCrashlog(Exception fatalException)
+        {
+            var crashLogger = new CrashlogGenerator(fatalException);
+            crashLogger.GenerateLogContent();
+            crashLogger.WriteContentToTextFileInCurrentDirectory();
         }
     }
 }
