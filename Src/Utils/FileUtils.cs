@@ -3,10 +3,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Collections.Generic;
 using System.Threading;
-using System.Text;
 using System.Diagnostics;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
 using System.Linq;
 using CemuUpdateTool.Workers;
 
