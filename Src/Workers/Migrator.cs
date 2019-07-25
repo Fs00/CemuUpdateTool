@@ -20,63 +20,18 @@ namespace CemuUpdateTool.Workers
         private readonly string sourceCemuInstallationPath;
         private readonly string destinationCemuInstallationPath;
 
+        private readonly VersionNumber sourceCemuVersion;
+
         public Migrator(string sourceCemuInstallationPath,
                         string destinationCemuInstallationPath,
-                        IList<string> foldersToCopy,
-                        IList<string> filesToCopy,
+                        VersionNumber sourceCemuVersion,
                         CancellationToken cancToken,
                         Action<string, bool> LoggerDelegate)
                : base(cancToken, LoggerDelegate)
         {
             this.sourceCemuInstallationPath = sourceCemuInstallationPath;
             this.destinationCemuInstallationPath = destinationCemuInstallationPath;
-
-            // Populate folders/file tuple arrays and calculate their sizes
-            this.foldersToCopy = new (string, long)[foldersToCopy.Count];
-            for (int i = 0; i < foldersToCopy.Count; i++)
-                this.foldersToCopy[i] = (foldersToCopy[i], 0L);
-
-            this.filesToCopy = new (string, long)[filesToCopy.Count];
-            for (int i = 0; i < filesToCopy.Count; i++)
-                this.filesToCopy[i] = (filesToCopy[i], 0L);
-            CalculateSizes();
-        }
-
-        // ValueTuple arrays containing names and sizes of the files and folders to be copied
-        (string Name, long Size)[] foldersToCopy;
-        (string Name, long Size)[] filesToCopy;
-
-        /*
-         *  Calculates the size of every folder and file to copy
-         */
-        private void CalculateSizes()
-        {
-            // Calculate the size of every folder to copy
-            for (int i = 0; i < foldersToCopy.Length; i++)
-                foldersToCopy[i].Size = FileUtils.CalculateDirSize(Path.Combine(sourceCemuInstallationPath, foldersToCopy[i].Name), HandleLogMessage);
-
-            // Calculate the size of every file to copy
-            for (int i = 0; i < filesToCopy.Length; i++)
-            {
-                string filePath = Path.Combine(sourceCemuInstallationPath, filesToCopy[i].Name);
-                if (System.IO.File.Exists(filePath))
-                    filesToCopy[i].Size = new FileInfo(filePath).Length;
-            }
-        }
-
-        /*
-         *  Sum all the folder sizes and return the result (needed by the MigrationForm)
-         */
-        public long GetOverallSizeToCopy()
-        {
-            long overallSize = 0;
-
-            foreach ((_, long folderSize) in foldersToCopy)
-                overallSize += folderSize;
-            foreach ((_, long fileSize) in filesToCopy)
-                overallSize += fileSize;
-
-            return overallSize;
+            this.sourceCemuVersion = sourceCemuVersion;
         }
 
         public void PerformMigrationOperations(Action<string> PerformingWork, IProgress<long> progressHandler)
@@ -93,47 +48,58 @@ namespace CemuUpdateTool.Workers
 
         private void MigrateFolders(Action<string> PerformingWork, IProgress<long> progressHandler)
         {
-            foreach (var folder in foldersToCopy)
+            foreach (string folder in Options.FoldersToMigrate.GetAllEnabled())
             {
-                if (Options.Migration[OptionKey.DeleteDestinationFolderContents])
+                if (ShouldNotCopyMlcSubfolders() && IsMlcSubfolder(folder))
+                    continue;
+
+                string sourceFolderPath = Path.Combine(sourceCemuInstallationPath, folder);
+                if (!Directory.Exists(sourceFolderPath))
+                    continue;
+
+                string destinationFolderPath = Path.Combine(destinationCemuInstallationPath, folder);
+                if (Options.Migration[OptionKey.DeleteDestinationFolderContents] && Directory.Exists(destinationFolderPath))
                 {
-                    string destFolderPath = Path.Combine(destinationCemuInstallationPath, folder.Name);
-                    if (Directory.Exists(destFolderPath))
+                    PerformingWork($"Removing destination {folder} folder previous contents");
+                    try
                     {
-                        PerformingWork($"Removing destination {folder.Name} folder previous contents");
-                        try
-                        {
-                            FileUtils.RemoveDirectoryContents(destFolderPath, HandleLogMessage, cancToken);
-                        }
-                        // Catch errors here since we don't want to abort the entire work if content deletion fails
-                        catch (Exception exc) when (!(exc is OperationCanceledException))
-                        {
-                            HandleLogMessage($"Unable to complete folder {folder.Name} contents removal: {exc.Message}", EventLogEntryType.Error);
-                        }
+                        FileUtils.RemoveDirectoryContents(destinationFolderPath, HandleLogMessage, cancToken);
+                    }
+                    // Catch errors here since we don't want to abort the entire work if content deletion fails
+                    catch (Exception exc) when (!(exc is OperationCanceledException))
+                    {
+                        HandleLogMessage($"Unable to complete folder {folder} contents removal: {exc.Message}", EventLogEntryType.Error);
                     }
                 }
 
-                if (folder.Size > 0)     // avoiding to copy empty/unexisting folders
-                {
-                    PerformingWork($"Copying {folder.Name}");
-                    FileUtils.CopyDirectory(Path.Combine(sourceCemuInstallationPath, folder.Name), Path.Combine(destinationCemuInstallationPath, folder.Name), HandleLogMessage,
-                                      cancToken, progressHandler, CreatedFiles, CreatedDirectories);
-                }
+                PerformingWork($"Copying {folder}");
+                FileUtils.CopyDirectory(sourceFolderPath, destinationFolderPath, HandleLogMessage,
+                                    cancToken, progressHandler, CreatedFiles, CreatedDirectories);
             }
         }
+
+        private bool ShouldNotCopyMlcSubfolders()
+        {
+            return Options.Migration[OptionKey.UseCustomMlcFolderIfSupported] &&
+                   sourceCemuVersion >= new VersionNumber(1, 10);
+        }
+
+        private bool IsMlcSubfolder(string folder)
+        {
+            return folder.StartsWith(@"mlc01\");
+        }
+
         private void MigrateFiles(Action<string> PerformingWork, IProgress<long> progressHandler)
         {
             PerformingWork("Copying files");
-            foreach (var fileToCopy in filesToCopy)
+            foreach (string fileToCopy in Options.FilesToMigrate.GetAllEnabled())
             {
                 cancToken.ThrowIfCancellationRequested();
-                if (fileToCopy.Size > 0)
-                {
-                    var file = new FileInfo(Path.Combine(sourceCemuInstallationPath, fileToCopy.Name));
-                    file.CopyTo(Path.Combine(destinationCemuInstallationPath, fileToCopy.Name), HandleLogMessage, progressHandler, CreatedFiles);
-                }
+                var file = new FileInfo(Path.Combine(sourceCemuInstallationPath, fileToCopy));
+                if (file.Exists)
+                    file.CopyTo(Path.Combine(destinationCemuInstallationPath, fileToCopy), HandleLogMessage, progressHandler, CreatedFiles);
                 else
-                    HandleLogMessage($"File {fileToCopy.Name} empty or unexisting: skipped.", EventLogEntryType.Warning);
+                    HandleLogMessage($"File {fileToCopy} doesn't exist in source Cemu installation.", EventLogEntryType.Warning);
             }
         }
 

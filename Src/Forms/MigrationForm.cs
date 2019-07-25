@@ -2,7 +2,6 @@
 using CemuUpdateTool.Utils;
 using CemuUpdateTool.Workers;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -206,17 +205,7 @@ namespace CemuUpdateTool.Forms
                 }
             }
 
-            List<string> foldersToCopy = Options.FoldersToMigrate.GetAllEnabled().ToList();
-            // TODO: move this logic inside Worker
-            if (srcCemuExeVersion.Major > 1 || srcCemuExeVersion.Minor >= 10 && Options.Migration[OptionKey.UseCustomMlcFolderIfSupported])
-            {
-                foldersToCopy.Remove(FolderOption.OldSavegames);
-                foldersToCopy.Remove(FolderOption.Savegames);
-                foldersToCopy.Remove(FolderOption.DLCUpdates);
-            }
-            List<string> filesToCopy = Options.FilesToMigrate.GetAllEnabled().ToList();
-
-            if (foldersToCopy.Count == 0 && filesToCopy.Count == 0)
+            if (!Options.FoldersToMigrate.GetAllEnabled().Any() && !Options.FilesToMigrate.GetAllEnabled().Any())
             {
                 MessageBox.Show("It seems that there are neither folders nor single files to copy. Probably you set up options incorrectly.",
                                 "Empty folders and files lists", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -225,7 +214,7 @@ namespace CemuUpdateTool.Forms
 
             PrepareControlsForOperations();
             ctSource = new CancellationTokenSource();
-            Migrator migrator = new Migrator(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, foldersToCopy, filesToCopy, ctSource.Token, logUpdater.AppendLogMessage);
+            Migrator migrator = new Migrator(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, srcCemuExeVersion, ctSource.Token, logUpdater.AppendLogMessage);
 
             WorkOutcome result;
             stopwatch.Start();
