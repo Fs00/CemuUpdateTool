@@ -1,7 +1,6 @@
 ﻿using CemuUpdateTool.Settings;
 using CemuUpdateTool.Utils;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -16,8 +15,8 @@ namespace CemuUpdateTool.Workers
         private readonly WebClient webClient;
         private readonly RemoteVersionChecker versionChecker;
 
-        public Downloader(string destinationCemuInstallationPath, CancellationToken cancToken, Action<string, bool> LoggerDelegate)
-            : base(cancToken, LoggerDelegate)
+        public Downloader(string destinationCemuInstallationPath, CancellationToken cancToken)
+            : base(cancToken)
         {
             extractedCemuFolder = destinationCemuInstallationPath;
             webClient = new WebClient();
@@ -33,10 +32,10 @@ namespace CemuUpdateTool.Workers
          *  Downloads and extracts the latest Cemu version.
          *  Returns the version number of the downloaded Cemu version (needed to update the latest known Cemu version in options)
          */
-        public VersionNumber PerformDownloadOperations(Action<string> PerformingWork, DownloadProgressChangedEventHandler progressHandler,
+        public VersionNumber PerformDownloadOperations(DownloadProgressChangedEventHandler progressHandler,
                                                        VersionNumber cemuVersionToBeDownloaded = null)
         {
-            PerformingWork("Downloading Cemu archive");
+            OnWorkStart("Downloading Cemu archive");
             webClient.DownloadProgressChanged += progressHandler;
 
             // If no Cemu version to be downloaded is specified, discover which is the latest one
@@ -48,7 +47,7 @@ namespace CemuUpdateTool.Workers
                 if (cemuVersionToBeDownloaded == null)       // if this condition is true, it's much likely caused by wrong Cemu website set
                     throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");
 
-                HandleLogMessage($"Latest Cemu version found is {cemuVersionToBeDownloaded.ToString()}.", EventLogEntryType.Information);
+                OnLogMessage(LogMessageType.Information, $"Latest Cemu version found is {cemuVersionToBeDownloaded.ToString()}.");
             }
             // Otherwise, check if the supplied version exists. If not, quit the task
             else
@@ -77,22 +76,23 @@ namespace CemuUpdateTool.Workers
             }
 
             // DOWNLOAD THE FILE
-            HandleLogMessage(
+            OnLogMessage(
+                LogMessageType.Information,
                 $"Downloading file {Options.Download[OptionKey.CemuBaseUrl] + cemuVersionToBeDownloaded.ToString() + Options.Download[OptionKey.CemuUrlSuffix]}... ",
-                EventLogEntryType.Information,
                 false
             );
             string downloadedCemuZip = DownloadCemuArchive(cemuVersionToBeDownloaded);
-            HandleLogMessage("Done!", EventLogEntryType.Information);
+            OnLogMessage(LogMessageType.Information, "Done!");
 
             // EXTRACT CONTENTS
-            HandleLogMessage("Extracting downloaded Cemu archive... ", EventLogEntryType.Information, false);
-            string extractionPath = FileUtils.ExtractZipArchiveInSameDirectory(downloadedCemuZip, HandleLogMessage, cancToken);
-            HandleLogMessage("Done!", EventLogEntryType.Information);
+            OnLogMessage(LogMessageType.Information, "Extracting downloaded Cemu archive... ", false);
+            string extractionPath = FileUtils.ExtractZipArchiveInSameDirectory(downloadedCemuZip, this);
+            OnLogMessage(LogMessageType.Information, "Done!");
 
             // Since Cemu zips contain a root folder (./cemu_[VERSION]), copy the content from there to the destination path
             string tempDownloadedCemuFolder = Path.Combine(extractionPath, $"cemu_{cemuVersionToBeDownloaded.ToString()}");
-            FileUtils.CopyDirectory(tempDownloadedCemuFolder, extractedCemuFolder, delegate {}, cancToken);    // silent copy
+            // Worker is not passed since copy must not be logged (and it's fast enough not to be noticeable)
+            FileUtils.CopyDirectory(tempDownloadedCemuFolder, extractedCemuFolder);
 
             try
             {
@@ -101,7 +101,7 @@ namespace CemuUpdateTool.Workers
             }
             catch (Exception exc)
             {
-                HandleLogMessage($"Unexpected error during deletion of temporary download/extraction files: {exc.Message}", EventLogEntryType.Error);
+                OnLogMessage(LogMessageType.Error, $"Unexpected error during deletion of temporary download/extraction files: {exc.Message}");
             }
 
             return cemuVersionToBeDownloaded;
@@ -135,7 +135,7 @@ namespace CemuUpdateTool.Workers
                     }
                     catch (Exception deletionExc)
                     {
-                        HandleLogMessage($"Unable to delete temporary download file: {deletionExc.Message}", EventLogEntryType.Error);
+                        OnLogMessage(LogMessageType.Error, $"Unable to delete temporary download file: {deletionExc.Message}");
                     }
 
                     // Handle web request cancellation

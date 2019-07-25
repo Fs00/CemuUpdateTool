@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -25,28 +24,27 @@ namespace CemuUpdateTool.Workers
         public Migrator(string sourceCemuInstallationPath,
                         string destinationCemuInstallationPath,
                         VersionNumber sourceCemuVersion,
-                        CancellationToken cancToken,
-                        Action<string, bool> LoggerDelegate)
-               : base(cancToken, LoggerDelegate)
+                        CancellationToken cancToken)
+               : base(cancToken)
         {
             this.sourceCemuInstallationPath = sourceCemuInstallationPath;
             this.destinationCemuInstallationPath = destinationCemuInstallationPath;
             this.sourceCemuVersion = sourceCemuVersion;
         }
 
-        public void PerformMigrationOperations(Action<string> PerformingWork, IProgress<long> progressHandler)
+        public void PerformMigrationOperations()
         {
             if (string.IsNullOrWhiteSpace(sourceCemuInstallationPath) || string.IsNullOrWhiteSpace(destinationCemuInstallationPath))
                 throw new ArgumentException("Source and/or destination Cemu folder are set incorrectly!");
 
-            MigrateFolders(PerformingWork, progressHandler);
-            MigrateFiles(PerformingWork, progressHandler);
+            MigrateFolders();
+            MigrateFiles();
 
             if (Options.Migration[OptionKey.SetCompatibilityOptions])
                 SetCompatibilityOptionsForDestinationCemuExecutable();
         }
 
-        private void MigrateFolders(Action<string> PerformingWork, IProgress<long> progressHandler)
+        private void MigrateFolders()
         {
             foreach (string folder in Options.FoldersToMigrate.GetAllEnabled())
             {
@@ -60,21 +58,20 @@ namespace CemuUpdateTool.Workers
                 string destinationFolderPath = Path.Combine(destinationCemuInstallationPath, folder);
                 if (Options.Migration[OptionKey.DeleteDestinationFolderContents] && Directory.Exists(destinationFolderPath))
                 {
-                    PerformingWork($"Removing destination {folder} folder previous contents");
+                    OnWorkStart($"Removing destination {folder} folder previous contents");
                     try
                     {
-                        FileUtils.RemoveDirectoryContents(destinationFolderPath, HandleLogMessage, cancToken);
+                        FileUtils.RemoveDirectoryContents(destinationFolderPath, this);
                     }
                     // Catch errors here since we don't want to abort the entire work if content deletion fails
                     catch (Exception exc) when (!(exc is OperationCanceledException))
                     {
-                        HandleLogMessage($"Unable to complete folder {folder} contents removal: {exc.Message}", EventLogEntryType.Error);
+                        OnLogMessage(LogMessageType.Error, $"Unable to complete folder {folder} contents removal: {exc.Message}");
                     }
                 }
 
-                PerformingWork($"Copying {folder}");
-                FileUtils.CopyDirectory(sourceFolderPath, destinationFolderPath, HandleLogMessage,
-                                    cancToken, progressHandler, CreatedFiles, CreatedDirectories);
+                OnWorkStart($"Copying {folder}");
+                FileUtils.CopyDirectory(sourceFolderPath, destinationFolderPath, this);
             }
         }
 
@@ -89,17 +86,17 @@ namespace CemuUpdateTool.Workers
             return folder.StartsWith(@"mlc01\");
         }
 
-        private void MigrateFiles(Action<string> PerformingWork, IProgress<long> progressHandler)
+        private void MigrateFiles()
         {
-            PerformingWork("Copying files");
+            OnWorkStart("Copying files");
             foreach (string fileToCopy in Options.FilesToMigrate.GetAllEnabled())
             {
                 cancToken.ThrowIfCancellationRequested();
                 var file = new FileInfo(Path.Combine(sourceCemuInstallationPath, fileToCopy));
                 if (file.Exists)
-                    file.CopyTo(Path.Combine(destinationCemuInstallationPath, fileToCopy), HandleLogMessage, progressHandler, CreatedFiles);
+                    file.CopyTo(Path.Combine(destinationCemuInstallationPath, fileToCopy), this);
                 else
-                    HandleLogMessage($"File {fileToCopy} doesn't exist in source Cemu installation.", EventLogEntryType.Warning);
+                    OnLogMessage(LogMessageType.Warning, $"File {fileToCopy} doesn't exist in source Cemu installation.");
             }
         }
 
@@ -119,16 +116,16 @@ namespace CemuUpdateTool.Workers
                     key.SetValue(destinationCemuExecutablePath, keyValue);
                 }
 
-                HandleLogMessage(
-                    $"Compatibility options for {destinationCemuExecutablePath} set in the Windows Registry correctly.",
-                    EventLogEntryType.Information
+                OnLogMessage(
+                    LogMessageType.Information,
+                    $"Compatibility options for {destinationCemuExecutablePath} set in the Windows Registry correctly."
                 );
             }
             catch (Exception exc)
             {
-                HandleLogMessage(
-                    $"Unable to set compatibility options for {destinationCemuExecutablePath} in the Windows Registry: {exc.Message}",
-                    EventLogEntryType.Error
+                OnLogMessage(
+                    LogMessageType.Error,
+                    $"Unable to set compatibility options for {destinationCemuExecutablePath} in the Windows Registry: {exc.Message}"
                 );
             }
         }
@@ -169,7 +166,21 @@ namespace CemuUpdateTool.Workers
             foreach (DirectoryInfo copiedDir in Enumerable.Reverse(CreatedDirectories))
                 copiedDir.Delete();
 
-            HandleLogMessage("Created files and directories deleted successfully.", EventLogEntryType.Information);
+            OnLogMessage(LogMessageType.Information, "Created files and directories deleted successfully.");
+        }
+
+        public override void OnOperationSuccess(OperationInfo operationInfo)
+        {
+            switch (operationInfo)
+            {
+                case FileCopyOperationInfo fileCopyOperationInfo:
+                    CreatedFiles.Add(fileCopyOperationInfo.CopiedFile);
+                    OnProgressIncrement(1);
+                    break;
+                case DirectoryCreationOperationInfo directoryCreationOperationInfo:
+                    CreatedDirectories.Add(directoryCreationOperationInfo.CreatedDirectory);
+                    break;
+            }
         }
     }
 }

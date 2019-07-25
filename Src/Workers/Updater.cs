@@ -1,6 +1,5 @@
 ﻿using CemuUpdateTool.Utils;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -11,8 +10,8 @@ namespace CemuUpdateTool.Workers
     {
         private readonly string cemuInstallationPath;
 
-        public Updater(string cemuInstallationPath, CancellationToken cancToken, Action<string, bool> LoggerDelegate)
-            : base(Path.Combine(Path.GetTempPath(), "cemu_update"), cancToken, LoggerDelegate)
+        public Updater(string cemuInstallationPath, CancellationToken cancToken)
+            : base(Path.Combine(Path.GetTempPath(), "cemu_update"), cancToken)
         {
             this.cemuInstallationPath = cemuInstallationPath;
         }
@@ -23,31 +22,28 @@ namespace CemuUpdateTool.Workers
          *  Returns the version number of the downloaded Cemu version in order to update the latest known Cemu version in options.
          */
         public VersionNumber PerformUpdateOperations(bool removePrecompiledCaches, bool updateGameProfiles,
-                                                     Action<string> PerformingWork, DownloadProgressChangedEventHandler progressHandler)
+                                                     DownloadProgressChangedEventHandler progressHandler)
         {
-            // Download the latest version of Cemu to downloadPath
-            VersionNumber downloadedCemuVer = PerformDownloadOperations(PerformingWork, progressHandler);
+            VersionNumber downloadedCemuVer = PerformDownloadOperations(progressHandler);
 
             // Replace Cemu.exe from the downloaded Cemu version
             var downloadedCemuExe = new FileInfo(Path.Combine(extractedCemuFolder, "Cemu.exe"));
-            downloadedCemuExe.CopyTo(Path.Combine(cemuInstallationPath, "Cemu.exe"), HandleLogMessage);
+            downloadedCemuExe.CopyTo(Path.Combine(cemuInstallationPath, "Cemu.exe"), this);
 
             // Copy 'resources' folder to the updated Cemu installation to avoid old translations being used
-            PerformingWork("Updating translation files");
-            FileUtils.CopyDirectory(Path.Combine(extractedCemuFolder, "resources"), Path.Combine(cemuInstallationPath, "resources"), HandleLogMessage, cancToken);
+            OnWorkStart("Updating translation files");
+            FileUtils.CopyDirectory(Path.Combine(extractedCemuFolder, "resources"), Path.Combine(cemuInstallationPath, "resources"), this);
 
-            // Remove precompiled caches
             if (removePrecompiledCaches)
             {
-                PerformingWork("Removing precompiled caches");
-                FileUtils.RemoveDirectoryContents(Path.Combine(cemuInstallationPath, "shaderCache", "precompiled"), HandleLogMessage, cancToken);
+                OnWorkStart("Removing precompiled caches");
+                FileUtils.RemoveDirectoryContents(Path.Combine(cemuInstallationPath, "shaderCache", "precompiled"), this);
             }
 
-            // Copy new game profiles
             if (updateGameProfiles)
             {
-                PerformingWork("Updating game profiles");
-                FileUtils.CopyDirectory(Path.Combine(extractedCemuFolder, "gameProfiles"), Path.Combine(cemuInstallationPath, "gameProfiles"), HandleLogMessage, cancToken);
+                OnWorkStart("Updating game profiles");
+                FileUtils.CopyDirectory(Path.Combine(extractedCemuFolder, "gameProfiles"), Path.Combine(cemuInstallationPath, "gameProfiles"), this);
             }
 
             // Clean up temporary downloaded Cemu folder
@@ -57,7 +53,7 @@ namespace CemuUpdateTool.Workers
             }
             catch (Exception exc)
             {
-                HandleLogMessage($"Unexpected error during deletion of temporary downloaded Cemu folder: {exc.Message}", EventLogEntryType.Error);
+                OnLogMessage(LogMessageType.Error, $"Unexpected error during deletion of temporary downloaded Cemu folder: {exc.Message}");
             }
 
             return downloadedCemuVer;

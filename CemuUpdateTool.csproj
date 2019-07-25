@@ -126,7 +126,9 @@
     <Compile Include="Src\Utils\FileUtils.cs" />
     <Compile Include="Src\Utils\RemoteVersionChecker.cs" />
     <Compile Include="Src\Utils\WebUtils.cs" />
+    <Compile Include="Src\Workers\EnumTypes.cs" />
     <Compile Include="Src\Workers\Downloader.cs" />
+    <Compile Include="Src\Workers\OperationInfo.cs" />
     <Compile Include="Src\Workers\Migrator.cs" />
     <Compile Include="Src\Workers\Updater.cs" />
     <Compile Include="Src\Workers\Worker.cs" />

@@ -1,51 +1,121 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace CemuUpdateTool.Workers
 {
-    public delegate void LogMessageHandler(string message, EventLogEntryType type, bool newLine = true);
-
-    public enum WorkOutcome
+    public abstract class Worker
     {
-        Success,
-        CompletedWithErrors,
-        Aborted,
-        CancelledByUser
-    }
-
-    abstract class Worker
-    {
-        // Counts the number of errors
         public int ErrorsEncountered      { private set; get; }
 
-        protected CancellationToken cancToken;
-        private Action<string, bool> LoggerDelegate;    // callback that writes a message on an external log (in this case OperationsForm textbox)
+        public event Action<string> WorkStart;
+        public event Action<string, bool> LogMessage;
+        public event Action<int, int> ProgressChange;
+        public event Action<int> ProgressIncrement;
 
-        public Worker(CancellationToken cancToken, Action<string, bool> LoggerDelegate)
+        protected CancellationToken cancToken;
+
+        public Worker(CancellationToken cancToken)
         {
             this.cancToken = cancToken;
-            this.LoggerDelegate = LoggerDelegate;
         }
 
-        /*
-         *  Callback that handles a log message given its type (warning, info, error etc.).
-         *  Through this callback, methods called by the Worker can notify errors.
-         */
-        protected void HandleLogMessage(string message, EventLogEntryType type, bool newLine = true)
+        public void ThrowIfWorkIsCancelled()
+        {
+            cancToken.ThrowIfCancellationRequested();
+        }
+
+        public ErrorHandlingDecision DecideHowToHandleError(OperationInfo operationInfo, string errorMessage)
+        {
+            string dialogMessage = GetErrorDialogMessageForOperation(operationInfo, errorMessage);
+            string dialogTitle = GetErrorDialogTitleForOperation(operationInfo);
+
+            DialogResult choice = MessageBox.Show(dialogMessage, dialogTitle,
+                                  MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
+
+            var decision = choice.ToErrorHandlingDecision();
+            if (decision == ErrorHandlingDecision.Ignore)
+            {
+                OnOperationErrorHandled(operationInfo, errorMessage);
+                ErrorsEncountered++;
+            }
+
+            return decision;
+        }
+
+        private string GetErrorDialogMessageForOperation(OperationInfo operationInfo, string errorMessage)
+        {
+            // TODO
+        }
+
+        private string GetErrorDialogTitleForOperation(OperationInfo operationInfo)
+        {
+            string dialogTitle = "Error during ";
+            switch (operationInfo)
+            {
+                case FileCopyOperationInfo _:
+                    dialogTitle += "file copy";
+                    break;
+                case FileDeletionOperationInfo _:
+                    dialogTitle += "file deletion";
+                    break;
+                case FileExtractionOperationInfo _:
+                    dialogTitle += "file extraction";
+                    break;
+            }
+            return dialogTitle;
+        }
+
+        public virtual void OnOperationStart(OperationInfo operationInfo)
+        {
+            switch (operationInfo)
+            {
+                case FileCopyOperationInfo fileCopyOperationInfo:
+                    OnLogMessage(LogMessageType.Information, $"Copying {fileCopyOperationInfo.CopiedFile.FullName}... ", false);
+                    break;
+            }
+        }
+
+        public virtual void OnOperationSuccess(OperationInfo operationInfo)
+        {
+            switch (operationInfo)
+            {
+                case FileCopyOperationInfo _:
+                    OnLogMessage(LogMessageType.Information, "Done!");
+                    break;
+            }
+        }
+
+        public virtual void OnOperationErrorHandled(OperationInfo operationInfo, string errorMessage)
+        {
+            // TODO print log messages after error has been ignored
+        }
+
+        protected void OnLogMessage(LogMessageType type, string message, bool newLine = true)
         {
             string logMessage = "";
-            if (type == EventLogEntryType.Error || type == EventLogEntryType.FailureAudit)
-            {
-                // if it's an error message, update errors encountered counter
-                ErrorsEncountered++;
+            if (type == LogMessageType.Error)
                 logMessage += "ERROR: ";
-            }
-            else if (type == EventLogEntryType.Warning)
+            else if (type == LogMessageType.Warning)
                 logMessage += "WARNING: ";
 
             logMessage += message;
-            LoggerDelegate(logMessage, newLine);   // pass the message to the form
+            LogMessage?.Invoke(message, newLine);
+        }
+
+        protected void OnProgressIncrement(int incrementValue)
+        {
+            ProgressIncrement?.Invoke(incrementValue);
+        }
+
+        protected void OnProgressChange(int currentProgress, int maximumProgress)
+        {
+            ProgressChange?.Invoke(currentProgress, maximumProgress);
+        }
+
+        protected void OnWorkStart(string workName)
+        {
+            WorkStart?.Invoke(workName);
         }
     }
 }

@@ -26,11 +26,11 @@ namespace CemuUpdateTool.Tests
             {
                 switch (type)
                 {
-                    case EventLogEntryType.Error:
-                    case EventLogEntryType.FailureAudit:
+                    case LogMessageType.Error:
+                    case LogMessageType.FailureAudit:
                         Debug.Write("ERR: ");
                         break;
-                    case EventLogEntryType.Warning:
+                    case LogMessageType.Warning:
                         Debug.Write("WARN: ");
                         break;
                 }
@@ -52,11 +52,11 @@ namespace CemuUpdateTool.Tests
             {
                 switch (type)
                 {
-                    case EventLogEntryType.Error:
-                    case EventLogEntryType.FailureAudit:
+                    case LogMessageType.Error:
+                    case LogMessageType.FailureAudit:
                         Debug.Write("ERR: ");
                         break;
-                    case EventLogEntryType.Warning:
+                    case LogMessageType.Warning:
                         Debug.Write("WARN: ");
                         break;
                 }
