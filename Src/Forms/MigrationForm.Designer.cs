@@ -154,8 +154,8 @@
             this.txtBoxDestFolder.Size = new System.Drawing.Size(397, 23);
             this.txtBoxDestFolder.TabIndex = 4;
             this.txtBoxDestFolder.TextChanged += new System.EventHandler(this.CheckDestFolderTextboxContent);
-            this.txtBoxDestFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
-            this.txtBoxDestFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
+            this.txtBoxDestFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.PasteContentIntoTextboxOnDragDrop);
+            this.txtBoxDestFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.ChangeCursorEffectOnTextboxDragEnter);
             // 
             // lblDestFolder
             // 
@@ -185,8 +185,8 @@
             this.txtBoxSrcFolder.Size = new System.Drawing.Size(397, 23);
             this.txtBoxSrcFolder.TabIndex = 1;
             this.txtBoxSrcFolder.TextChanged += new System.EventHandler(this.CheckSrcFolderTextboxContent);
-            this.txtBoxSrcFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
-            this.txtBoxSrcFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
+            this.txtBoxSrcFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.PasteContentIntoTextboxOnDragDrop);
+            this.txtBoxSrcFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.ChangeCursorEffectOnTextboxDragEnter);
             // 
             // lblSrcFolder
             // 

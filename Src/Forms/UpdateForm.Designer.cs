@@ -146,8 +146,8 @@
             this.txtBoxCemuFolder.Size = new System.Drawing.Size(411, 23);
             this.txtBoxCemuFolder.TabIndex = 1;
             this.txtBoxCemuFolder.TextChanged += new System.EventHandler(this.CheckFolderTextboxContent);
-            this.txtBoxCemuFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.TextboxDragDrop);
-            this.txtBoxCemuFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.TextboxDragEnter);
+            this.txtBoxCemuFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.PasteContentIntoTextboxOnDragDrop);
+            this.txtBoxCemuFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.ChangeCursorEffectOnTextboxDragEnter);
             // 
             // lblCemuFolder
             // 

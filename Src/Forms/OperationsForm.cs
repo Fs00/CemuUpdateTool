@@ -1,5 +1,4 @@
-﻿using CemuUpdateTool.Utils;
-using CemuUpdateTool.Workers;
+﻿using CemuUpdateTool.Workers;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -30,12 +29,12 @@ namespace CemuUpdateTool.Forms
             txtBoxLog.ContextMenuStrip = new ContextMenuStrip();
         }
 
-        protected void Back(object sender, EventArgs e)
+        protected void Back(object sender, EventArgs evt)
         {
             ContainerForm.ShowHomeForm();
         }
 
-        protected void OpenHelpForm(object sender, EventArgs e)
+        protected void OpenHelpForm(object sender, EventArgs evt)
         {
             new HelpForm(this).Show();
         }
@@ -55,11 +54,10 @@ namespace CemuUpdateTool.Forms
                 return null;
         }
 
-        protected /*abstract*/ virtual void DoOperationsAsync(object sender, EventArgs e) { }
+        protected /*abstract*/ virtual void DoOperationsAsync(object sender, EventArgs evt) { }
 
         protected virtual void PrepareControlsForOperations()
         {
-            // Start the textbox logger
             logUpdater = new TextBoxLogger(txtBoxLog);
 
             txtBoxLog.Clear();
@@ -74,19 +72,25 @@ namespace CemuUpdateTool.Forms
          */
         protected virtual void ResetControls()
         {
-            // Reset progress bars
-            overallProgressBar.Value = 0;
-            lblPercent.Text = "0%";
-            lblCurrentTask.Text = "Waiting for operations to start...";
-
-            btnCancel.Enabled = false;
-            btnBack.Enabled = true;
-
-            // Reset stopwatch
+            ResetProgressBarAndText();
+            ResetButtonsState();
             stopwatch.Reset();
         }
 
-        protected void CancelOperations(object sender = null, EventArgs e = null)
+        private void ResetButtonsState()
+        {
+            btnCancel.Enabled = false;
+            btnBack.Enabled = true;
+        }
+
+        private void ResetProgressBarAndText()
+        {
+            overallProgressBar.Value = 0;
+            lblPercent.Text = "0%";
+            lblCurrentTask.Text = "Waiting for operations to start...";
+        }
+
+        protected void CancelOperations(object sender = null, EventArgs evt = null)
         {
             lblCurrentTask.Text = "Cancelling...";
             ctSource.Cancel();
@@ -117,8 +121,7 @@ namespace CemuUpdateTool.Forms
         protected void HandleDownloadProgress(object sender, System.Net.DownloadProgressChangedEventArgs evtArgs)
         {
             // Set maximum progress bar value according to file size (happens only the first time)
-            if (overallProgressBar.Maximum != evtArgs.TotalBytesToReceive)
-                overallProgressBar.Maximum = (int)evtArgs.TotalBytesToReceive;
+            overallProgressBar.Maximum = (int)evtArgs.TotalBytesToReceive;
 
             // Update percent label and progress bar
             lblPercent.Text = evtArgs.ProgressPercentage + "%";
@@ -139,45 +142,52 @@ namespace CemuUpdateTool.Forms
             logUpdater.UpdateTextBox();
         }
 
-        /*
-         *  Methods for handling drag & drop into folder textboxes
-         */
-        protected virtual void TextboxDragEnter(object sender, DragEventArgs e)
+        #region Methods for handling drag & drop into folder textboxes
+        protected virtual void ChangeCursorEffectOnTextboxDragEnter(object sender, DragEventArgs evt)
         {
-            if (e.Data.GetDataPresent(DataFormats.Text) || e.Data.GetDataPresent(DataFormats.FileDrop))
-                e.Effect = DragDropEffects.Copy;
+            if (evt.Data.GetDataPresent(DataFormats.Text) || evt.Data.GetDataPresent(DataFormats.FileDrop))
+                evt.Effect = DragDropEffects.Copy;
             else
-                e.Effect = DragDropEffects.None;
+                evt.Effect = DragDropEffects.None;
         }
 
-        protected virtual void TextboxDragDrop(object sender, DragEventArgs e)
+        protected virtual void PasteContentIntoTextboxOnDragDrop(object sender, DragEventArgs evt)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                (sender as TextBox).Text = (e.Data.GetData(DataFormats.FileDrop) as string[])[0];
-            else if (e.Data.GetDataPresent(DataFormats.Text))
-                (sender as TextBox).Text = e.Data.GetData(DataFormats.Text).ToString();
+            if (evt.Data.GetDataPresent(DataFormats.FileDrop))
+                (sender as TextBox).Text = (evt.Data.GetData(DataFormats.FileDrop) as string[])[0];
+            else if (evt.Data.GetDataPresent(DataFormats.Text))
+                (sender as TextBox).Text = evt.Data.GetData(DataFormats.Text).ToString();
         }
+        #endregion
 
         /*
          *  Shows/hides log textbox when clicking on Details label
          */
-        protected void ShowHideDetailsTextbox(object sender, EventArgs e)
+        protected void ShowHideDetailsTextbox(object sender, EventArgs evt)
         {
-            if (txtBoxLog.Visible)  // arrow down -> arrow right
-                lblDetails.Text = lblDetails.Text.Replace((char)9661, (char)9655);
-            else                    // arrow right -> arrow down
-                lblDetails.Text = lblDetails.Text.Replace((char)9655, (char)9661);
-
+            ReplaceArrowNearDetails();
             txtBoxLog.Visible = !txtBoxLog.Visible;
+        }
+
+        private void ReplaceArrowNearDetails()
+        {
+            const char ARROW_DOWN = (char) 9661;
+            const char ARROW_RIGHT = (char) 9655;
+
+            if (txtBoxLog.Visible)
+                lblDetails.Text = lblDetails.Text.Replace(ARROW_DOWN, ARROW_RIGHT);
+            else
+                lblDetails.Text = lblDetails.Text.Replace(ARROW_RIGHT, ARROW_DOWN);
         }
 
         /*
          *  Resizes the form when txtBoxLog's visible state changes
          *  Note: this event handler must be added only on inherited forms, otherwise the designer will crash
          */
-        protected virtual void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e)
+        protected virtual void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs evt)
         {
-            if (ContainerForm.IsCurrentDisplayingForm(this))     // avoid triggering the event before the form is shown
+            // Avoid triggering the event before the form is shown
+            if (ContainerForm.IsCurrentDisplayingForm(this))
             {
                 if (txtBoxLog.Visible)
                     this.Height += txtBoxLog.Height;
@@ -186,16 +196,15 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        /*
-         *  If there's a job running, cancel window closing and ask the user if he wants to cancel operations
-         */
-        protected void PreventClosingIfOperationInProgress(object sender, FormClosingEventArgs e)
+        protected void PreventClosingIfOperationInProgress(object sender, FormClosingEventArgs evt)
         {
             if (logUpdater != null && logUpdater.IsReady)
             {
-                e.Cancel = true;
-                DialogResult choice = MessageBox.Show("You can't close this window while an operation is in progress. Do you want to cancel the job?",
-                                                      "Exit not allowed", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                evt.Cancel = true;
+                DialogResult choice = MessageBox.Show(
+                    "You can't close this window while an operation is in progress. Do you want to cancel the job?",
+                    "Exit not allowed", MessageBoxButtons.YesNo, MessageBoxIcon.Warning
+                );
                 if (choice == DialogResult.Yes)
                     CancelOperations();
             }

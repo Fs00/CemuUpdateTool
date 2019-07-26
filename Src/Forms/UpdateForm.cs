@@ -135,7 +135,7 @@ namespace CemuUpdateTool.Forms
 
         // These "fake overrides" are needed to avoid VS designer errors
         protected override void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e) { base.ResizeFormOnLogTextboxVisibleChanged(sender, e); }
-        protected override void TextboxDragDrop(object sender, DragEventArgs e) { base.TextboxDragDrop(sender, e); }
-        protected override void TextboxDragEnter(object sender, DragEventArgs e) { base.TextboxDragEnter(sender, e); }
+        protected override void PasteContentIntoTextboxOnDragDrop(object sender, DragEventArgs e) { base.PasteContentIntoTextboxOnDragDrop(sender, e); }
+        protected override void ChangeCursorEffectOnTextboxDragEnter(object sender, DragEventArgs e) { base.ChangeCursorEffectOnTextboxDragEnter(sender, e); }
     }
 }
