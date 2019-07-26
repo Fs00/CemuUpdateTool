@@ -12,14 +12,13 @@ namespace CemuUpdateTool.Workers
     {
         protected readonly string extractedCemuFolder;
 
-        private readonly WebClient webClient;
+        private readonly WebClient webClient = new WebClient();
         private readonly RemoteVersionChecker versionChecker;
 
         public Downloader(string destinationCemuInstallationPath, CancellationToken cancToken)
             : base(cancToken)
         {
             extractedCemuFolder = destinationCemuInstallationPath;
-            webClient = new WebClient();
             versionChecker = new RemoteVersionChecker(
                 Options.Download[OptionKey.CemuBaseUrl],
                 Options.Download[OptionKey.CemuUrlSuffix],

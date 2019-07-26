@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
-using System.Windows.Forms;
 using System.Linq;
 using CemuUpdateTool.Workers;
 
@@ -9,36 +8,35 @@ namespace CemuUpdateTool.Utils
 {
     /*
      *  FileUtils
-     *  Static class which contains helper methods to operate on files, directories and zip archives
-     *  Methods are designed to optionally log events, keep track of the files created and be cancelled
+     *  Static class which contains helper methods to operate on files, directories and zip archives.
+     *  Methods are designed to optionally log events, keep track of operation progress and be cancelled through a Worker.
      */
     public static class FileUtils
     {
         /*
          *  Copies a directory recursively to a destination folder (can be unexisting)
-         *  Reports optionally progress to a Worker.
          */
         public static void CopyDirectory(string sourceDirectoryPath, string destinationDirectoryPath, Worker worker = null)
         {
             DirectoryInfo sourceDirectory = new DirectoryInfo(sourceDirectoryPath);
-
-            // Check if destination folder exists, if not create it
             if (!Directory.Exists(destinationDirectoryPath))
             {
                 var newFolder = Directory.CreateDirectory(destinationDirectoryPath);
                 worker?.OnOperationSuccess(new DirectoryCreationOperationInfo(newFolder));
             }
 
-            // Copy files
             foreach (FileInfo file in sourceDirectory.GetFiles())
             {
                 worker?.ThrowIfWorkIsCancelled();
                 file.CopyTo(Path.Combine(destinationDirectoryPath, file.Name), worker);
             }
 
-            // Copy subdirs recursively
-            foreach (DirectoryInfo subdir in sourceDirectory.GetDirectories())
-                CopyDirectory(Path.Combine(sourceDirectoryPath, subdir.Name), Path.Combine(destinationDirectoryPath, subdir.Name), worker);
+            foreach (DirectoryInfo subDirectory in sourceDirectory.GetDirectories())
+                CopyDirectory(
+                    Path.Combine(sourceDirectoryPath, subDirectory.Name),
+                    Path.Combine(destinationDirectoryPath, subDirectory.Name),
+                    worker
+                );
         }
 
         /*
@@ -64,19 +62,16 @@ namespace CemuUpdateTool.Utils
                         throw;
 
                     ErrorHandlingDecision decision = worker.DecideHowToHandleError(sourceFileCopyInfo, exc.Message);
-                    /*DialogResult choice = MessageBox.Show($"Unexpected error when copying file {sourceFile.Name}: {exc.Message} What do you want to do?",
-                        "Error during file copy", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);*/
                     if (decision == ErrorHandlingDecision.Abort)
                         throw;
                     else if (decision == ErrorHandlingDecision.Ignore)
-                        //LogMessage($"{sourceFile.Name} not copied: {exc.Message}", LogMessageType.Error);
                         break;
                 }
             }
         }
 
         /*
-         *  Method that deletes the contents (including subfolders recursively) of the passed folder without deleting the folder itself
+         *  Method that deletes the contents (including subfolders recursively) of the passed folder without deleting the folder itself.
          *  Return the DirectoryInfo corresponding to the folder being emptied, so that the previous recursive call can delete it
          */
         public static DirectoryInfo RemoveDirectoryContents(string path, Worker worker = null)
@@ -89,31 +84,7 @@ namespace CemuUpdateTool.Utils
             foreach (FileInfo file in directory.GetFiles())
             {
                 worker?.ThrowIfWorkIsCancelled();
-
-                bool deletionSuccessful = false;
-                while (!deletionSuccessful)
-                {
-                    try
-                    {
-                        file.Delete();
-                        deletionSuccessful = true;
-                    }
-                    catch (Exception exc)
-                    {
-                        if (worker == null)
-                            throw;
-
-                        ErrorHandlingDecision decision = worker.DecideHowToHandleError(new FileDeletionOperationInfo(file), exc.Message);
-                        /*DialogResult choice = MessageBox.Show($"Unexpected error when deleting file {file.Name}: {exc.Message}" +
-                            " Do you want to retry, ignore file or skip folder contents removal?",
-                            "Error during file deletion", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);*/
-                        if (decision == ErrorHandlingDecision.Abort)
-                            throw;
-                        else if (decision == ErrorHandlingDecision.Ignore)
-                            //LogMessage($"Unable to delete {file.Name}: {exc.Message}", LogMessageType.Error);
-                            break;
-                    }
-                }
+                TryDeleteFile(file, worker);
             }
 
             // Delete subdirs recursively
@@ -125,6 +96,30 @@ namespace CemuUpdateTool.Utils
             }
 
             return directory;
+        }
+
+        private static void TryDeleteFile(FileInfo file, Worker worker)
+        {
+            bool deletionSuccessful = false;
+            while (!deletionSuccessful)
+            {
+                try
+                {
+                    file.Delete();
+                    deletionSuccessful = true;
+                }
+                catch (Exception exc)
+                {
+                    if (worker == null)
+                        throw;
+
+                    ErrorHandlingDecision decision = worker.DecideHowToHandleError(new FileDeletionOperationInfo(file), exc.Message);
+                    if (decision == ErrorHandlingDecision.Abort)
+                        throw;
+                    else if (decision == ErrorHandlingDecision.Ignore)
+                        break;
+                }
+            }
         }
 
         /*
@@ -145,14 +140,7 @@ namespace CemuUpdateTool.Utils
                     {
                         try
                         {
-                            string entryRelativePath = zipEntry.FullName.Replace('/', Path.DirectorySeparatorChar);
-                            string entryExtractionPath = Path.Combine(archiveExtractionPath, entryRelativePath);
-
-                            if (zipEntry.IsDirectory())
-                                Directory.CreateDirectory(entryExtractionPath);
-                            else
-                                zipEntry.ExtractToFile(entryExtractionPath, overwrite: true);
-
+                            zipEntry.ExtractTo(archiveExtractionPath);
                             entryExtractedSuccessfully = true;
                         }
                         catch (Exception exc)
@@ -163,21 +151,26 @@ namespace CemuUpdateTool.Utils
                             ErrorHandlingDecision decision = worker.DecideHowToHandleError(
                                 new FileExtractionOperationInfo(zipEntry.Name, Path.GetFileName(zipPath)), exc.Message
                             );
-                            /*DialogResult choice = MessageBox.Show(
-                                $"Unexpected error when extracting file {zipEntry.Name} from {Path.GetFileName(zipPath)}: {exc.Message}" +
-                                "What do you want to do?", "Error during file extraction",
-                                MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error
-                            );*/
                             if (decision == ErrorHandlingDecision.Abort)
                                 throw;
                             else if (decision == ErrorHandlingDecision.Ignore)
-                                //LogMessage($"Unable to extract file {zipEntry.Name}: {exc.Message}", LogMessageType.Error);
                                 break;
                         }
                     }
                 }
             }
             return archiveExtractionPath;
+        }
+
+        private static void ExtractTo(this ZipArchiveEntry zipEntry, string extractionRootFolder)
+        {
+            string entryRelativePath = zipEntry.FullName.Replace('/', Path.DirectorySeparatorChar);
+            string entryExtractionPath = Path.Combine(extractionRootFolder, entryRelativePath);
+
+            if (zipEntry.IsDirectory())
+                Directory.CreateDirectory(entryExtractionPath);
+            else
+                zipEntry.ExtractToFile(entryExtractionPath, overwrite: true);
         }
 
         private static bool IsDirectory(this ZipArchiveEntry entry)

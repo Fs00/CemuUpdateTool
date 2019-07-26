@@ -45,7 +45,20 @@ namespace CemuUpdateTool.Workers
 
         private string GetErrorDialogMessageForOperation(OperationInfo operationInfo, string errorMessage)
         {
-            // TODO
+            string message = "Unexpected error when ";
+            switch (operationInfo)
+            {
+                case FileCopyOperationInfo fileCopyInfo:
+                    return message + $"copying file {fileCopyInfo.CopiedFile.Name}: {errorMessage} What do you want to do?";
+                case FileDeletionOperationInfo fileDeletionInfo:
+                    return message + $"deleting file {fileDeletionInfo.FileToDelete.Name}: {errorMessage} " +
+                                     "Do you want to retry, ignore file or skip folder contents removal?";
+                case FileExtractionOperationInfo fileExtractionInfo:
+                    return message + $"extracting file {fileExtractionInfo.FileToExtract} from " +
+                                     $"{fileExtractionInfo.ZipArchiveName}: {errorMessage} What do you want to do?";
+                default:
+                    return message + $"performing an unknown operation: {errorMessage}";
+            }
         }
 
         private string GetErrorDialogTitleForOperation(OperationInfo operationInfo)
@@ -54,24 +67,22 @@ namespace CemuUpdateTool.Workers
             switch (operationInfo)
             {
                 case FileCopyOperationInfo _:
-                    dialogTitle += "file copy";
-                    break;
+                    return dialogTitle + "file copy";
                 case FileDeletionOperationInfo _:
-                    dialogTitle += "file deletion";
-                    break;
+                    return dialogTitle + "file deletion";
                 case FileExtractionOperationInfo _:
-                    dialogTitle += "file extraction";
-                    break;
+                    return dialogTitle + "file extraction";
+                default:
+                    return dialogTitle + "unknown operation";
             }
-            return dialogTitle;
         }
 
         public virtual void OnOperationStart(OperationInfo operationInfo)
         {
             switch (operationInfo)
             {
-                case FileCopyOperationInfo fileCopyOperationInfo:
-                    OnLogMessage(LogMessageType.Information, $"Copying {fileCopyOperationInfo.CopiedFile.FullName}... ", false);
+                case FileCopyOperationInfo fileCopyInfo:
+                    OnLogMessage(LogMessageType.Information, $"Copying {fileCopyInfo.CopiedFile.FullName}... ", false);
                     break;
             }
         }
@@ -88,7 +99,18 @@ namespace CemuUpdateTool.Workers
 
         public virtual void OnOperationErrorHandled(OperationInfo operationInfo, string errorMessage)
         {
-            // TODO print log messages after error has been ignored
+            switch (operationInfo)
+            {
+                case FileCopyOperationInfo fileCopyInfo:
+                    OnLogMessage(LogMessageType.Error, $"{fileCopyInfo.CopiedFile.Name} not copied: {errorMessage}");
+                    break;
+                case FileDeletionOperationInfo fileDeletionInfo:
+                    OnLogMessage(LogMessageType.Error, $"Unable to delete {fileDeletionInfo.FileToDelete.Name}: {errorMessage}");
+                    break;
+                case FileExtractionOperationInfo fileExtractionInfo:
+                    OnLogMessage(LogMessageType.Error, $"Unable to extract file {fileExtractionInfo.FileToExtract}: {errorMessage}");
+                    break;
+            }
         }
 
         protected void OnLogMessage(LogMessageType type, string message, bool newLine = true)

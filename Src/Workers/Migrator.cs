@@ -171,6 +171,7 @@ namespace CemuUpdateTool.Workers
 
         public override void OnOperationSuccess(OperationInfo operationInfo)
         {
+            base.OnOperationSuccess(operationInfo);
             switch (operationInfo)
             {
                 case FileCopyOperationInfo fileCopyOperationInfo:
@@ -179,6 +180,17 @@ namespace CemuUpdateTool.Workers
                     break;
                 case DirectoryCreationOperationInfo directoryCreationOperationInfo:
                     CreatedDirectories.Add(directoryCreationOperationInfo.CreatedDirectory);
+                    break;
+            }
+        }
+
+        public override void OnOperationErrorHandled(OperationInfo operationInfo, string errorMessage)
+        {
+            base.OnOperationErrorHandled(operationInfo, errorMessage);
+            switch (operationInfo)
+            {
+                case FileCopyOperationInfo _:
+                    OnProgressIncrement(1);
                     break;
             }
         }
