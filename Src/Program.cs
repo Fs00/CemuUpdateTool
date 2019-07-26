@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Globalization;
-using System.Reflection;
 using CemuUpdateTool.Forms;
 using CemuUpdateTool.Settings;
 
@@ -19,37 +18,6 @@ namespace CemuUpdateTool
             #if !DEBUG
             AppDomain.CurrentDomain.UnhandledException += HandleFatalExceptionAndExit;
             #endif
-
-            try
-            {
-                // Check that ValueTuple types can be instantiated. If it fails, it means that ValueType assembly can't be loaded from local DLL or GAC
-                AppDomain.CurrentDomain.CreateInstance("System.ValueTuple, Version = 4.0.3.0, Culture = neutral, PublicKeyToken = cc7b13ffcd2ddd51", "System.ValueTuple");
-            }
-            catch
-            {
-                Assembly valueTupleAssembly = null;
-                try
-                {
-                    // Load ValueTuple assembly from resources
-                    valueTupleAssembly = Assembly.Load(Properties.Resources.ValueTupleDLL);
-                }
-                catch
-                {
-                    // If it fails, show error dialog and quit
-                    MessageBox.Show("An error occurred when trying to load a necessary component for the program. This is likely due to corrupted executable file or incompatible OS version.",
-                                    "Fatal error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Environment.Exit(0);
-                }
-
-                // Register AssemblyResolve event handler (last resort in assembly resolving before failure) to resolve all ValueTuple references
-                // Reference: docs.microsoft.com/it-it/dotnet/framework/deployment/best-practices-for-assembly-loading#no-context
-                AppDomain.CurrentDomain.AssemblyResolve += (o, e) => {
-                    if (e.Name == valueTupleAssembly.FullName)
-                        return valueTupleAssembly;
-
-                    return null;
-                }; 
-            }
 
             try
             {
