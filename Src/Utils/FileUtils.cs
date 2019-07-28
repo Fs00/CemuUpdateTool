@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using CemuUpdateTool.Workers;
@@ -22,21 +21,30 @@ namespace CemuUpdateTool.Utils
             if (!Directory.Exists(destinationDirectoryPath))
             {
                 var newFolder = Directory.CreateDirectory(destinationDirectoryPath);
-                worker?.OnOperationSuccess(new DirectoryCreationOperationInfo(newFolder));
+                worker?.OnOperationSuccess(new DirectoryCreationOperation(newFolder));
             }
 
+            sourceDirectory.CopyAllFilesTo(destinationDirectoryPath, worker);
+            sourceDirectory.CopyAllSubDirectoriesTo(destinationDirectoryPath, worker);
+        }
+
+        private static void CopyAllSubDirectoriesTo(this DirectoryInfo sourceDirectory, string destinationDirectoryPath, Worker worker = null)
+        {
+            foreach (DirectoryInfo subDirectory in sourceDirectory.GetDirectories())
+                CopyDirectory(
+                    Path.Combine(sourceDirectory.FullName, subDirectory.Name),
+                    Path.Combine(destinationDirectoryPath, subDirectory.Name),
+                    worker
+                );
+        }
+
+        private static void CopyAllFilesTo(this DirectoryInfo sourceDirectory, string destinationDirectoryPath, Worker worker = null)
+        {
             foreach (FileInfo file in sourceDirectory.GetFiles())
             {
                 worker?.ThrowIfWorkIsCancelled();
                 file.CopyTo(Path.Combine(destinationDirectoryPath, file.Name), worker);
             }
-
-            foreach (DirectoryInfo subDirectory in sourceDirectory.GetDirectories())
-                CopyDirectory(
-                    Path.Combine(sourceDirectoryPath, subDirectory.Name),
-                    Path.Combine(destinationDirectoryPath, subDirectory.Name),
-                    worker
-                );
         }
 
         /*
@@ -44,30 +52,14 @@ namespace CemuUpdateTool.Utils
          */
         public static void CopyTo(this FileInfo sourceFile, string destinationFilePath, Worker worker = null)
         {
-            var sourceFileCopyInfo = new FileCopyOperationInfo(sourceFile);
-            worker?.OnOperationStart(sourceFileCopyInfo);
+            FileInfo destinationFile = new FileInfo(destinationFilePath);
+            var fileCopyOperation = new FileCopyOperation(sourceFile, destinationFile);
+            worker?.OnOperationStart(fileCopyOperation);
 
-            bool copySuccessful = false;
-            while (!copySuccessful)
-            {
-                try
-                {
-                    FileInfo destinationFile = sourceFile.CopyTo(destinationFilePath, true);
-                    copySuccessful = true;
-                    worker?.OnOperationSuccess(new FileCopyOperationInfo(destinationFile));
-                }
-                catch (Exception exc)
-                {
-                    if (worker == null)
-                        throw;
-
-                    ErrorHandlingDecision decision = worker.DecideHowToHandleError(sourceFileCopyInfo, exc.Message);
-                    if (decision == ErrorHandlingDecision.Abort)
-                        throw;
-                    else if (decision == ErrorHandlingDecision.Ignore)
-                        break;
-                }
-            }
+            if (worker == null)
+                fileCopyOperation.Perform();
+            else
+                fileCopyOperation.RetryUntilSuccessOrCancellationByWorker(worker);
         }
 
         /*
@@ -80,45 +72,33 @@ namespace CemuUpdateTool.Utils
             if (!directory.Exists)
                 throw new DirectoryNotFoundException($"Directory {path} doesn't exist!");
 
-            // Delete files
-            foreach (FileInfo file in directory.GetFiles())
-            {
-                worker?.ThrowIfWorkIsCancelled();
-                TryDeleteFile(file, worker);
-            }
-
-            // Delete subdirs recursively
-            foreach (DirectoryInfo subdir in directory.GetDirectories())
-            {
-                var emptiedFolder = RemoveDirectoryContents(Path.Combine(path, subdir.Name), worker);
-                if (IsDirectoryEmpty(emptiedFolder.FullName))
-                    emptiedFolder.Delete();
-            }
+            directory.RemoveAllFiles(worker);
+            directory.RemoveAllSubdirectories(worker);
 
             return directory;
         }
 
-        private static void TryDeleteFile(FileInfo file, Worker worker)
+        private static void RemoveAllFiles(this DirectoryInfo directory, Worker worker = null)
         {
-            bool deletionSuccessful = false;
-            while (!deletionSuccessful)
+            foreach (FileInfo file in directory.GetFiles())
             {
-                try
-                {
-                    file.Delete();
-                    deletionSuccessful = true;
-                }
-                catch (Exception exc)
-                {
-                    if (worker == null)
-                        throw;
+                worker?.ThrowIfWorkIsCancelled();
 
-                    ErrorHandlingDecision decision = worker.DecideHowToHandleError(new FileDeletionOperationInfo(file), exc.Message);
-                    if (decision == ErrorHandlingDecision.Abort)
-                        throw;
-                    else if (decision == ErrorHandlingDecision.Ignore)
-                        break;
-                }
+                var fileDeletionOperation = new FileDeletionOperation(file);
+                if (worker == null)
+                    fileDeletionOperation.Perform();
+                else
+                    fileDeletionOperation.RetryUntilSuccessOrCancellationByWorker(worker);
+            }
+        }
+
+        private static void RemoveAllSubdirectories(this DirectoryInfo directory, Worker worker)
+        {
+            foreach (DirectoryInfo subdir in directory.GetDirectories())
+            {
+                var emptiedFolder = RemoveDirectoryContents(Path.Combine(directory.FullName, subdir.Name), worker);
+                if (IsDirectoryEmpty(emptiedFolder.FullName))
+                    emptiedFolder.Delete();
             }
         }
 
@@ -135,34 +115,17 @@ namespace CemuUpdateTool.Utils
                 {
                     worker?.ThrowIfWorkIsCancelled();
 
-                    bool entryExtractedSuccessfully = false;
-                    while (!entryExtractedSuccessfully)
-                    {
-                        try
-                        {
-                            zipEntry.ExtractTo(archiveExtractionPath);
-                            entryExtractedSuccessfully = true;
-                        }
-                        catch (Exception exc)
-                        {
-                            if (worker == null)
-                                throw;
-
-                            ErrorHandlingDecision decision = worker.DecideHowToHandleError(
-                                new FileExtractionOperationInfo(zipEntry.Name, Path.GetFileName(zipPath)), exc.Message
-                            );
-                            if (decision == ErrorHandlingDecision.Abort)
-                                throw;
-                            else if (decision == ErrorHandlingDecision.Ignore)
-                                break;
-                        }
-                    }
+                    var entryExtractionOperation = new FileOrDirectoryExtractionOperation(zipEntry, archiveExtractionPath, Path.GetFileName(zipPath));
+                    if (worker == null)
+                        entryExtractionOperation.Perform();
+                    else
+                        entryExtractionOperation.RetryUntilSuccessOrCancellationByWorker(worker);
                 }
             }
             return archiveExtractionPath;
         }
 
-        private static void ExtractTo(this ZipArchiveEntry zipEntry, string extractionRootFolder)
+        public static void ExtractTo(this ZipArchiveEntry zipEntry, string extractionRootFolder)
         {
             string entryRelativePath = zipEntry.FullName.Replace('/', Path.DirectorySeparatorChar);
             string entryExtractionPath = Path.Combine(extractionRootFolder, entryRelativePath);
@@ -173,23 +136,9 @@ namespace CemuUpdateTool.Utils
                 zipEntry.ExtractToFile(entryExtractionPath, overwrite: true);
         }
 
-        private static bool IsDirectory(this ZipArchiveEntry entry)
+        public static bool IsDirectory(this ZipArchiveEntry entry)
         {
             return entry.FullName.EndsWith("/");
-        }
-
-        /*
-         *  Helper method to determine whether a folder contains a Cemu installation
-         */
-        public static bool IsValidCemuInstallation(string path, out string reason)
-        {
-            reason = null;
-            if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
-                reason = "Directory does not exist";
-            else if (!File.Exists(Path.Combine(path, "Cemu.exe")))
-                reason = "Not a valid Cemu installation (Cemu.exe is missing)";
-
-            return reason == null;
         }
 
         /*

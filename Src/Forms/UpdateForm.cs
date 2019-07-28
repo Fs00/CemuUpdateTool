@@ -24,8 +24,7 @@ namespace CemuUpdateTool.Forms
 
         private void CheckFolderTextboxContent(object sender, EventArgs e)
         {
-            // Check if it's a valid Cemu installation
-            if (!FileUtils.IsValidCemuInstallation(txtBoxCemuFolder.Text, out string reason))
+            if (!DirectoryContainsACemuInstallation(txtBoxCemuFolder.Text, out string reason))
             {
                 errProviderFolders.SetError(txtBoxCemuFolder, reason);
                 btnStart.Enabled = false;

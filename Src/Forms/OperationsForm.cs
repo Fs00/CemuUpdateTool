@@ -54,6 +54,17 @@ namespace CemuUpdateTool.Forms
                 return null;
         }
 
+        public static bool DirectoryContainsACemuInstallation(string path, out string reason)
+        {
+            reason = null;
+            if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+                reason = "Directory does not exist";
+            else if (!File.Exists(Path.Combine(path, "Cemu.exe")))
+                reason = "Not a valid Cemu installation (Cemu.exe is missing)";
+
+            return reason == null;
+        }
+
         protected /*abstract*/ virtual void DoOperationsAsync(object sender, EventArgs evt) { }
 
         protected virtual void PrepareControlsForOperations()

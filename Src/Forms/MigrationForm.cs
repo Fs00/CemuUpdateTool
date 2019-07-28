@@ -102,8 +102,7 @@ namespace CemuUpdateTool.Forms
 
         private void CheckSrcFolderTextboxContent(object sender, EventArgs e)
         {
-            // Check if it's a valid Cemu installation
-            if (!FileUtils.IsValidCemuInstallation(txtBoxSrcFolder.Text, out string reason))
+            if (!DirectoryContainsACemuInstallation(txtBoxSrcFolder.Text, out string reason))
             {
                 errProviderFolders.SetError(txtBoxSrcFolder, reason);
                 srcFolderTxtBoxValidated = false;
@@ -142,7 +141,7 @@ namespace CemuUpdateTool.Forms
                 reason = "Directory does not exist";
             }
             else
-                contentOk = FileUtils.IsValidCemuInstallation(txtBoxDestFolder.Text, out reason);
+                contentOk = DirectoryContainsACemuInstallation(txtBoxDestFolder.Text, out reason);
 
             if (!contentOk)
             {
