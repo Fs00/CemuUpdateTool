@@ -13,13 +13,10 @@ namespace CemuUpdateTool.Forms
 {
     /*
      *  MigrationForm
-     *  Window that provides Migrate and Download & Migrate functionalities.
+     *  Window that provides Migrate and Download & Migrate functionality.
      */
     partial class MigrationForm : OperationsForm
     {
-        Progress<long> progressHandler;             // used to send callbacks to UI thread
-        bool progressBarMaxDivided = false;         /* if overall size to copy > int.MaxValue (maximum possible ProgressBar value), progress bar maximum
-                                                       is divided by 1000 and therefore the same applies to every increment to its value */
         bool srcFolderTxtBoxValidated = false,
              destFolderTxtBoxValidated = false;     // true when content of the textbox is verified to be correct
         VersionNumber srcCemuExeVersion, destCemuExeVersion;
@@ -30,7 +27,6 @@ namespace CemuUpdateTool.Forms
         {
             InitializeComponent();
             DownloadMode = downloadMode;
-            progressHandler = new Progress<long>(UpdateProgressBarsAndLog);
 
             // Set controls according to the mode chosen
             if (DownloadMode)
@@ -213,7 +209,7 @@ namespace CemuUpdateTool.Forms
 
             PrepareControlsForOperations();
             ctSource = new CancellationTokenSource();
-            Migrator migrator = new Migrator(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, srcCemuExeVersion, ctSource.Token, logUpdater.AppendLogMessage);
+            var migrator = new Migrator(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, srcCemuExeVersion, ctSource.Token);
 
             WorkOutcome result;
             stopwatch.Start();
@@ -222,8 +218,8 @@ namespace CemuUpdateTool.Forms
                 // Perform download operations if we are in download mode
                 if (DownloadMode)
                 {
-                    var downloader = new Downloader(txtBoxDestFolder.Text, ctSource.Token, logUpdater.AppendLogMessage);
-                    destCemuExeVersion = await Task.Run(() => downloader.PerformDownloadOperations(ChangeProgressLabelText, HandleDownloadProgress, destCemuExeVersion));
+                    var downloader = new Downloader(txtBoxDestFolder.Text, ctSource.Token);
+                    destCemuExeVersion = await Task.Run(() => downloader.PerformDownloadOperations(destCemuExeVersion));
 
                     // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
                     VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
@@ -241,18 +237,8 @@ namespace CemuUpdateTool.Forms
                     }
                 }
 
-                // Set maximum progress bar value according to overall size to copy
-                long overallSize = migrator.GetOverallSizeToCopy();
-                if (overallSize > int.MaxValue)
-                {
-                    overallSize /= 1000;
-                    progressBarMaxDivided = true;
-                }
-                overallProgressBar.Value = 0;       // reset progress bar
-                overallProgressBar.Maximum = (int)overallSize;
-
                 // Start migration operations in a secondary thread
-                var migrationTask = Task.Run(() => migrator.PerformMigrationOperations(ChangeProgressLabelText, progressHandler));
+                var migrationTask = Task.Run(() => migrator.PerformMigrationOperations());
                 await migrationTask;
 
                 stopwatch.Stop();
@@ -283,7 +269,7 @@ namespace CemuUpdateTool.Forms
                         {
                             migrator.DeleteCreatedFilesAndFolders();
                             if (DownloadMode)
-                                FileUtils.RemoveDirectoryContents(txtBoxDestFolder.Text, delegate {});
+                                FileUtils.RemoveDirectoryContents(txtBoxDestFolder.Text);
                         }
                     }
                 }
@@ -295,7 +281,7 @@ namespace CemuUpdateTool.Forms
                 // Update result according to caught exception type
                 if (taskExc is OperationCanceledException)
                 {
-                    logUpdater.AppendLogMessage($"\r\nOperations cancelled due to user request.", false);
+                    logUpdater.AppendLogMessage("\r\nOperations cancelled due to user request.", false);
                     result = WorkOutcome.CancelledByUser;
                 }
                 else
@@ -316,7 +302,7 @@ namespace CemuUpdateTool.Forms
                 bool isNewCemuVersionAtLeast110 = destCemuExeVersion.Major > 1 || destCemuExeVersion.Minor >= 10;
                 if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
                     migrator.CreateDesktopShortcut(destCemuExeVersion.ToString(),
-                      (isNewCemuVersionAtLeast110 && Options.Migration[OptionKey.UseCustomMlcFolderIfSupported] == true) ? Options.CustomMlcFolderPath : null);
+                      (isNewCemuVersionAtLeast110 && Options.Migration[OptionKey.UseCustomMlcFolderIfSupported]) ? Options.CustomMlcFolderPath : null);
             }
 
             ShowWorkResultDialog(result);
@@ -351,7 +337,7 @@ namespace CemuUpdateTool.Forms
          *  Callback method that updates progress bars after a file has been copied
          *  Since it's the callback used by Progress<T>, it's queued on the main UI thread
          */
-        private void UpdateProgressBarsAndLog(long dim)
+        /*private void UpdateProgressBarsAndLog(long dim)
         {
             // Update progress bar and percent label
             if (progressBarMaxDivided)
@@ -362,7 +348,7 @@ namespace CemuUpdateTool.Forms
             lblPercent.Text = Math.Floor(overallProgressBar.Value / (double)overallProgressBar.Maximum * 100) + "%";
 
             logUpdater.UpdateTextBox();
-        }
+        }*/
 
         private void ParseSuppliedVersionInCombobox(object sender, EventArgs e)
         {

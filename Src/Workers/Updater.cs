@@ -21,14 +21,13 @@ namespace CemuUpdateTool.Workers
          *  precompiled removal and game profiles update.
          *  Returns the version number of the downloaded Cemu version in order to update the latest known Cemu version in options.
          */
-        public VersionNumber PerformUpdateOperations(bool removePrecompiledCaches, bool updateGameProfiles,
-                                                     DownloadProgressChangedEventHandler progressHandler)
+        public VersionNumber PerformUpdateOperations(bool removePrecompiledCaches, bool updateGameProfiles)
         {
-            VersionNumber downloadedCemuVer = PerformDownloadOperations(progressHandler);
+            VersionNumber downloadedCemuVer = PerformDownloadOperations();
 
             // Replace Cemu.exe from the downloaded Cemu version
             var downloadedCemuExe = new FileInfo(Path.Combine(extractedCemuFolder, "Cemu.exe"));
-            downloadedCemuExe.CopyTo(Path.Combine(cemuInstallationPath, "Cemu.exe"), this);
+            downloadedCemuExe.CopyToAndReportOutcomeToWorker(Path.Combine(cemuInstallationPath, "Cemu.exe"), this);
 
             // Copy 'resources' folder to the updated Cemu installation to avoid old translations being used
             OnWorkStart("Updating translation files");

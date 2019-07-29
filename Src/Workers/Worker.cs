@@ -88,7 +88,7 @@ namespace CemuUpdateTool.Workers
                 logMessage += "WARNING: ";
 
             logMessage += message;
-            LogMessage?.Invoke(message, newLine);
+            LogMessage?.Invoke(logMessage, newLine);
         }
 
         protected void OnProgressIncrement(int incrementValue)

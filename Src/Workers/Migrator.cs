@@ -13,12 +13,14 @@ namespace CemuUpdateTool.Workers
     sealed class Migrator : Worker
     {
         // Necessary for restoring the original situation when operation is cancelled
-        public List<FileInfo> CreatedFiles { get; } = new List<FileInfo>();
-        public List<DirectoryInfo> CreatedDirectories { get; } = new List<DirectoryInfo>();
+        public IReadOnlyList<FileInfo> CreatedFiles => createdFiles.AsReadOnly();
+        public IReadOnlyList<DirectoryInfo> CreatedDirectories => createdDirectories.AsReadOnly();
+        
+        private readonly List<FileInfo> createdFiles = new List<FileInfo>();
+        private readonly List<DirectoryInfo> createdDirectories = new List<DirectoryInfo>();
 
         private readonly string sourceCemuInstallationPath;
         private readonly string destinationCemuInstallationPath;
-
         private readonly VersionNumber sourceCemuVersion;
 
         public Migrator(string sourceCemuInstallationPath,
@@ -37,6 +39,8 @@ namespace CemuUpdateTool.Workers
             if (string.IsNullOrWhiteSpace(sourceCemuInstallationPath) || string.IsNullOrWhiteSpace(destinationCemuInstallationPath))
                 throw new ArgumentException("Source and/or destination Cemu folder are set incorrectly!");
 
+            OnProgressChange(0, CalculateAllFilesToMigrateCount());
+            
             MigrateFolders();
             MigrateFiles();
 
@@ -44,37 +48,67 @@ namespace CemuUpdateTool.Workers
                 SetCompatibilityOptionsForDestinationCemuExecutable();
         }
 
+        private int CalculateAllFilesToMigrateCount()
+        {
+            int count = 0;
+            foreach (string folder in FoldersToActuallyMigrate())
+                count += FileUtils.CountFilesIncludedInDirectoryRecursively(folder);
+            count += Options.FilesToMigrate.GetAllEnabled().Count();
+            return count;
+        }
+
         private void MigrateFolders()
         {
-            foreach (string folder in Options.FoldersToMigrate.GetAllEnabled())
+            foreach (string folder in FoldersToActuallyMigrate())
             {
-                if (ShouldNotCopyMlcSubfolders() && IsMlcSubfolder(folder))
-                    continue;
-
                 string sourceFolderPath = Path.Combine(sourceCemuInstallationPath, folder);
                 if (!Directory.Exists(sourceFolderPath))
                     continue;
 
-                string destinationFolderPath = Path.Combine(destinationCemuInstallationPath, folder);
-                if (Options.Migration[OptionKey.DeleteDestinationFolderContents] && Directory.Exists(destinationFolderPath))
-                {
-                    OnWorkStart($"Removing destination {folder} folder previous contents");
-                    try
-                    {
-                        FileUtils.RemoveDirectoryContents(destinationFolderPath, this);
-                    }
-                    // Catch errors here since we don't want to abort the entire work if content deletion fails
-                    catch (Exception exc) when (!(exc is OperationCanceledException))
-                    {
-                        OnLogMessage(LogMessageType.Error, $"Unable to complete folder {folder} contents removal: {exc.Message}");
-                    }
-                }
+                if (Options.Migration[OptionKey.DeleteDestinationFolderContents])
+                    TryDeleteDestinationFolderContents(folder);
 
                 OnWorkStart($"Copying {folder}");
+                string destinationFolderPath = Path.Combine(destinationCemuInstallationPath, folder);
                 FileUtils.CopyDirectory(sourceFolderPath, destinationFolderPath, this);
             }
         }
 
+        private void TryDeleteDestinationFolderContents(string folder)
+        {
+            try
+            {
+                string folderPath = Path.Combine(destinationCemuInstallationPath, folder);
+                if (Directory.Exists(folderPath))
+                {
+                    OnWorkStart($"Removing destination {folder} folder previous contents");
+                    FileUtils.RemoveDirectoryContents(folderPath, this);
+                }
+            }
+            // Catch errors here since we don't want to abort the entire work if content deletion fails
+            catch (Exception exc) when (!(exc is OperationCanceledException))
+            {
+                OnLogMessage(LogMessageType.Error, $"Unable to complete folder {folder} contents removal: {exc.Message}");
+            }
+        }
+
+        private IEnumerable<string> FoldersToActuallyMigrate()
+        {
+            foreach (string folder in Options.FoldersToMigrate.GetAllEnabled())
+            {
+                if (ShouldNotCopyMlcSubfolders())
+                {
+                    if (!IsMlcSubfolder(folder))
+                        yield return folder;
+                }
+
+                yield return folder;
+            }
+        }
+
+        // Cemu 1.10 has been the first version to support custom MLC folder location,
+        // so if the user has chosen to use a custom MLC folder in options and Cemu version is compatible,
+        // then MLC subfolders won't be copied
         private bool ShouldNotCopyMlcSubfolders()
         {
             return Options.Migration[OptionKey.UseCustomMlcFolderIfSupported] &&
@@ -89,14 +123,15 @@ namespace CemuUpdateTool.Workers
         private void MigrateFiles()
         {
             OnWorkStart("Copying files");
-            foreach (string fileToCopy in Options.FilesToMigrate.GetAllEnabled())
+            foreach (string fileRelativePath in Options.FilesToMigrate.GetAllEnabled())
             {
                 cancToken.ThrowIfCancellationRequested();
-                var file = new FileInfo(Path.Combine(sourceCemuInstallationPath, fileToCopy));
-                if (file.Exists)
-                    file.CopyTo(Path.Combine(destinationCemuInstallationPath, fileToCopy), this);
+                
+                var sourceFile = new FileInfo(Path.Combine(sourceCemuInstallationPath, fileRelativePath));
+                if (sourceFile.Exists)
+                    sourceFile.CopyToAndReportOutcomeToWorker(Path.Combine(destinationCemuInstallationPath, fileRelativePath), this);
                 else
-                    OnLogMessage(LogMessageType.Warning, $"File {fileToCopy} doesn't exist in source Cemu installation.");
+                    OnLogMessage(LogMessageType.Warning, $"File {fileRelativePath} doesn't exist in source Cemu installation.");
             }
         }
 
@@ -175,11 +210,11 @@ namespace CemuUpdateTool.Workers
             switch (operationInfo)
             {
                 case FileCopyOperation fileCopyOperationInfo:
-                    CreatedFiles.Add(fileCopyOperationInfo.SourceFile);
+                    createdFiles.Add(fileCopyOperationInfo.SourceFile);
                     OnProgressIncrement(1);
                     break;
                 case DirectoryCreationOperation directoryCreationOperationInfo:
-                    CreatedDirectories.Add(directoryCreationOperationInfo.DirectoryToCreate);
+                    createdDirectories.Add(directoryCreationOperationInfo.DirectoryToCreate);
                     break;
             }
         }

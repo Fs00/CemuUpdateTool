@@ -42,24 +42,22 @@ namespace CemuUpdateTool.Utils
         {
             foreach (FileInfo file in sourceDirectory.GetFiles())
             {
-                worker?.ThrowIfWorkIsCancelled();
-                file.CopyTo(Path.Combine(destinationDirectoryPath, file.Name), worker);
+                string destinationFilePath = Path.Combine(destinationDirectoryPath, file.Name);
+                if (worker == null)
+                    file.CopyTo(destinationFilePath);
+                else
+                    file.CopyToAndReportOutcomeToWorker(destinationFilePath, worker);
             }
         }
-
-        /*
-         *  Extension method to reuse advanced file copy logic in different parts of the program
-         */
-        public static void CopyTo(this FileInfo sourceFile, string destinationFilePath, Worker worker = null)
+        
+        public static void CopyToAndReportOutcomeToWorker(this FileInfo sourceFile, string destinationFilePath, Worker worker)
         {
-            FileInfo destinationFile = new FileInfo(destinationFilePath);
+            worker.ThrowIfWorkIsCancelled();
+            
+            var destinationFile = new FileInfo(destinationFilePath);
             var fileCopyOperation = new FileCopyOperation(sourceFile, destinationFile);
-            worker?.OnOperationStart(fileCopyOperation);
-
-            if (worker == null)
-                fileCopyOperation.Perform();
-            else
-                fileCopyOperation.RetryUntilSuccessOrCancellationByWorker(worker);
+            worker.OnOperationStart(fileCopyOperation);
+            fileCopyOperation.RetryUntilSuccessOrCancellationByWorker(worker);
         }
 
         /*
@@ -92,14 +90,35 @@ namespace CemuUpdateTool.Utils
             }
         }
 
-        private static void RemoveAllSubdirectories(this DirectoryInfo directory, Worker worker)
+        private static void RemoveAllSubdirectories(this DirectoryInfo directory, Worker worker = null)
         {
-            foreach (DirectoryInfo subdir in directory.GetDirectories())
+            foreach (DirectoryInfo subDirectory in directory.GetDirectories())
             {
-                var emptiedFolder = RemoveDirectoryContents(Path.Combine(directory.FullName, subdir.Name), worker);
+                var emptiedFolder = RemoveDirectoryContents(Path.Combine(directory.FullName, subDirectory.Name), worker);
                 if (IsDirectoryEmpty(emptiedFolder.FullName))
                     emptiedFolder.Delete();
             }
+        }
+        
+        public static int CountFilesIncludedInDirectoryRecursively(string directoryPath)
+        {
+            int filesCount = 0;
+            filesCount += CountFilesInCurrentDirectory(directoryPath);
+            filesCount += CountFilesIncludedInAllSubdirectories(directoryPath);
+            return filesCount;
+        }
+        
+        private static int CountFilesInCurrentDirectory(string directoryPath)
+        {
+            return Directory.GetFiles(directoryPath).Length;
+        }
+
+        private static int CountFilesIncludedInAllSubdirectories(string directoryPath)
+        {
+            int filesCount = 0;
+            foreach (string subDirectory in Directory.GetDirectories(directoryPath))
+                filesCount += CountFilesIncludedInDirectoryRecursively(Path.Combine(directoryPath, subDirectory));
+            return filesCount;
         }
 
         /*
@@ -140,13 +159,10 @@ namespace CemuUpdateTool.Utils
         {
             return entry.FullName.EndsWith("/");
         }
-
-        /*
-         *  Checks if a given directory has no elements inside.
-         */
-        public static bool IsDirectoryEmpty(string dirPath)
+        
+        public static bool IsDirectoryEmpty(string directoryPath)
         {
-            return !Directory.EnumerateFileSystemEntries(dirPath).Any();
+            return !Directory.EnumerateFileSystemEntries(directoryPath).Any();
         }
     }
 }

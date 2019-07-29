@@ -56,14 +56,13 @@ namespace CemuUpdateTool.Forms
             PrepareControlsForOperations();
 
             ctSource = new CancellationTokenSource();
-            var updater = new Updater(txtBoxCemuFolder.Text, ctSource.Token, logUpdater.AppendLogMessage);
+            var updater = new Updater(txtBoxCemuFolder.Text, ctSource.Token);
 
             WorkOutcome result;
             stopwatch.Start();
             try
             {
-                VersionNumber downloadedCemuVersion = await Task.Run(() => updater.PerformUpdateOperations(chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked,
-                                                                                                          ChangeProgressLabelText, HandleDownloadProgress));
+                VersionNumber downloadedCemuVersion = await Task.Run(() => updater.PerformUpdateOperations(chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked));
                 // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
                 VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
                 if (previousLastKnownCemuVersion != downloadedCemuVersion)
@@ -100,7 +99,7 @@ namespace CemuUpdateTool.Forms
                 // Update result according to caught exception type
                 if (taskExc is OperationCanceledException)
                 {
-                    logUpdater.AppendLogMessage($"\r\nOperations cancelled due to user request.", false);
+                    logUpdater.AppendLogMessage("\r\nOperations cancelled due to user request.", false);
                     result = WorkOutcome.CancelledByUser;
                 }
                 else
