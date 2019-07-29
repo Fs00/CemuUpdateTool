@@ -1,10 +1,10 @@
-﻿using CemuUpdateTool.Settings;
-using CemuUpdateTool.Utils;
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
+using CemuUpdateTool.Settings;
+using CemuUpdateTool.Utils;
 using CemuUpdateTool.Workers.Operations;
 
 namespace CemuUpdateTool.Workers
@@ -96,14 +96,15 @@ namespace CemuUpdateTool.Workers
             {
                 try
                 {
-                    webClient.DownloadFileTaskAsync(
+                    webClient.DownloadFileSynchronouslyWithProgressReporting(
                         Options.Download[OptionKey.CemuBaseUrl] + cemuVersion + Options.Download[OptionKey.CemuUrlSuffix],
                         destinationFile
-                    ).Wait();
+                    );
                     fileDownloaded = true;
                 }
-                catch (AggregateException exc)    // DownloadFileTaskAsync wraps all its exceptions in an AggregateException
+                catch (Exception exc)
                 {
+                    // TODO: valutare se spostare questo blocco nell'extension method
                     // Delete temporary download file if present, since it won't be used
                     try
                     {
@@ -115,26 +116,22 @@ namespace CemuUpdateTool.Workers
                         OnLogMessage(LogMessageType.Error, $"Unable to delete temporary download file: {deletionExc.Message}");
                     }
 
-                    // Handle web request cancellation
-                    if ((exc.InnerException as WebException)?.Status == WebExceptionStatus.RequestCanceled)
-                        throw new OperationCanceledException();
-
                     // Build the message according to the type of error
                     string message = "An error occurred when trying to download the latest Cemu version: ";
-                    if (exc.InnerException is WebException webExc)     // internet or read-only file error
+                    if (exc is WebException webExc)     // internet or read-only file error
                     {
                         if (webExc.Status == WebExceptionStatus.UnknownError && webExc.InnerException != null)  // file error
                             message += webExc.InnerException.Message;
                         else
                             message += WebUtils.GetErrorMessageFromWebExceptionStatus(webExc.Status);
                     }
-                    else if (exc.InnerException is InvalidOperationException)  // should never happen
-                        message += exc.InnerException.Message;
+                    else if (exc is InvalidOperationException)  // should never happen
+                        message += exc.Message;
                     message += " Would you like to retry or give up the entire operation?";
 
                     DialogResult choice = MessageBox.Show(message, "Download error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
                     if (choice == DialogResult.Cancel)
-                        throw exc.InnerException;
+                        throw;
                 }
             }
             return destinationFile;

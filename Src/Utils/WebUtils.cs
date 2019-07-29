@@ -49,6 +49,22 @@ namespace CemuUpdateTool.Utils
             request.Timeout = REQUEST_TIMEOUT_MS;
             return request;
         }
+
+        public static void DownloadFileSynchronouslyWithProgressReporting(this WebClient webClient, string address, string destinationFile)
+        {
+            try
+            {
+                webClient.DownloadFileTaskAsync(address, destinationFile).Wait();
+            }
+            // Task.Wait() wraps all its exceptions in an AggregateException
+            catch (AggregateException exc)
+            {
+                if (exc.InnerException is WebException webExc && webExc.Status == WebExceptionStatus.RequestCanceled)
+                    throw new OperationCanceledException();
+
+                throw exc.InnerException;
+            }
+        }
         
         public static string GetErrorMessageFromWebExceptionStatus(WebExceptionStatus excStatus)
         {
