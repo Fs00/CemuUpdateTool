@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Windows.Forms;
+using CemuUpdateTool.Workers.Operations;
 
 namespace CemuUpdateTool.Workers
 {
@@ -10,14 +11,14 @@ namespace CemuUpdateTool.Workers
      */
     public abstract class Worker
     {
-        public int ErrorsEncountered      { private set; get; }
+        public int ErrorsEncountered { private set; get; }
 
         public event Action<string> WorkStart;
         public event Action<string, bool> LogMessage;
         public event Action<int, int> ProgressChange;
         public event Action<int> ProgressIncrement;
 
-        protected CancellationToken cancToken;
+        private CancellationToken cancToken;
 
         protected Worker(CancellationToken cancToken)
         {
@@ -32,12 +33,9 @@ namespace CemuUpdateTool.Workers
         public ErrorHandlingDecision DecideHowToHandleError(RetryableOperation operationInfo, Exception error)
         {
             if (error is OperationCanceledException)
-                throw error;
-
-            string promptMessage = operationInfo.BuildMessageForErrorHandlingDecision(error.Message);
-            string promptTitle = "Error during " + operationInfo.OperationName;
-
-            ErrorHandlingDecision decision = AskUserHowToHandleError(promptTitle, promptMessage);
+                return ErrorHandlingDecision.AbortOrCancel;
+            
+            ErrorHandlingDecision decision = AskUserHowToHandleError(operationInfo, error);
             if (decision == ErrorHandlingDecision.Ignore)
             {
                 OnOperationErrorHandled(operationInfo, error.Message);
@@ -47,9 +45,12 @@ namespace CemuUpdateTool.Workers
             return decision;
         }
 
-        protected virtual ErrorHandlingDecision AskUserHowToHandleError(string promptTitle, string promptMessage)
+        protected virtual ErrorHandlingDecision AskUserHowToHandleError(RetryableOperation operationInfo, Exception error)
         {
-            DialogResult choice = MessageBox.Show(promptMessage, promptTitle,
+            string dialogMessage = operationInfo.BuildMessageForErrorHandlingDecision(error);
+            string dialogTitle = "Error during " + operationInfo.OperationName;
+
+            DialogResult choice = MessageBox.Show(dialogMessage, dialogTitle,
                                                   MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error);
             return choice.ToErrorHandlingDecision();
         }

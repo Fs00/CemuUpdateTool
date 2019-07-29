@@ -11,14 +11,14 @@ namespace CemuUpdateTool.Utils
 
         private readonly string urlPrefix, urlSuffix;
         private readonly int maxVersionLength;
+        private readonly CancellationToken cancellationToken;
 
-        private CancellationToken cancellationToken;
-
-        public RemoteVersionChecker(string urlPrefix, string urlSuffix, int maxVersionLength)
+        public RemoteVersionChecker(string urlPrefix, string urlSuffix, int maxVersionLength, CancellationToken? cancellationToken = null)
         {
             this.urlPrefix = urlPrefix;
             this.urlSuffix = urlSuffix;
             this.maxVersionLength = maxVersionLength;
+            this.cancellationToken = cancellationToken ?? CancellationToken.None;
         }
 
         /*
@@ -27,17 +27,11 @@ namespace CemuUpdateTool.Utils
          *  and files be named in the format [urlPrefix][version][urlSuffix].
          */
         public VersionNumber GetLatestRemoteVersionInBranch(VersionNumber branch,
-                                                            VersionNumber startingVersion = null,
-                                                            CancellationToken? cancellationToken = null)
+                                                            VersionNumber startingVersion = null)
         {
-            if (cancellationToken != null)
-                this.cancellationToken = cancellationToken.Value;
-            else
-                this.cancellationToken = CancellationToken.None;
-
             if (startingVersion != null)
             {
-                if (!RemoteVersionExists(startingVersion, this.cancellationToken))
+                if (!RemoteVersionExists(startingVersion))
                     startingVersion = null;
             }
 
@@ -83,14 +77,14 @@ namespace CemuUpdateTool.Utils
             while (!latestVersionFound)
             {
                 nextVersionToCheck++;
-                if (RemoteVersionExists(nextVersionToCheck, cancellationToken))
+                if (RemoteVersionExists(nextVersionToCheck))
                     latestKnownVersion++;
                 else
                     latestVersionFound = true;
             }
         }
 
-        public bool RemoteVersionExists(VersionNumber version, CancellationToken cancellationToken)
+        public bool RemoteVersionExists(VersionNumber version)
         {
             string requestUrl = urlPrefix + version.ToString(maxVersionLength) + urlSuffix;
             using (HttpWebResponse response = WebUtils.SendHttpRequest(HttpMethod.Head, requestUrl, cancellationToken))

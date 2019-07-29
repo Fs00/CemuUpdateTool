@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
+using CemuUpdateTool.Workers.Operations;
 
 namespace CemuUpdateTool.Workers
 {
@@ -22,7 +23,8 @@ namespace CemuUpdateTool.Workers
             versionChecker = new RemoteVersionChecker(
                 Options.Download[OptionKey.CemuBaseUrl],
                 Options.Download[OptionKey.CemuUrlSuffix],
-                maxVersionLength: 3
+                maxVersionLength: 3,
+                cancToken
             );
             cancToken.Register(webClient.CancelAsync);
         }
@@ -42,35 +44,20 @@ namespace CemuUpdateTool.Workers
                 // Avoid errors if version string in download options is malformed
                 VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);
                 cemuVersionToBeDownloaded = DiscoverLatestCemuVersion(lastKnownCemuVersion);
-                if (cemuVersionToBeDownloaded == null)       // if this condition is true, it's much likely caused by wrong Cemu website set
-                    throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");
+                
+                // TODO: fare sì che il version check lanci quest'eccezione nel controllo preliminare
+                /*if (cemuVersionToBeDownloaded == null)
+                    throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");*/
 
-                OnLogMessage(LogMessageType.Information, $"Latest Cemu version found is {cemuVersionToBeDownloaded.ToString()}.");
+                OnLogMessage(LogMessageType.Information, $"Latest Cemu version found is {cemuVersionToBeDownloaded}.");
             }
             // Otherwise, check if the supplied version exists. If not, quit the task
             else
             {
-                bool versionChecked = false;
-                while (!versionChecked)
-                {
-                    try
-                    {
-                        if (!versionChecker.RemoteVersionExists(cemuVersionToBeDownloaded, cancToken))
-                            throw new ArgumentException("The Cemu version you supplied does not exist.");
-
-                        versionChecked = true;
-                    }
-                    catch (WebException exc)
-                    {
-                        // Build the message according to the type of error
-                        string message = $"An error occurred when trying to connect to Cemu version repository: {GetWebErrorMessage(exc.Status)} " +
-                                         "Would you like to retry or give up the entire operation?";
-
-                        DialogResult choice = MessageBox.Show(message, "Internet request error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
-                        if (choice == DialogResult.Cancel)
-                            throw;
-                    }
-                }
+                var versionCheckOperation = new RemoteVersionExistenceCheckOperation(cemuVersionToBeDownloaded, versionChecker);
+                versionCheckOperation.RetryUntilSuccessOrCancellationByWorker(this);
+                if (!versionCheckOperation.SuppliedVersionExists)
+                    throw new ArgumentException("The Cemu version you supplied does not exist or Cemu repository has changed.");
             }
 
             // DOWNLOAD THE FILE
@@ -88,19 +75,11 @@ namespace CemuUpdateTool.Workers
             OnLogMessage(LogMessageType.Information, "Done!");
 
             // Since Cemu zips contain a root folder (./cemu_[VERSION]), copy the content from there to the destination path
-            string tempDownloadedCemuFolder = Path.Combine(extractionPath, $"cemu_{cemuVersionToBeDownloaded.ToString()}");
+            string tempDownloadedCemuFolder = Path.Combine(extractionPath, $"cemu_{cemuVersionToBeDownloaded}");
             // Worker is not passed since copy must not be logged (and it's fast enough not to be noticeable)
             FileUtils.CopyDirectory(tempDownloadedCemuFolder, extractedCemuFolder);
 
-            try
-            {
-                Directory.Delete(tempDownloadedCemuFolder, recursive: true);
-                File.Delete(downloadedCemuZip);
-            }
-            catch (Exception exc)
-            {
-                OnLogMessage(LogMessageType.Error, $"Unexpected error during deletion of temporary download/extraction files: {exc.Message}");
-            }
+            TryDeleteTemporaryDownloadFiles(tempDownloadedCemuFolder, downloadedCemuZip);
 
             return cemuVersionToBeDownloaded;
         }
@@ -111,7 +90,7 @@ namespace CemuUpdateTool.Workers
          */
         private string DownloadCemuArchive(VersionNumber cemuVersion)
         {
-            string destinationFile = Path.Combine(Path.GetTempPath(), $"cemu_{cemuVersion.ToString()}.zip");
+            string destinationFile = Path.Combine(Path.GetTempPath(), $"cemu_{cemuVersion}.zip");
             bool fileDownloaded = false;
             while (!fileDownloaded)
             {
@@ -141,13 +120,13 @@ namespace CemuUpdateTool.Workers
                         throw new OperationCanceledException();
 
                     // Build the message according to the type of error
-                    string message = $"An error occurred when trying to download the latest Cemu version: ";
+                    string message = "An error occurred when trying to download the latest Cemu version: ";
                     if (exc.InnerException is WebException webExc)     // internet or read-only file error
                     {
                         if (webExc.Status == WebExceptionStatus.UnknownError && webExc.InnerException != null)  // file error
                             message += webExc.InnerException.Message;
                         else
-                            message += GetWebErrorMessage(webExc.Status);
+                            message += WebUtils.GetErrorMessageFromWebExceptionStatus(webExc.Status);
                     }
                     else if (exc.InnerException is InvalidOperationException)  // should never happen
                         message += exc.InnerException.Message;
@@ -163,52 +142,40 @@ namespace CemuUpdateTool.Workers
 
         private VersionNumber DiscoverLatestCemuVersion(VersionNumber lastKnownCemuVersion = null)
         {
-            VersionNumber latestCemuVersion = null;
-            bool versionObtained = false;
-            while (!versionObtained)
+            var latestVersionSearchOperation = new LatestRemoteVersionSearchOperation(lastKnownCemuVersion, versionChecker);
+            latestVersionSearchOperation.RetryUntilSuccessOrCancellationByWorker(this);
+            return latestVersionSearchOperation.LatestVersionFound;
+        }
+        
+        private void TryDeleteTemporaryDownloadFiles(string tempDownloadedCemuFolder, string downloadedCemuZip)
+        {
+            try
             {
-                try
-                {
-                    latestCemuVersion = versionChecker.GetLatestRemoteVersionInBranch(VersionNumber.Empty, lastKnownCemuVersion, cancToken);
-                    versionObtained = true;
-                }
-                // Handle any web request error
-                catch (WebException exc)
-                {
-                    // Build the message according to the type of error
-                    string message = $"An error occurred when trying to find out which is the latest Cemu version: {GetWebErrorMessage(exc.Status)} " +
-                                      "Would you like to retry or give up the entire operation?";
-
-                    DialogResult choice = MessageBox.Show(message, "Internet request error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
-                    if (choice == DialogResult.Cancel)
-                        throw;
-                }
+                Directory.Delete(tempDownloadedCemuFolder, recursive: true);
+                File.Delete(downloadedCemuZip);
             }
-            return latestCemuVersion;
+            catch (Exception exc)
+            {
+                OnLogMessage(LogMessageType.Error,
+                    $"Unexpected error during deletion of temporary download/extraction files: {exc.Message}");
+            }
         }
 
-        /*
-         *  Return an error string according to the WebExceptionStatus passed.
-         */
-        protected string GetWebErrorMessage(WebExceptionStatus excStatus)
+        // Errors in operations that make web requests can not be ignored, therefore in those cases we need to replace the
+        // base method dialog (which has Abort, Retry and Ignore controls) with a dialog that has only Retry and Cancel buttons  
+        protected override ErrorHandlingDecision AskUserHowToHandleError(RetryableOperation operationInfo, Exception error)
         {
-            string message;
-            switch (excStatus)
+            if (operationInfo is RemoteVersionExistenceCheckOperation || operationInfo is LatestRemoteVersionSearchOperation)
             {
-                case WebExceptionStatus.NameResolutionFailure:
-                    message = "Name resolution failure. This can be due to absent internet connection or wrong Cemu website option.";
-                    break;
-                case WebExceptionStatus.ConnectFailure:
-                    message = "Connection failure. Is your internet connection working?";
-                    break;
-                case WebExceptionStatus.Timeout:
-                    message = "Request timed out. Could be a temporary server error as well as missing internet connection.";
-                    break;
-                default:
-                    message = excStatus.ToString() + ".";
-                    break;
+                string dialogMessage = operationInfo.BuildMessageForErrorHandlingDecision(error);
+                string dialogTitle = "Error during " + operationInfo.OperationName;
+
+                DialogResult choice = MessageBox.Show(dialogMessage, dialogTitle,
+                                                      MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                return choice.ToErrorHandlingDecision();
             }
-            return message;
+            
+            return base.AskUserHowToHandleError(operationInfo, error);
         }
     }
 }

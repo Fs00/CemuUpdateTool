@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace CemuUpdateTool.Workers
+namespace CemuUpdateTool.Workers.Operations
 {
     /*
      * Represents a generic operation that doesn't return a result.

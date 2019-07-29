@@ -2,6 +2,7 @@
 using System.IO.Compression;
 using System.Linq;
 using CemuUpdateTool.Workers;
+using CemuUpdateTool.Workers.Operations;
 
 namespace CemuUpdateTool.Utils
 {

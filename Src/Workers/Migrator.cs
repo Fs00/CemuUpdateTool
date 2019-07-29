@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using CemuUpdateTool.Settings;
 using CemuUpdateTool.Utils;
+using CemuUpdateTool.Workers.Operations;
 using IWshRuntimeLibrary;
 using Microsoft.Win32;
 
@@ -125,7 +126,7 @@ namespace CemuUpdateTool.Workers
             OnWorkStart("Copying files");
             foreach (string fileRelativePath in Options.FilesToMigrate.GetAllEnabled())
             {
-                cancToken.ThrowIfCancellationRequested();
+                ThrowIfWorkIsCancelled();
                 
                 var sourceFile = new FileInfo(Path.Combine(sourceCemuInstallationPath, fileRelativePath));
                 if (sourceFile.Exists)

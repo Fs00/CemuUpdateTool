@@ -5,9 +5,9 @@ using System.Threading;
 
 namespace CemuUpdateTool.Utils
 {
-    public class WebUtils
+    public static class WebUtils
     {
-        private static readonly int requestTimeoutMs = 10000;
+        private const int REQUEST_TIMEOUT_MS = 10000;
 
         /*
          * Performs a simple HTTP request synchronously with the specified method.
@@ -21,6 +21,11 @@ namespace CemuUpdateTool.Utils
             cancellationToken.ThrowIfCancellationRequested();
             cancellationToken.Register(request.Abort);
 
+            return request.PerformAndGetResponse();
+        }
+
+        private static HttpWebResponse PerformAndGetResponse(this HttpWebRequest request)
+        {
             try
             {
                 var response = (HttpWebResponse) request.GetResponse();
@@ -41,8 +46,25 @@ namespace CemuUpdateTool.Utils
         {
             HttpWebRequest request = WebRequest.CreateHttp(url);
             request.Method = method.ToString();
-            request.Timeout = requestTimeoutMs;
+            request.Timeout = REQUEST_TIMEOUT_MS;
             return request;
+        }
+        
+        public static string GetErrorMessageFromWebExceptionStatus(WebExceptionStatus excStatus)
+        {
+            switch (excStatus)
+            {
+                case WebExceptionStatus.NameResolutionFailure:
+                    return "Name resolution failure. This can be due to absent internet connection or wrong Cemu website option.";
+                case WebExceptionStatus.ConnectFailure:
+                    return "Connection failure. Is your internet connection working?";
+                case WebExceptionStatus.Timeout:
+                    return "Request timed out. Could be a temporary server error as well as missing internet connection.";
+                case WebExceptionStatus.ConnectionClosed:
+                    return "The connection was unexpectedly closed by server. Retry later.";
+                default:
+                    return excStatus + ".";
+            }
         }
     }
 }
