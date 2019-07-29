@@ -16,26 +16,13 @@ namespace CemuUpdateTool.Tests
         }
 
         [DeploymentItem(@"Resources\ZipExtractTest\", @"ZipExtractTest\")]
-        [TestMethod()]
+        [TestMethod]
         public void ExtractZipFileContentsTest()
         {
             // The archive contains 1 directory and 2 files
             string testZip = @".\ZipExtractTest\testArchive.zip";
 
-            FileUtils.ExtractZipArchiveInSameDirectory(testZip, (msg, type, newLine) =>
-            {
-                switch (type)
-                {
-                    case LogMessageType.Error:
-                    case LogMessageType.FailureAudit:
-                        Debug.Write("ERR: ");
-                        break;
-                    case LogMessageType.Warning:
-                        Debug.Write("WARN: ");
-                        break;
-                }
-                Debug.WriteLine(msg);
-            });
+            FileUtils.ExtractZipArchiveInSameDirectory(testZip);
 
             string currentDirectory = Path.GetDirectoryName(testZip);
             Assert.AreEqual(1, Directory.EnumerateDirectories(currentDirectory).Count());
@@ -43,25 +30,12 @@ namespace CemuUpdateTool.Tests
         }
 
         [DeploymentItem(@"Resources\DirectoryContentsTest\", @"DirectoryContentsTest\")]
-        [TestMethod()]
+        [TestMethod]
         public void RemoveDirContentsTest()
         {
             string testDir = @".\DirectoryContentsTest";
 
-            FileUtils.RemoveDirectoryContents(testDir, (msg, type, newLine) =>
-            {
-                switch (type)
-                {
-                    case LogMessageType.Error:
-                    case LogMessageType.FailureAudit:
-                        Debug.Write("ERR: ");
-                        break;
-                    case LogMessageType.Warning:
-                        Debug.Write("WARN: ");
-                        break;
-                }
-                Debug.WriteLine(msg);
-            });
+            FileUtils.RemoveDirectoryContents(testDir);
 
             Assert.AreEqual(0, new DirectoryInfo(testDir).GetDirectories().Length);
         }
