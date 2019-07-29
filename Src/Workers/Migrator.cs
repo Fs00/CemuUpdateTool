@@ -169,27 +169,27 @@ namespace CemuUpdateTool.Workers
             OnLogMessage(LogMessageType.Information, "Created files and directories deleted successfully.");
         }
 
-        public override void OnOperationSuccess(IOperation operationInfo)
+        public override void OnOperationSuccess(Operation operationInfo)
         {
             base.OnOperationSuccess(operationInfo);
             switch (operationInfo)
             {
-                case FileCopyOperationn  fileCopyOperationInfo:
+                case FileCopyOperation fileCopyOperationInfo:
                     CreatedFiles.Add(fileCopyOperationInfo.SourceFile);
                     OnProgressIncrement(1);
                     break;
-                case DirectoryCreationOperationn  directoryCreationOperationInfo:
+                case DirectoryCreationOperation directoryCreationOperationInfo:
                     CreatedDirectories.Add(directoryCreationOperationInfo.DirectoryToCreate);
                     break;
             }
         }
 
-        public override void OnOperationErrorHandled(IOperation operationInfo, string errorMessage)
+        public override void OnOperationErrorHandled(Operation operationInfo, string errorMessage)
         {
             base.OnOperationErrorHandled(operationInfo, errorMessage);
             switch (operationInfo)
             {
-                case FileCopyOperationn  _:
+                case FileCopyOperation _:
                     OnProgressIncrement(1);
                     break;
             }

@@ -31,11 +31,10 @@ namespace CemuUpdateTool.Workers
          *  Downloads and extracts the latest Cemu version.
          *  Returns the version number of the downloaded Cemu version (needed to update the latest known Cemu version in options)
          */
-        public VersionNumber PerformDownloadOperations(DownloadProgressChangedEventHandler progressHandler,
-                                                       VersionNumber cemuVersionToBeDownloaded = null)
+        public VersionNumber PerformDownloadOperations(VersionNumber cemuVersionToBeDownloaded = null)
         {
             OnWorkStart("Downloading Cemu archive");
-            webClient.DownloadProgressChanged += progressHandler;
+            webClient.DownloadProgressChanged += (_, evt) => OnProgressChange(evt.ProgressPercentage, 100);
 
             // If no Cemu version to be downloaded is specified, discover which is the latest one
             if (cemuVersionToBeDownloaded == null)
@@ -77,7 +76,7 @@ namespace CemuUpdateTool.Workers
             // DOWNLOAD THE FILE
             OnLogMessage(
                 LogMessageType.Information,
-                $"Downloading file {Options.Download[OptionKey.CemuBaseUrl] + cemuVersionToBeDownloaded.ToString() + Options.Download[OptionKey.CemuUrlSuffix]}... ",
+                $"Downloading file {Options.Download[OptionKey.CemuBaseUrl] + cemuVersionToBeDownloaded + Options.Download[OptionKey.CemuUrlSuffix]}... ",
                 false
             );
             string downloadedCemuZip = DownloadCemuArchive(cemuVersionToBeDownloaded);
@@ -119,7 +118,7 @@ namespace CemuUpdateTool.Workers
                 try
                 {
                     webClient.DownloadFileTaskAsync(
-                        Options.Download[OptionKey.CemuBaseUrl] + cemuVersion.ToString() + Options.Download[OptionKey.CemuUrlSuffix],
+                        Options.Download[OptionKey.CemuBaseUrl] + cemuVersion + Options.Download[OptionKey.CemuUrlSuffix],
                         destinationFile
                     ).Wait();
                     fileDownloaded = true;
@@ -172,11 +171,6 @@ namespace CemuUpdateTool.Workers
                 {
                     latestCemuVersion = versionChecker.GetLatestRemoteVersionInBranch(VersionNumber.Empty, lastKnownCemuVersion, cancToken);
                     versionObtained = true;
-                }
-                // Handle web request cancellation
-                catch (WebException exc) when (exc.Status == WebExceptionStatus.RequestCanceled)
-                {
-                    throw new OperationCanceledException();
                 }
                 // Handle any web request error
                 catch (WebException exc)

@@ -20,7 +20,7 @@ namespace CemuUpdateTool.Workers
 
     public enum ErrorHandlingDecision
     {
-        Abort,
+        AbortOrCancel,
         Retry,
         Ignore
     }
@@ -31,8 +31,9 @@ namespace CemuUpdateTool.Workers
         {
             switch (result)
             {
+                case DialogResult.Cancel:
                 case DialogResult.Abort:
-                    return ErrorHandlingDecision.Abort;
+                    return ErrorHandlingDecision.AbortOrCancel;
                 case DialogResult.Ignore:
                     return ErrorHandlingDecision.Ignore;
                 case DialogResult.Retry:

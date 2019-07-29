@@ -4,6 +4,10 @@ using System.Windows.Forms;
 
 namespace CemuUpdateTool.Workers
 {
+    /*
+     * Represents a class that performs some work, which is made up of single operations.
+     * Provides API for progress reporting, operations outcome notification, work cancellation and error recovery.
+     */
     public abstract class Worker
     {
         public int ErrorsEncountered      { private set; get; }
@@ -27,6 +31,9 @@ namespace CemuUpdateTool.Workers
 
         public ErrorHandlingDecision DecideHowToHandleError(RetryableOperation operationInfo, Exception error)
         {
+            if (error is OperationCanceledException)
+                throw error;
+
             string promptMessage = operationInfo.BuildMessageForErrorHandlingDecision(error.Message);
             string promptTitle = "Error during " + operationInfo.OperationName;
 
