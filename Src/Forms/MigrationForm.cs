@@ -1,13 +1,12 @@
-﻿using CemuUpdateTool.Settings;
-using CemuUpdateTool.Utils;
-using CemuUpdateTool.Workers;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CemuUpdateTool.Settings;
+using CemuUpdateTool.Utils;
+using CemuUpdateTool.Workers;
 
 namespace CemuUpdateTool.Forms
 {
@@ -17,11 +16,14 @@ namespace CemuUpdateTool.Forms
      */
     partial class MigrationForm : OperationsForm
     {
-        bool srcFolderTxtBoxValidated = false,
-             destFolderTxtBoxValidated = false;     // true when content of the textbox is verified to be correct
-        VersionNumber srcCemuExeVersion, destCemuExeVersion;
+        private bool srcFolderTxtBoxValidated = false,
+                     destFolderTxtBoxValidated = false;     // true when content of the textbox is verified to be correct
 
-        public bool DownloadMode { get; }           // if true, newer version of Cemu will be downloaded before migrating
+        private VersionNumber srcCemuExeVersion, destCemuExeVersion;
+
+        private Migrator migrator;
+
+        private bool DownloadMode { get; }           // if true, newer version of Cemu will be downloaded before migrating
 
         public MigrationForm(bool downloadMode) : base()
         {
@@ -66,7 +68,7 @@ namespace CemuUpdateTool.Forms
         private void SelectSrcCemuFolder(object sender, EventArgs e)
         {
             // Open folder picker
-            string chosenFolder = ChooseFolder(txtBoxSrcFolder.Text);
+            string chosenFolder = ChooseFolderWithPicker(txtBoxSrcFolder.Text);
 
             // Check whether result is different to the other selected folder (it mustn't be equal)
             if (chosenFolder != null)
@@ -84,7 +86,7 @@ namespace CemuUpdateTool.Forms
         private void SelectDestCemuFolder(object sender, EventArgs e)
         {
             // Open folder picker
-            string chosenFolder = ChooseFolder(txtBoxDestFolder.Text);
+            string chosenFolder = ChooseFolderWithPicker(txtBoxDestFolder.Text);
 
             // Check whether result is different to the other selected folder (it mustn't be equal)
             if (chosenFolder != null)
@@ -171,132 +173,35 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        protected override async void DoOperationsAsync(object sender, EventArgs e)
+        protected override async Task<WorkOutcome> PerformOperations()
         {
-            // If not in download mode, warn the user if old Cemu version is not older than new one
-            if (!DownloadMode)
+            // Perform download operations if we are in download mode
+            if (DownloadMode)
             {
-                if (srcCemuExeVersion > destCemuExeVersion)
+                var downloader = new Downloader(txtBoxDestFolder.Text, cTokenSource.Token);
+                destCemuExeVersion = await Task.Run(() => downloader.PerformDownloadOperations(destCemuExeVersion));
+
+                // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
+                VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
+                if (previousLastKnownCemuVersion != destCemuExeVersion)
                 {
-                    DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
-                        "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested",
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                    if (choice == DialogResult.No)
-                        return;
-                }
-            }
-            // If in download mode, warn the user if the destination folder contains a Cemu installation
-            else
-            {
-                if (File.Exists(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")))
-                {
-                    DialogResult choice = MessageBox.Show("The chosen destination folder already contains a Cemu installation. " +
-                        "Do you want to overwrite it?", "Cemu installation already present",
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                    if (choice == DialogResult.No)
-                        return;
-                }
-            }
-
-            if (!Options.FoldersToMigrate.GetAllEnabled().Any() && !Options.FilesToMigrate.GetAllEnabled().Any())
-            {
-                MessageBox.Show("It seems that there are neither folders nor single files to copy. Probably you set up options incorrectly.",
-                                "Empty folders and files lists", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            PrepareControlsForOperations();
-            ctSource = new CancellationTokenSource();
-            var migrator = new Migrator(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, srcCemuExeVersion, ctSource.Token);
-
-            WorkOutcome result;
-            stopwatch.Start();
-            try
-            {
-                // Perform download operations if we are in download mode
-                if (DownloadMode)
-                {
-                    var downloader = new Downloader(txtBoxDestFolder.Text, ctSource.Token);
-                    destCemuExeVersion = await Task.Run(() => downloader.PerformDownloadOperations(destCemuExeVersion));
-
-                    // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
-                    VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
-                    if (previousLastKnownCemuVersion != destCemuExeVersion)
+                    Options.Download[OptionKey.LastKnownCemuVersion] = destCemuExeVersion.ToString();
+                    try
                     {
-                        Options.Download[OptionKey.LastKnownCemuVersion] = destCemuExeVersion.ToString();
-                        try
-                        {
-                            Options.WriteOptionsToCurrentlySelectedFile();
-                        }
-                        catch (Exception optionsUpdateExc)
-                        {
-                            logUpdater.AppendLogMessage($"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
-                        }
+                        Options.WriteOptionsToCurrentlySelectedFile();
+                    }
+                    catch (Exception optionsUpdateExc)
+                    {
+                        logUpdater.AppendLogMessage($"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
                     }
                 }
-
-                // Start migration operations in a secondary thread
-                var migrationTask = Task.Run(() => migrator.PerformMigrationOperations());
-                await migrationTask;
-
-                stopwatch.Stop();
-
-                // If there have been errors during operations, update result
-                if (migrator.ErrorsEncountered > 0)
-                {
-                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {migrator.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
-                    result = WorkOutcome.CompletedWithErrors;
-                }
-                else
-                {
-                    logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
-                    result = WorkOutcome.Success;
-                }
-                lblCurrentTask.Text = "Operations completed!";
-            }
-            catch (Exception taskExc)   // task cancelled or aborted due to an error
-            {
-                stopwatch.Stop();
-                try
-                {
-                    if (migrator.CreatedFiles.Count > 0 || migrator.CreatedDirectories.Count > 0)
-                    {
-                        // Ask if the user wants to remove files that have been created
-                        DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
-                        if (choice == DialogResult.Yes)
-                        {
-                            migrator.DeleteCreatedFilesAndFolders();
-                            if (DownloadMode)
-                                FileUtils.RemoveDirectoryContents(txtBoxDestFolder.Text);
-                        }
-                    }
-                }
-                catch (Exception cleanupExc)
-                {
-                    MessageBox.Show($"An error occurred when deleting created files: {cleanupExc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-
-                // Update result according to caught exception type
-                if (taskExc is OperationCanceledException)
-                {
-                    logUpdater.AppendLogMessage("\r\nOperations cancelled due to user request.", false);
-                    result = WorkOutcome.CancelledByUser;
-                }
-                else
-                {
-                    logUpdater.AppendLogMessage($"\r\nOperation aborted due to unrecoverable error: {taskExc.Message}", false);
-                    result = WorkOutcome.Aborted;
-                }
-                lblCurrentTask.Text = "Operations stopped!";
             }
 
-            // Tell the textbox logger to stop after printing all queued messages
-            logUpdater.StopAndWaitShutdown();
+            migrator = new Migrator(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, srcCemuExeVersion, cTokenSource.Token);
+            await Task.Run(() => migrator.PerformMigrationOperations());
 
             // Ask if user wants to create Cemu desktop shortcut
-            if (result != WorkOutcome.Aborted && result != WorkOutcome.CancelledByUser && Options.Migration[OptionKey.AskForDesktopShortcut])
+            if (Options.Migration[OptionKey.AskForDesktopShortcut])
             {
                 DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 bool isNewCemuVersionAtLeast110 = destCemuExeVersion.Major > 1 || destCemuExeVersion.Minor >= 10;
@@ -305,8 +210,71 @@ namespace CemuUpdateTool.Forms
                       (isNewCemuVersionAtLeast110 && Options.Migration[OptionKey.UseCustomMlcFolderIfSupported]) ? Options.CustomMlcFolderPath : null);
             }
 
-            ShowWorkResultDialog(result);
-            ResetControls();
+            if (migrator.ErrorsEncountered > 0)
+                return WorkOutcome.CompletedWithErrors;
+            
+            return WorkOutcome.Success;
+        }
+
+        protected override bool ArePreliminaryChecksSuccessful()
+        {
+            // If not in download mode, warn the user if old Cemu version is not older than new one
+            if (!DownloadMode)
+            {
+                if (srcCemuExeVersion > destCemuExeVersion)
+                {
+                    DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
+                                                          "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                    if (choice == DialogResult.No)
+                        return false;
+                }
+            }
+            // If in download mode, warn the user if the destination folder contains a Cemu installation
+            else
+            {
+                if (File.Exists(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")))
+                {
+                    DialogResult choice = MessageBox.Show("The chosen destination folder already contains a Cemu installation. " +
+                                                          "Do you want to overwrite it?", "Cemu installation already present",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                    if (choice == DialogResult.No)
+                        return false;
+                }
+            }
+
+            if (!Options.FoldersToMigrate.GetAllEnabled().Any() && !Options.FilesToMigrate.GetAllEnabled().Any())
+            {
+                MessageBox.Show("It seems that there are neither folders nor single files to copy. Probably you set up options incorrectly.",
+                    "Empty folders and files lists", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            return true;
+        }
+
+        protected override void HandleOperationsError()
+        {
+            try
+            {
+                if (migrator.CreatedFiles.Count > 0 || migrator.CreatedDirectories.Count > 0)
+                {
+                    // Ask if the user wants to remove files that have been created
+                    DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
+                    if (choice == DialogResult.Yes)
+                    {
+                        migrator.DeleteCreatedFilesAndFolders();
+                        if (DownloadMode)
+                            FileUtils.RemoveDirectoryContents(txtBoxDestFolder.Text);
+                    }
+                }
+            }
+            catch (Exception cleanupExc)
+            {
+                MessageBox.Show($"An error occurred when deleting created files: {cleanupExc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         protected override void ResetControls()

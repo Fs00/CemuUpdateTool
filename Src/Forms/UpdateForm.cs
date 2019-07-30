@@ -1,12 +1,10 @@
-﻿using CemuUpdateTool.Settings;
-using CemuUpdateTool.Utils;
-using CemuUpdateTool.Workers;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CemuUpdateTool.Settings;
+using CemuUpdateTool.Workers;
 
 namespace CemuUpdateTool.Forms
 {
@@ -46,75 +44,43 @@ namespace CemuUpdateTool.Forms
 
         private void SelectCemuFolder(object sender, EventArgs e)
         {
-            string chosenFolder = ChooseFolder(txtBoxCemuFolder.Text);
+            string chosenFolder = ChooseFolderWithPicker(txtBoxCemuFolder.Text);
             if (chosenFolder != null)
                 txtBoxCemuFolder.Text = chosenFolder;
         }
-
-        protected override async void DoOperationsAsync(object sender, EventArgs e)
+        
+        protected override void HandleOperationsError()
         {
-            PrepareControlsForOperations();
+            // nothing to do here
+        }
 
-            ctSource = new CancellationTokenSource();
-            var updater = new Updater(txtBoxCemuFolder.Text, ctSource.Token);
-
-            WorkOutcome result;
-            stopwatch.Start();
-            try
+        protected override async Task<WorkOutcome> PerformOperations()
+        {
+            var updater = new Updater(txtBoxCemuFolder.Text, cTokenSource.Token);
+            
+            VersionNumber downloadedCemuVersion = await Task.Run(
+                () => updater.PerformUpdateOperations(chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked)
+            );
+            
+            // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
+            VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
+            if (previousLastKnownCemuVersion != downloadedCemuVersion)
             {
-                VersionNumber downloadedCemuVersion = await Task.Run(() => updater.PerformUpdateOperations(chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked));
-                // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
-                VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
-                if (previousLastKnownCemuVersion != downloadedCemuVersion)
+                Options.Download[OptionKey.LastKnownCemuVersion] = downloadedCemuVersion.ToString();
+                try
                 {
-                    Options.Download[OptionKey.LastKnownCemuVersion] = downloadedCemuVersion.ToString();
-                    try
-                    {
-                        Options.WriteOptionsToCurrentlySelectedFile();
-                    }
-                    catch (Exception optionsUpdateExc)
-                    {
-                        logUpdater.AppendLogMessage($"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
-                    }
+                    Options.WriteOptionsToCurrentlySelectedFile();
                 }
-
-                stopwatch.Stop();
-
-                if (updater.ErrorsEncountered > 0)
+                catch (Exception optionsUpdateExc)
                 {
-                    logUpdater.AppendLogMessage($"\r\nOperations terminated with {updater.ErrorsEncountered} errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
-                    result = WorkOutcome.CompletedWithErrors;
+                    logUpdater.AppendLogMessage($"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
                 }
-                else
-                {
-                    logUpdater.AppendLogMessage($"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.", false);
-                    result = WorkOutcome.Success;
-                }
-                lblCurrentTask.Text = "Operations completed!";
-            }
-            catch (Exception taskExc)
-            {
-                stopwatch.Stop();
-
-                // Update result according to caught exception type
-                if (taskExc is OperationCanceledException)
-                {
-                    logUpdater.AppendLogMessage("\r\nOperations cancelled due to user request.", false);
-                    result = WorkOutcome.CancelledByUser;
-                }
-                else
-                {
-                    logUpdater.AppendLogMessage($"\r\nOperation aborted due to unrecoverable error: {taskExc.Message}", false);
-                    result = WorkOutcome.Aborted;
-                }
-                lblCurrentTask.Text = "Operations stopped!";
             }
 
-            // Tell the textbox logger to stop after printing all queued messages
-            logUpdater.StopAndWaitShutdown();
+            if (updater.ErrorsEncountered > 0)
+                return WorkOutcome.CompletedWithErrors;
 
-            ShowWorkResultDialog(result);
-            ResetControls();
+            return WorkOutcome.Success;
         }
 
         protected override void ResetControls()

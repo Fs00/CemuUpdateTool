@@ -1,9 +1,10 @@
-﻿using CemuUpdateTool.Workers;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using CemuUpdateTool.Workers;
 
 namespace CemuUpdateTool.Forms
 {
@@ -12,11 +13,14 @@ namespace CemuUpdateTool.Forms
      *  Form from which MigrationForm and UpdateForm inherit.
      *  It's designed to behave as an abstract class, but declaring it as abstract causes problems with VS Designer
      */
-    /*abstract*/ partial class OperationsForm : Form
+    abstract partial class OperationsForm : Form
     {
-        protected CancellationTokenSource ctSource;           // handles task cancellation
-        protected Stopwatch stopwatch;                        // used to measure how much time the task took to complete
-        protected TextBoxLogger logUpdater;                   // used to update txtBoxLog asynchronously
+        protected CancellationTokenSource cTokenSource;
+        protected readonly Stopwatch stopwatch;   // used to measure how much time the task took to complete
+        protected TextBoxLogger logUpdater;       // used to update txtBoxLog asynchronously
+        
+        private WorkOutcome workResult;
+        private string workFailureMessage;
 
         protected OperationsForm()
         {
@@ -39,11 +43,11 @@ namespace CemuUpdateTool.Forms
             new HelpForm(this).Show();
         }
 
-        protected string ChooseFolder(string previouslySelectedFolder)
+        protected string ChooseFolderWithPicker(string previouslySelectedFolder)
         {
-            // Open folder picker in Computer or in the currently selected folder (if it exists)
-            var folderPicker = new FolderBrowserDialog();
-            folderPicker.RootFolder = Environment.SpecialFolder.MyComputer;
+            var folderPicker = new FolderBrowserDialog {
+                RootFolder = Environment.SpecialFolder.MyComputer
+            };
             if (!string.IsNullOrEmpty(previouslySelectedFolder) && Directory.Exists(previouslySelectedFolder))
                 folderPicker.SelectedPath = previouslySelectedFolder;
 
@@ -54,7 +58,7 @@ namespace CemuUpdateTool.Forms
                 return null;
         }
 
-        public static bool DirectoryContainsACemuInstallation(string path, out string reason)
+        protected static bool DirectoryContainsACemuInstallation(string path, out string reason)
         {
             reason = null;
             if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
@@ -65,8 +69,22 @@ namespace CemuUpdateTool.Forms
             return reason == null;
         }
 
-        protected /*abstract*/ virtual void DoOperationsAsync(object sender, EventArgs evt) { }
+        protected async void DoOperationsAsync(object sender, EventArgs evt)
+        {
+            if (!ArePreliminaryChecksSuccessful())
+                return;
+            
+            PrepareControlsForOperations();
+            cTokenSource = new CancellationTokenSource();
+            await TryPerformOperationsAsync();
+            AppendResultLogMessage();
+            logUpdater.StopAndWaitShutdown();
+            ShowWorkResultDialog();
+            ResetControls();
+        }
 
+        protected virtual bool ArePreliminaryChecksSuccessful() => true;
+        
         protected virtual void PrepareControlsForOperations()
         {
             logUpdater = new TextBoxLogger(txtBoxLog);
@@ -76,6 +94,61 @@ namespace CemuUpdateTool.Forms
             btnStart.Enabled = false;
             btnBack.Enabled = false;
             btnCancel.Enabled = true;
+        }
+        
+        protected async Task TryPerformOperationsAsync()
+        {
+            stopwatch.Start();
+            try
+            {
+                workResult = await PerformOperations();
+                lblCurrentTask.Text = "Operations completed!";
+            }
+            catch (Exception exc)
+            {
+                HandleOperationsError();
+                
+                lblCurrentTask.Text = "Operations stopped!";
+                if (exc is OperationCanceledException)
+                    workResult = WorkOutcome.CancelledByUser;
+                else
+                {
+                    workFailureMessage = exc.Message;
+                    workResult = WorkOutcome.Aborted;
+                }
+            }
+            finally
+            {
+                stopwatch.Stop();
+            }
+        }
+
+        protected abstract Task<WorkOutcome> PerformOperations();
+        protected abstract void HandleOperationsError();
+        
+        private void AppendResultLogMessage()
+        {
+            switch (workResult)
+            {
+                case WorkOutcome.Success:
+                    logUpdater.AppendLogMessage(
+                        $"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.",
+                        newLine: false
+                    );
+                    break;
+                case WorkOutcome.CompletedWithErrors:
+                    logUpdater.AppendLogMessage(
+                        $"\r\nOperations terminated with errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.",
+                        newLine: false
+                    );
+                    break;
+                case WorkOutcome.Aborted:
+                    logUpdater.AppendLogMessage($"\r\nOperations aborted due to unrecoverable error: {workFailureMessage}", newLine: false);
+                    break;
+                case WorkOutcome.CancelledByUser:
+                    logUpdater.AppendLogMessage("\r\nOperations cancelled due to user request.", false);
+                    break;
+            }
         }
 
         /*
@@ -104,27 +177,28 @@ namespace CemuUpdateTool.Forms
         protected void CancelOperations(object sender = null, EventArgs evt = null)
         {
             lblCurrentTask.Text = "Cancelling...";
-            ctSource.Cancel();
+            cTokenSource.Cancel();
         }
 
         /*
          *  Shows a MessageBox with the final result of the task
          */
-        protected void ShowWorkResultDialog(WorkOutcome result)
+        protected void ShowWorkResultDialog()
         {
-            switch (result)
+            switch (workResult)
             {
                 case WorkOutcome.Success:
-                    MessageBox.Show("Operation successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Operations successfully terminated.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
                 case WorkOutcome.Aborted:
-                    MessageBox.Show("Operation aborted due to an unexpected error.", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    MessageBox.Show("Operations aborted due to an unrecoverable error. See Details for more information.",
+                            "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     break;
                 case WorkOutcome.CancelledByUser:
-                    MessageBox.Show("Operation cancelled by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Operations cancelled by user.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
                 case WorkOutcome.CompletedWithErrors:
-                    MessageBox.Show("Operation terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Operations terminated with errors.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
             }
         }
