@@ -86,7 +86,44 @@ namespace CemuUpdateTool.Workers.Operations
 
         public override string BuildMessageForErrorHandlingDecision(Exception error)
         {
-            string message = "An error occurred while to find out which is the latest Cemu version: ";
+            string message = "An error occurred while finding the latest Cemu version: ";
+            if (error is WebException webException)
+                message += WebUtils.GetErrorMessageFromWebExceptionStatus(webException.Status);
+            else
+                message += error.Message;
+            message += "\r\nWould you like to retry or give up the entire operation?";
+            return message;
+        }
+    }
+
+    class FileDownloadOperation : RetryableOperation
+    {
+        public override string OperationName => "file download";
+        public string FileUrl { get; }
+        public string DestinationFilePath { get; }
+        
+        private readonly WebClient webClient;
+
+        public FileDownloadOperation(string fileUrl, string destinationFilePath, WebClient webClient)
+        {
+            FileUrl = fileUrl;
+            DestinationFilePath = destinationFilePath;
+            this.webClient = webClient;
+        }
+
+        protected override void PerformOperationLogic()
+        {
+            webClient.DownloadFileSynchronouslyWithProgressReporting(FileUrl, DestinationFilePath);
+        }
+
+        public override string BuildFailureMessage(string failureReason)
+        {
+            return $"Unable to download file {FileUrl}: {failureReason}";
+        }
+
+        public override string BuildMessageForErrorHandlingDecision(Exception error)
+        {
+            string message = $"An error occurred when trying to download file {FileUrl}: ";
             if (error is WebException webException)
                 message += WebUtils.GetErrorMessageFromWebExceptionStatus(webException.Status);
             else

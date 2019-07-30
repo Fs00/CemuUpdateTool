@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 
@@ -6,7 +7,7 @@ namespace CemuUpdateTool.Utils
 {
     public class RemoteVersionChecker
     {
-        // This is Cemu-specific
+        // Existence of this version must be guaranteed when no startingVersion is specified (see below)
         private static readonly VersionNumber defaultStartingVersion = new VersionNumber(1, 0, 0);
 
         private readonly string urlPrefix, urlSuffix;
@@ -34,6 +35,9 @@ namespace CemuUpdateTool.Utils
                 if (!RemoteVersionExists(startingVersion))
                     startingVersion = null;
             }
+            
+            if (startingVersion == null && !RemoteVersionExists(defaultStartingVersion))
+                throw new InvalidOperationException("Can't find any version in the remote repository (address may be wrong).");
 
             return RecursiveGetLatestRemoteVersionInBranch(new VersionNumber(branch), startingVersion);
         }
@@ -67,8 +71,8 @@ namespace CemuUpdateTool.Utils
          * latestKnownVersion parameter gets updated with the latest version found.
          * This method assumes that the initial value of latestKnownVersion represents an existing version, since:
          *   - in the first recursive call, branch and startingVersion (or defaultStartingVersion) must belong to an existing branch
-         *   - in the subsequent recursive calls, latestKnownVersion has already been checked
-         *     in the loop of the previous recursive call
+         *   - in the subsequent recursive calls, latestKnownVersion has already been checked in the loop of
+         *     the previous recursive call
          */
         private void RunVersionCheckingLoopForCurrentBranch(VersionNumber latestKnownVersion)
         {

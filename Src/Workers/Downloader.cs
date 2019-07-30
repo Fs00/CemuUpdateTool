@@ -11,15 +11,18 @@ namespace CemuUpdateTool.Workers
 {
     class Downloader : Worker
     {
-        protected readonly string extractedCemuFolder;
+        protected readonly string downloadedCemuInstallation;
 
         private readonly WebClient webClient = new WebClient();
         private readonly RemoteVersionChecker versionChecker;
 
+        private string cemuArchiveDownloadPath;
+        private string tempCemuArchiveExtractionPath;
+        
         public Downloader(string destinationCemuInstallationPath, CancellationToken cancToken)
             : base(cancToken)
         {
-            extractedCemuFolder = destinationCemuInstallationPath;
+            downloadedCemuInstallation = destinationCemuInstallationPath;
             versionChecker = new RemoteVersionChecker(
                 Options.Download[OptionKey.CemuBaseUrl],
                 Options.Download[OptionKey.CemuUrlSuffix],
@@ -28,128 +31,91 @@ namespace CemuUpdateTool.Workers
             );
             cancToken.Register(webClient.CancelAsync);
         }
-
+        
         /*
          *  Downloads and extracts the latest Cemu version.
          *  Returns the version number of the downloaded Cemu version (needed to update the latest known Cemu version in options)
          */
         public VersionNumber PerformDownloadOperations(VersionNumber cemuVersionToBeDownloaded = null)
         {
+            try
+            {
+                return PerformActualDownloadOperations(cemuVersionToBeDownloaded);
+            }
+            finally
+            {
+                TryDeleteTemporaryDownloadFiles();
+            }
+        }
+
+        private VersionNumber PerformActualDownloadOperations(VersionNumber cemuVersionToBeDownloaded = null)
+        {
             OnWorkStart("Downloading Cemu archive");
             webClient.DownloadProgressChanged += (_, evt) => OnProgressChange(evt.ProgressPercentage, 100);
 
-            // If no Cemu version to be downloaded is specified, discover which is the latest one
             if (cemuVersionToBeDownloaded == null)
-            {
-                // Avoid errors if version string in download options is malformed
-                VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);
-                cemuVersionToBeDownloaded = DiscoverLatestCemuVersion(lastKnownCemuVersion);
-                
-                // TODO: fare sì che il version check lanci quest'eccezione nel controllo preliminare
-                /*if (cemuVersionToBeDownloaded == null)
-                    throw new ApplicationException("Unable to find out latest Cemu version. Maybe you altered download options with wrong information?");*/
-
-                OnLogMessage(LogMessageType.Information, $"Latest Cemu version found is {cemuVersionToBeDownloaded}.");
-            }
-            // Otherwise, check if the supplied version exists. If not, quit the task
+                cemuVersionToBeDownloaded = DiscoverLatestCemuVersion();
             else
-            {
-                var versionCheckOperation = new RemoteVersionExistenceCheckOperation(cemuVersionToBeDownloaded, versionChecker);
-                versionCheckOperation.RetryUntilSuccessOrCancellationByWorker(this);
-                if (!versionCheckOperation.SuppliedVersionExists)
-                    throw new ArgumentException("The Cemu version you supplied does not exist or Cemu repository has changed.");
-            }
+                EnsureSuppliedCemuVersionExists(cemuVersionToBeDownloaded);
 
-            // DOWNLOAD THE FILE
-            OnLogMessage(
-                LogMessageType.Information,
-                $"Downloading file {Options.Download[OptionKey.CemuBaseUrl] + cemuVersionToBeDownloaded + Options.Download[OptionKey.CemuUrlSuffix]}... ",
-                false
-            );
-            string downloadedCemuZip = DownloadCemuArchive(cemuVersionToBeDownloaded);
-            OnLogMessage(LogMessageType.Information, "Done!");
-
-            // EXTRACT CONTENTS
-            OnLogMessage(LogMessageType.Information, "Extracting downloaded Cemu archive... ", false);
-            string extractionPath = FileUtils.ExtractZipArchiveInSameDirectory(downloadedCemuZip, this);
-            OnLogMessage(LogMessageType.Information, "Done!");
-
-            // Since Cemu zips contain a root folder (./cemu_[VERSION]), copy the content from there to the destination path
-            string tempDownloadedCemuFolder = Path.Combine(extractionPath, $"cemu_{cemuVersionToBeDownloaded}");
-            // Worker is not passed since copy must not be logged (and it's fast enough not to be noticeable)
-            FileUtils.CopyDirectory(tempDownloadedCemuFolder, extractedCemuFolder);
-
-            TryDeleteTemporaryDownloadFiles(tempDownloadedCemuFolder, downloadedCemuZip);
-
+            DownloadCemuArchive(cemuVersionToBeDownloaded);
+            ExtractDownloadedArchive(cemuVersionToBeDownloaded);
+            
+            // Worker is not passed here since copy must not be logged (and it's fast enough not to be noticeable)
+            FileUtils.CopyDirectory(tempCemuArchiveExtractionPath, downloadedCemuInstallation);
+            
             return cemuVersionToBeDownloaded;
         }
 
-        /*
-         *  Performs the download of the selected Cemu version.
-         *  The file is downloaded in %Temp% directory (%UserProfile%\AppData\Local\Temp)
-         */
-        private string DownloadCemuArchive(VersionNumber cemuVersion)
+        private void EnsureSuppliedCemuVersionExists(VersionNumber cemuVersionToBeDownloaded)
         {
-            string destinationFile = Path.Combine(Path.GetTempPath(), $"cemu_{cemuVersion}.zip");
-            bool fileDownloaded = false;
-            while (!fileDownloaded)
-            {
-                try
-                {
-                    webClient.DownloadFileSynchronouslyWithProgressReporting(
-                        Options.Download[OptionKey.CemuBaseUrl] + cemuVersion + Options.Download[OptionKey.CemuUrlSuffix],
-                        destinationFile
-                    );
-                    fileDownloaded = true;
-                }
-                catch (Exception exc)
-                {
-                    // TODO: valutare se spostare questo blocco nell'extension method
-                    // Delete temporary download file if present, since it won't be used
-                    try
-                    {
-                        if (File.Exists(destinationFile))
-                            File.Delete(destinationFile);
-                    }
-                    catch (Exception deletionExc)
-                    {
-                        OnLogMessage(LogMessageType.Error, $"Unable to delete temporary download file: {deletionExc.Message}");
-                    }
-
-                    // Build the message according to the type of error
-                    string message = "An error occurred when trying to download the latest Cemu version: ";
-                    if (exc is WebException webExc)     // internet or read-only file error
-                    {
-                        if (webExc.Status == WebExceptionStatus.UnknownError && webExc.InnerException != null)  // file error
-                            message += webExc.InnerException.Message;
-                        else
-                            message += WebUtils.GetErrorMessageFromWebExceptionStatus(webExc.Status);
-                    }
-                    else if (exc is InvalidOperationException)  // should never happen
-                        message += exc.Message;
-                    message += " Would you like to retry or give up the entire operation?";
-
-                    DialogResult choice = MessageBox.Show(message, "Download error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
-                    if (choice == DialogResult.Cancel)
-                        throw;
-                }
-            }
-            return destinationFile;
+            var versionCheckOperation = new RemoteVersionExistenceCheckOperation(cemuVersionToBeDownloaded, versionChecker);
+            versionCheckOperation.RetryUntilSuccessOrCancellationByWorker(this);
+            if (!versionCheckOperation.SuppliedVersionExists)
+                throw new ArgumentException("The Cemu version you supplied does not exist or Cemu repository has changed.");
         }
-
-        private VersionNumber DiscoverLatestCemuVersion(VersionNumber lastKnownCemuVersion = null)
+        
+        private VersionNumber DiscoverLatestCemuVersion()
         {
+            // Avoid errors if version string in download options is malformed
+            VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber lastKnownCemuVersion);
+            
             var latestVersionSearchOperation = new LatestRemoteVersionSearchOperation(lastKnownCemuVersion, versionChecker);
             latestVersionSearchOperation.RetryUntilSuccessOrCancellationByWorker(this);
             return latestVersionSearchOperation.LatestVersionFound;
         }
         
-        private void TryDeleteTemporaryDownloadFiles(string tempDownloadedCemuFolder, string downloadedCemuZip)
+        // The file is downloaded in %Temp% directory (%UserProfile%\AppData\Local\Temp)
+        private void DownloadCemuArchive(VersionNumber cemuVersion)
+        {
+            cemuArchiveDownloadPath = Path.Combine(Path.GetTempPath(), $"cemu_{cemuVersion}.zip");
+            var fileDownloadOperation = new FileDownloadOperation(
+                Options.Download[OptionKey.CemuBaseUrl] + cemuVersion + Options.Download[OptionKey.CemuUrlSuffix],
+                cemuArchiveDownloadPath,
+                webClient
+            );
+            fileDownloadOperation.RetryUntilSuccessOrCancellationByWorker(this);
+        }
+
+        private void ExtractDownloadedArchive(VersionNumber downloadedCemuVersion)
+        {
+            OnLogMessage(LogMessageType.Information, "Extracting downloaded Cemu archive... ", false);
+            FileUtils.ExtractZipArchiveInSameDirectory(cemuArchiveDownloadPath, this);
+            OnLogMessage(LogMessageType.Information, "Done!");
+
+            // Cemu zips always contain a root folder (./cemu_[VERSION])
+            tempCemuArchiveExtractionPath =
+                Path.Combine(Path.GetDirectoryName(cemuArchiveDownloadPath), $"cemu_{downloadedCemuVersion}");
+        }
+        
+        private void TryDeleteTemporaryDownloadFiles()
         {
             try
             {
-                Directory.Delete(tempDownloadedCemuFolder, recursive: true);
-                File.Delete(downloadedCemuZip);
+                if (File.Exists(cemuArchiveDownloadPath))
+                    File.Delete(cemuArchiveDownloadPath);
+                if (Directory.Exists(tempCemuArchiveExtractionPath))
+                    Directory.Delete(tempCemuArchiveExtractionPath, recursive: true);
             }
             catch (Exception exc)
             {
@@ -158,11 +124,42 @@ namespace CemuUpdateTool.Workers
             }
         }
 
+        public override void OnOperationStart(Operation operationInfo)
+        {
+            base.OnOperationStart(operationInfo);
+            switch (operationInfo)
+            {
+                case FileDownloadOperation fileDownload:
+                    OnLogMessage(LogMessageType.Information,
+                        $"Downloading file {fileDownload.FileUrl}... ",
+                        newLine: false
+                    );
+                    break;
+            }
+        }
+
+        public override void OnOperationSuccess(Operation operationInfo)
+        {
+            base.OnOperationSuccess(operationInfo);
+            switch (operationInfo)
+            {
+                case LatestRemoteVersionSearchOperation remoteVersionSearch:
+                    OnLogMessage(LogMessageType.Information,
+                        $"Latest Cemu version found is {remoteVersionSearch.LatestVersionFound}.");
+                    break;
+                case FileDownloadOperation _:
+                    OnLogMessage(LogMessageType.Information, "Done!");
+                    break;
+            }
+        }
+
         // Errors in operations that make web requests can not be ignored, therefore in those cases we need to replace the
         // base method dialog (which has Abort, Retry and Ignore controls) with a dialog that has only Retry and Cancel buttons  
         protected override ErrorHandlingDecision AskUserHowToHandleError(RetryableOperation operationInfo, Exception error)
         {
-            if (operationInfo is RemoteVersionExistenceCheckOperation || operationInfo is LatestRemoteVersionSearchOperation)
+            if (operationInfo is RemoteVersionExistenceCheckOperation ||
+                operationInfo is LatestRemoteVersionSearchOperation ||
+                operationInfo is FileDownloadOperation)
             {
                 string dialogMessage = operationInfo.BuildMessageForErrorHandlingDecision(error);
                 string dialogTitle = "Error during " + operationInfo.OperationName;
