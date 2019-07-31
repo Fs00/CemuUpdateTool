@@ -92,7 +92,7 @@
             this.lblDetails.Size = new System.Drawing.Size(493, 15);
             this.lblDetails.TabIndex = 6;
             this.lblDetails.Text = "▽ Details";
-            this.lblDetails.Click += new System.EventHandler(this.ShowHideDetailsTextbox);
+            this.lblDetails.Click += new System.EventHandler(this.ShowOrHideDetailsTextBox);
             // 
             // lblPercent
             // 

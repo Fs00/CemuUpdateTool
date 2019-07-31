@@ -9,16 +9,16 @@ using CemuUpdateTool.Workers;
 namespace CemuUpdateTool.Forms
 {
     /*
-     *  OperationsForm
-     *  Form from which MigrationForm and UpdateForm inherit.
-     *  It's designed to behave as an abstract class, but declaring it as abstract causes problems with VS Designer
+     *  Provides common layout and functionality for MigrationForm and UpdateForm
+     *  Note: declaring it as abstract causes problems with VS Designer
      */
     abstract partial class OperationsForm : Form
     {
         protected CancellationTokenSource cTokenSource;
-        protected readonly Stopwatch stopwatch;   // used to measure how much time the task took to complete
-        protected TextBoxLogger logUpdater;       // used to update txtBoxLog asynchronously
+        protected readonly TextBoxLogger logUpdater;       // used to update txtBoxLog asynchronously
         
+        private readonly Stopwatch stopwatch;     // used to measure how much time the task took to complete
+
         private WorkOutcome workResult;
         private string workFailureMessage;
 
@@ -28,6 +28,7 @@ namespace CemuUpdateTool.Forms
             CheckForIllegalCrossThreadCalls = false;
 
             stopwatch = new Stopwatch();
+            logUpdater = new TextBoxLogger(txtBoxLog);
 
             // Remove default (and useless) menu strips
             txtBoxLog.ContextMenuStrip = new ContextMenuStrip();
@@ -74,11 +75,11 @@ namespace CemuUpdateTool.Forms
             if (!ArePreliminaryChecksSuccessful())
                 return;
             
+            logUpdater.Start();
             PrepareControlsForOperations();
-            cTokenSource = new CancellationTokenSource();
             await TryPerformOperationsAsync();
             AppendResultLogMessage();
-            logUpdater.StopAndWaitShutdown();
+            logUpdater.StopAndPrintAllBufferedContent();
             ShowWorkResultDialog();
             ResetControls();
         }
@@ -87,8 +88,6 @@ namespace CemuUpdateTool.Forms
         
         protected virtual void PrepareControlsForOperations()
         {
-            logUpdater = new TextBoxLogger(txtBoxLog);
-
             txtBoxLog.Clear();
             UpdateCurrentTaskLabel("Preparing");
             btnStart.Enabled = false;
@@ -98,6 +97,7 @@ namespace CemuUpdateTool.Forms
 
         private async Task TryPerformOperationsAsync()
         {
+            cTokenSource = new CancellationTokenSource();
             stopwatch.Start();
             try
             {
@@ -212,7 +212,6 @@ namespace CemuUpdateTool.Forms
         {
             lblCurrentTask.Text = $"{newLabelText}...";
             logUpdater.AppendLogMessage($"-- {newLabelText} --");
-            logUpdater.UpdateTextBox();
         }
         
         private void SetProgressBarCurrentAndMaximum(int currentProgress, int maximumProgress)
@@ -241,11 +240,10 @@ namespace CemuUpdateTool.Forms
         private void AppendLogMessageToTextBox(string message, bool newLine)
         {
             logUpdater.AppendLogMessage(message, newLine);
-            logUpdater.UpdateTextBox();
         }
 
         #region Methods for handling drag & drop into folder textboxes
-        protected virtual void ChangeCursorEffectOnTextboxDragEnter(object sender, DragEventArgs evt)
+        protected virtual void ChangeCursorEffectOnTextBoxDragEnter(object sender, DragEventArgs evt)
         {
             if (evt.Data.GetDataPresent(DataFormats.Text) || evt.Data.GetDataPresent(DataFormats.FileDrop))
                 evt.Effect = DragDropEffects.Copy;
@@ -253,19 +251,16 @@ namespace CemuUpdateTool.Forms
                 evt.Effect = DragDropEffects.None;
         }
 
-        protected virtual void PasteContentIntoTextboxOnDragDrop(object sender, DragEventArgs evt)
+        protected virtual void PasteContentIntoTextBoxOnDragDrop(object sender, DragEventArgs evt)
         {
             if (evt.Data.GetDataPresent(DataFormats.FileDrop))
-                (sender as TextBox).Text = (evt.Data.GetData(DataFormats.FileDrop) as string[])[0];
+                ((TextBox) sender).Text = ((string[]) evt.Data.GetData(DataFormats.FileDrop))[0];
             else if (evt.Data.GetDataPresent(DataFormats.Text))
-                (sender as TextBox).Text = evt.Data.GetData(DataFormats.Text).ToString();
+                ((TextBox) sender).Text = evt.Data.GetData(DataFormats.Text).ToString();
         }
         #endregion
 
-        /*
-         *  Shows/hides log textbox when clicking on Details label
-         */
-        protected void ShowHideDetailsTextbox(object sender, EventArgs evt)
+        private void ShowOrHideDetailsTextBox(object sender, EventArgs evt)
         {
             ReplaceArrowNearDetails();
             txtBoxLog.Visible = !txtBoxLog.Visible;
@@ -286,7 +281,7 @@ namespace CemuUpdateTool.Forms
          *  Resizes the form when txtBoxLog's visible state changes
          *  Note: this event handler must be added only on inherited forms, otherwise the designer will crash
          */
-        protected virtual void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs evt)
+        protected virtual void ResizeFormOnLogTextBoxVisibleChanged(object sender, EventArgs evt)
         {
             // Avoid triggering the event before the form is shown
             if (ContainerForm.IsCurrentDisplayingForm(this))
@@ -298,9 +293,9 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        protected void PreventClosingIfOperationInProgress(object sender, FormClosingEventArgs evt)
+        private void PreventClosingIfOperationInProgress(object sender, FormClosingEventArgs evt)
         {
-            if (logUpdater != null && logUpdater.IsReady)
+            if (logUpdater.IsRunning)
             {
                 evt.Cancel = true;
                 DialogResult choice = MessageBox.Show(

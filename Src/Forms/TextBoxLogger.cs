@@ -1,85 +1,73 @@
-﻿using System;
-using System.Text;
-using System.Diagnostics;
+﻿using System.Text;
 using System.Threading;
-using System.Windows.Threading;
 using System.Windows.Forms;
 
 namespace CemuUpdateTool.Forms
 {
     /*
-     *  TextBoxLogger
-     *  Performs asynchronous logging on a TextBox using a Dispatcher
-     *  Messages are appended to the log buffer by using AppendLogMessage(). To write them on the textbox, UpdateTextBox() must be called from outside the class
+     * Performs asynchronous logging on a TextBox.
+     * Once started, buffered log contents are written into the textBox in a separate thread every TIME_BETWEEN_UPDATE_ITERATIONS ms.
+     * The same instance can be reused after starting and stopping.
      */
     public class TextBoxLogger
     {
-        StringBuilder logBuffer;        // buffer used to store log messages that must be written into textbox
-        Dispatcher workDispatcher;      // used to update textbox on another thread
-        TextBox logTextbox;             // textbox used as a log
+        private readonly StringBuilder logBuffer;
+        private readonly TextBox logTextBox;
 
-        public bool IsReady => !(workDispatcher == null || workDispatcher.HasShutdownStarted);
-        public bool IsStopped => workDispatcher.HasShutdownFinished;
+        private volatile bool continueUpdating;
+        private readonly EventWaitHandle updaterLoopFinished = new EventWaitHandle(false, EventResetMode.AutoReset);
 
-        public TextBoxLogger(TextBox logTextbox)
+        private const int TIME_BETWEEN_UPDATE_ITERATIONS_MS = 40;
+
+        public bool IsRunning => continueUpdating;
+        
+        public TextBoxLogger(TextBox logTextBox)
         {
-            this.logTextbox = logTextbox;
+            this.logTextBox = logTextBox;
             logBuffer = new StringBuilder(1000);
-            Start();
         }
-
-        /*
-         *  Start the dispatcher and wait synchronously for it to be ready
-         */
-        private void Start(int maxWaitingCycles = 100)
+        
+        public void Start()
         {
-            // Create and start the thread on which the dispatcher will run
-            Thread dispatcherThread = new Thread(() => Dispatcher.Run());
-            dispatcherThread.IsBackground = true;
-            dispatcherThread.Name = "LogTextboxUpdater";
-            dispatcherThread.Start();
+            var updaterThread = new Thread(RunUpdaterLoop) {
+                IsBackground = true,
+                Name = "LogTextboxUpdater"
+            };
+            continueUpdating = true;
+            updaterThread.Start();
+        }
 
-            // Wait until dispatcher is running
-            int cycleIndex = 0;
-            do
+        private void RunUpdaterLoop()
+        {
+            while (continueUpdating)
             {
-                Thread.Sleep(10);
-                workDispatcher = Dispatcher.FromThread(dispatcherThread);
-                Debug.WriteLine((workDispatcher == null) ? "Couldn't get dispatcher. Retrying..." : "Dispatcher obtained.");
-                cycleIndex++;
+                Thread.Sleep(TIME_BETWEEN_UPDATE_ITERATIONS_MS);
+                if (logTextBox.Visible)
+                    UpdateTextBox();
             }
-            while (workDispatcher == null && cycleIndex < maxWaitingCycles);
-
-            // If dispatcher is still null, it means that we had some unknown problems
-            if (workDispatcher == null)
-            {
-                dispatcherThread.Abort();
-                throw new TimeoutException("Failed to start dispatcher due to some unknown problems.");
-            }
+            updaterLoopFinished.Set();
         }
 
         /*
-         *  Prints log buffer content asynchronously in the textbox and flushes the buffer.
+         *  Prints log buffer content in the textBox and flushes the buffer.
          *  Lock avoids race conditions with AppendLogMessage.
          */
-        public void UpdateTextBox()
+        private void UpdateTextBox()
         {
-            if (logTextbox.Visible)
+            if (logBuffer.Length > 0)
             {
+                string logTextToWrite;
                 lock (logBuffer)
                 {
-                    if (logBuffer.Length > 0)
-                    {
-                        string log = logBuffer.ToString();
-                        workDispatcher.InvokeAsync(() => logTextbox.AppendText(log));
-                        logBuffer.Clear();
-                    }
+                    logTextToWrite = logBuffer.ToString();
+                    logBuffer.Clear();
                 }
+                logTextBox.AppendText(logTextToWrite);
             }
         }
 
         /*
-         *  Appends a message to the buffer to be subsequently written in the textbox
+         *  Appends a message to the buffer to be subsequently written in the textBox
          */
         public void AppendLogMessage(string message, bool newLine = true)
         {
@@ -92,19 +80,11 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        /*
-         *  Wait for the Dispatcher to do all its work and stop, then update the textbox with the remaining logBuffer content
-         */
-        public void StopAndWaitShutdown()
+        public void StopAndPrintAllBufferedContent()
         {
-            workDispatcher.InvokeAsync(() => workDispatcher.InvokeShutdown()).Wait();
-            logTextbox.AppendText(logBuffer.ToString());
-            logBuffer.Clear();
-        }
-
-        public void StopAbruptly()
-        {
-            workDispatcher.InvokeShutdown();
+            continueUpdating = false;
+            updaterLoopFinished.WaitOne();
+            UpdateTextBox();
         }
     }
 }

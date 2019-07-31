@@ -98,7 +98,7 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        private void CheckSrcFolderTextboxContent(object sender, EventArgs e)
+        private void CheckSrcFolderTextBoxContent(object sender, EventArgs e)
         {
             if (!DirectoryContainsACemuInstallation(txtBoxSrcFolder.Text, out string reason))
             {
@@ -126,7 +126,7 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        private void CheckDestFolderTextboxContent(object sender, EventArgs e)
+        private void CheckDestFolderTextBoxContent(object sender, EventArgs e)
         {
             bool contentOk;
             string reason;
@@ -291,12 +291,12 @@ namespace CemuUpdateTool.Forms
                 lblDestCemuVersion.Visible = false;
 
             // Reset textboxes (I need to detach & reattach event handlers otherwise errorProviders will be triggered) and buttons
-            txtBoxSrcFolder.TextChanged -= CheckSrcFolderTextboxContent;
+            txtBoxSrcFolder.TextChanged -= CheckSrcFolderTextBoxContent;
             txtBoxSrcFolder.Text = "";
-            txtBoxSrcFolder.TextChanged += CheckSrcFolderTextboxContent;
-            txtBoxDestFolder.TextChanged -= CheckDestFolderTextboxContent;
+            txtBoxSrcFolder.TextChanged += CheckSrcFolderTextBoxContent;
+            txtBoxDestFolder.TextChanged -= CheckDestFolderTextBoxContent;
             txtBoxDestFolder.Text = "";
-            txtBoxDestFolder.TextChanged += CheckDestFolderTextboxContent;
+            txtBoxDestFolder.TextChanged += CheckDestFolderTextBoxContent;
 
             // Reset textboxes' validated state
             srcFolderTxtBoxValidated = false;
@@ -316,9 +316,9 @@ namespace CemuUpdateTool.Forms
             new OptionsForm().ShowDialog();
         }
 
-        // These "fake overrides" are needed to avoid VS designer errors
-        protected override void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e)  { base.ResizeFormOnLogTextboxVisibleChanged(sender, e); }
-        protected override void PasteContentIntoTextboxOnDragDrop(object sender, DragEventArgs e)  { base.PasteContentIntoTextboxOnDragDrop(sender, e); }
-        protected override void ChangeCursorEffectOnTextboxDragEnter(object sender, DragEventArgs e)  { base.ChangeCursorEffectOnTextboxDragEnter(sender, e); }
+        // These "fake overrides" are needed on Visual Studio to avoid form designer errors
+        /*protected override void ResizeFormOnLogTextBoxVisibleChanged(object sender, EventArgs e)  { base.ResizeFormOnLogTextBoxVisibleChanged(sender, e); }
+        protected override void PasteContentIntoTextBoxOnDragDrop(object sender, DragEventArgs e)  { base.PasteContentIntoTextBoxOnDragDrop(sender, e); }
+        protected override void ChangeCursorEffectOnTextBoxDragEnter(object sender, DragEventArgs e)  { base.ChangeCursorEffectOnTextBoxDragEnter(sender, e); }*/
     }
 }

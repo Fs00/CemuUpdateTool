@@ -20,7 +20,7 @@ namespace CemuUpdateTool.Forms
             txtBoxCemuFolder.ContextMenuStrip = new ContextMenuStrip();     // remove default menu strip
         }
 
-        private void CheckFolderTextboxContent(object sender, EventArgs e)
+        private void CheckFolderTextBoxContent(object sender, EventArgs e)
         {
             if (!DirectoryContainsACemuInstallation(txtBoxCemuFolder.Text, out string reason))
             {
@@ -92,15 +92,15 @@ namespace CemuUpdateTool.Forms
             lblCemuVersion.Visible = false;
             lblVersionNr.Text = "";
 
-            // Reset textbox (I need to detach & reattach event handlers otherwise errorProviders will be triggered) and buttons
-            txtBoxCemuFolder.TextChanged -= CheckFolderTextboxContent;
+            // Reset textBox (I need to detach & reattach event handlers otherwise errorProviders will be triggered)
+            txtBoxCemuFolder.TextChanged -= CheckFolderTextBoxContent;
             txtBoxCemuFolder.Text = "";
-            txtBoxCemuFolder.TextChanged += CheckFolderTextboxContent;
+            txtBoxCemuFolder.TextChanged += CheckFolderTextBoxContent;
         }
 
-        // These "fake overrides" are needed to avoid VS designer errors
-        protected override void ResizeFormOnLogTextboxVisibleChanged(object sender, EventArgs e) { base.ResizeFormOnLogTextboxVisibleChanged(sender, e); }
-        protected override void PasteContentIntoTextboxOnDragDrop(object sender, DragEventArgs e) { base.PasteContentIntoTextboxOnDragDrop(sender, e); }
-        protected override void ChangeCursorEffectOnTextboxDragEnter(object sender, DragEventArgs e) { base.ChangeCursorEffectOnTextboxDragEnter(sender, e); }
+        // These "fake overrides" are needed on Visual Studio to avoid form designer errors
+        /*protected override void ResizeFormOnLogTextBoxVisibleChanged(object sender, EventArgs e) { base.ResizeFormOnLogTextBoxVisibleChanged(sender, e); }
+        protected override void PasteContentIntoTextBoxOnDragDrop(object sender, DragEventArgs e) { base.PasteContentIntoTextBoxOnDragDrop(sender, e); }
+        protected override void ChangeCursorEffectOnTextBoxDragEnter(object sender, DragEventArgs e) { base.ChangeCursorEffectOnTextBoxDragEnter(sender, e); }*/
     }
 }

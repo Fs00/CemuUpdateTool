@@ -75,7 +75,7 @@
             // 
             this.txtBoxLog.Location = new System.Drawing.Point(30, 265);
             this.txtBoxLog.Size = new System.Drawing.Size(492, 133);
-            this.txtBoxLog.VisibleChanged += new System.EventHandler(this.ResizeFormOnLogTextboxVisibleChanged);
+            this.txtBoxLog.VisibleChanged += new System.EventHandler(this.ResizeFormOnLogTextBoxVisibleChanged);
             // 
             // bottomPanel
             // 
@@ -145,9 +145,9 @@
             this.txtBoxCemuFolder.Name = "txtBoxCemuFolder";
             this.txtBoxCemuFolder.Size = new System.Drawing.Size(411, 23);
             this.txtBoxCemuFolder.TabIndex = 1;
-            this.txtBoxCemuFolder.TextChanged += new System.EventHandler(this.CheckFolderTextboxContent);
-            this.txtBoxCemuFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.PasteContentIntoTextboxOnDragDrop);
-            this.txtBoxCemuFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.ChangeCursorEffectOnTextboxDragEnter);
+            this.txtBoxCemuFolder.TextChanged += new System.EventHandler(this.CheckFolderTextBoxContent);
+            this.txtBoxCemuFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.PasteContentIntoTextBoxOnDragDrop);
+            this.txtBoxCemuFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.ChangeCursorEffectOnTextBoxDragEnter);
             // 
             // lblCemuFolder
             // 

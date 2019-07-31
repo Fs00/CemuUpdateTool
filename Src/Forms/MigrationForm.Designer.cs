@@ -75,7 +75,7 @@
             // 
             this.txtBoxLog.Location = new System.Drawing.Point(30, 331);
             this.txtBoxLog.Size = new System.Drawing.Size(478, 133);
-            this.txtBoxLog.VisibleChanged += new System.EventHandler(this.ResizeFormOnLogTextboxVisibleChanged);
+            this.txtBoxLog.VisibleChanged += new System.EventHandler(this.ResizeFormOnLogTextBoxVisibleChanged);
             // 
             // bottomPanel
             // 
@@ -153,9 +153,9 @@
             this.txtBoxDestFolder.Name = "txtBoxDestFolder";
             this.txtBoxDestFolder.Size = new System.Drawing.Size(397, 23);
             this.txtBoxDestFolder.TabIndex = 4;
-            this.txtBoxDestFolder.TextChanged += new System.EventHandler(this.CheckDestFolderTextboxContent);
-            this.txtBoxDestFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.PasteContentIntoTextboxOnDragDrop);
-            this.txtBoxDestFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.ChangeCursorEffectOnTextboxDragEnter);
+            this.txtBoxDestFolder.TextChanged += new System.EventHandler(this.CheckDestFolderTextBoxContent);
+            this.txtBoxDestFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.PasteContentIntoTextBoxOnDragDrop);
+            this.txtBoxDestFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.ChangeCursorEffectOnTextBoxDragEnter);
             // 
             // lblDestFolder
             // 
@@ -184,9 +184,9 @@
             this.txtBoxSrcFolder.Name = "txtBoxSrcFolder";
             this.txtBoxSrcFolder.Size = new System.Drawing.Size(397, 23);
             this.txtBoxSrcFolder.TabIndex = 1;
-            this.txtBoxSrcFolder.TextChanged += new System.EventHandler(this.CheckSrcFolderTextboxContent);
-            this.txtBoxSrcFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.PasteContentIntoTextboxOnDragDrop);
-            this.txtBoxSrcFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.ChangeCursorEffectOnTextboxDragEnter);
+            this.txtBoxSrcFolder.TextChanged += new System.EventHandler(this.CheckSrcFolderTextBoxContent);
+            this.txtBoxSrcFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.PasteContentIntoTextBoxOnDragDrop);
+            this.txtBoxSrcFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.ChangeCursorEffectOnTextBoxDragEnter);
             // 
             // lblSrcFolder
             // 
