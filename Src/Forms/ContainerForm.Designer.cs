@@ -58,7 +58,7 @@
             this.Name = "ContainerForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Cemu Update Tool";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PropagateContainerFormClosing);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PropagateContainerClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -284,7 +284,7 @@ namespace CemuUpdateTool.Forms
         protected virtual void ResizeFormOnLogTextBoxVisibleChanged(object sender, EventArgs evt)
         {
             // Avoid triggering the event before the form is shown
-            if (ContainerForm.IsCurrentDisplayingForm(this))
+            if (ContainerForm.IsFormCurrentlyDisplayed(this))
             {
                 if (txtBoxLog.Visible)
                     this.Height += txtBoxLog.Height;
