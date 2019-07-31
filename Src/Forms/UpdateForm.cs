@@ -54,9 +54,10 @@ namespace CemuUpdateTool.Forms
             // nothing to do here
         }
 
-        protected override async Task<WorkOutcome> PerformOperations()
+        protected override async Task<WorkOutcome> PerformOperationsAsync()
         {
             var updater = new Updater(txtBoxCemuFolder.Text, cTokenSource.Token);
+            AttachProgressEventHandlersToWorker(updater);
             
             VersionNumber downloadedCemuVersion = await Task.Run(
                 () => updater.PerformUpdateOperations(chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked)

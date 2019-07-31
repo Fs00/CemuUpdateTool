@@ -8,6 +8,7 @@ using CemuUpdateTool.Utils;
 using CemuUpdateTool.Workers.Operations;
 using IWshRuntimeLibrary;
 using Microsoft.Win32;
+using File = System.IO.File;
 
 namespace CemuUpdateTool.Workers
 {
@@ -40,7 +41,7 @@ namespace CemuUpdateTool.Workers
             if (string.IsNullOrWhiteSpace(sourceCemuInstallationPath) || string.IsNullOrWhiteSpace(destinationCemuInstallationPath))
                 throw new ArgumentException("Source and/or destination Cemu folder are set incorrectly!");
 
-            OnProgressChange(0, CalculateAllFilesToMigrateCount());
+            OnProgressChange(0, CountAllExistingFilesToMigrate());
             
             MigrateFolders();
             MigrateFiles();
@@ -49,12 +50,34 @@ namespace CemuUpdateTool.Workers
                 SetCompatibilityOptionsForDestinationCemuExecutable();
         }
 
-        private int CalculateAllFilesToMigrateCount()
+        private int CountAllExistingFilesToMigrate()
+        {
+            int count = CountFilesInExistingFoldersToMigrate();
+            count += CountExistingFilesToMigrate();
+            return count;
+        }
+        
+        private int CountFilesInExistingFoldersToMigrate()
         {
             int count = 0;
-            foreach (string folder in FoldersToActuallyMigrate())
-                count += FileUtils.CountFilesIncludedInDirectoryRecursively(folder);
-            count += Options.FilesToMigrate.GetAllEnabled().Count();
+            foreach (string folderRelativePath in FoldersToActuallyMigrate())
+            {
+                string pathToSourceFolder = Path.Combine(sourceCemuInstallationPath, folderRelativePath);
+                if (Directory.Exists(pathToSourceFolder))
+                    count += FileUtils.CountFilesIncludedInDirectoryRecursively(pathToSourceFolder);
+            }
+            return count;
+        }
+
+        private int CountExistingFilesToMigrate()
+        {
+            int count = 0;
+            foreach (string fileRelativePath in Options.FilesToMigrate.GetAllEnabled())
+            {
+                string pathToSourceFile = Path.Combine(sourceCemuInstallationPath, fileRelativePath);
+                if (File.Exists(pathToSourceFile))
+                    count++;
+            }
             return count;
         }
 
@@ -63,7 +86,7 @@ namespace CemuUpdateTool.Workers
             foreach (string folder in FoldersToActuallyMigrate())
             {
                 string sourceFolderPath = Path.Combine(sourceCemuInstallationPath, folder);
-                if (!Directory.Exists(sourceFolderPath))
+                if (!Directory.Exists(sourceFolderPath) || FileUtils.IsDirectoryEmpty(sourceFolderPath))
                     continue;
 
                 if (Options.Migration[OptionKey.DeleteDestinationFolderContents])
@@ -132,7 +155,8 @@ namespace CemuUpdateTool.Workers
                 if (sourceFile.Exists)
                     sourceFile.CopyToAndReportOutcomeToWorker(Path.Combine(destinationCemuInstallationPath, fileRelativePath), this);
                 else
-                    OnLogMessage(LogMessageType.Warning, $"File {fileRelativePath} doesn't exist in source Cemu installation.");
+                    OnLogMessage(LogMessageType.Information,
+                        $"File {fileRelativePath} doesn't exist in source Cemu installation: skipped.");
             }
         }
 

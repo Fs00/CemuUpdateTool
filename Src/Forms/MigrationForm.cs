@@ -23,7 +23,7 @@ namespace CemuUpdateTool.Forms
 
         private Migrator migrator;
 
-        private bool DownloadMode { get; }           // if true, newer version of Cemu will be downloaded before migrating
+        private bool DownloadMode { get; }    // if true, newer version of Cemu will be downloaded before migrating
 
         public MigrationForm(bool downloadMode) : base()
         {
@@ -173,12 +173,13 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        protected override async Task<WorkOutcome> PerformOperations()
+        protected override async Task<WorkOutcome> PerformOperationsAsync()
         {
             // Perform download operations if we are in download mode
             if (DownloadMode)
             {
                 var downloader = new Downloader(txtBoxDestFolder.Text, cTokenSource.Token);
+                AttachProgressEventHandlersToWorker(downloader);
                 destCemuExeVersion = await Task.Run(() => downloader.PerformDownloadOperations(destCemuExeVersion));
 
                 // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
@@ -198,6 +199,7 @@ namespace CemuUpdateTool.Forms
             }
 
             migrator = new Migrator(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, srcCemuExeVersion, cTokenSource.Token);
+            AttachProgressEventHandlersToWorker(migrator);
             await Task.Run(() => migrator.PerformMigrationOperations());
 
             // Ask if user wants to create Cemu desktop shortcut
@@ -300,23 +302,6 @@ namespace CemuUpdateTool.Forms
             srcFolderTxtBoxValidated = false;
             destFolderTxtBoxValidated = false;
         }
-        
-        /*
-         *  Callback method that updates progress bars after a file has been copied
-         *  Since it's the callback used by Progress<T>, it's queued on the main UI thread
-         */
-        /*private void UpdateProgressBarsAndLog(long dim)
-        {
-            // Update progress bar and percent label
-            if (progressBarMaxDivided)
-                overallProgressBar.Value += Convert.ToInt32(dim/1000);
-            else
-                overallProgressBar.Value += Convert.ToInt32(dim);
-
-            lblPercent.Text = Math.Floor(overallProgressBar.Value / (double)overallProgressBar.Maximum * 100) + "%";
-
-            logUpdater.UpdateTextBox();
-        }*/
 
         private void ParseSuppliedVersionInCombobox(object sender, EventArgs e)
         {

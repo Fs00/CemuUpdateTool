@@ -94,6 +94,7 @@ namespace CemuUpdateTool.Workers
                 cemuArchiveDownloadPath,
                 webClient
             );
+            OnOperationStart(fileDownloadOperation);
             fileDownloadOperation.RetryUntilSuccessOrCancellationByWorker(this);
         }
 

@@ -69,7 +69,7 @@ namespace CemuUpdateTool.Forms
             return reason == null;
         }
 
-        protected async void DoOperationsAsync(object sender, EventArgs evt)
+        private async void DoOperationsAsync(object sender, EventArgs evt)
         {
             if (!ArePreliminaryChecksSuccessful())
                 return;
@@ -90,18 +90,18 @@ namespace CemuUpdateTool.Forms
             logUpdater = new TextBoxLogger(txtBoxLog);
 
             txtBoxLog.Clear();
-            ChangeProgressLabelText("Preparing");
+            UpdateCurrentTaskLabel("Preparing");
             btnStart.Enabled = false;
             btnBack.Enabled = false;
             btnCancel.Enabled = true;
         }
-        
-        protected async Task TryPerformOperationsAsync()
+
+        private async Task TryPerformOperationsAsync()
         {
             stopwatch.Start();
             try
             {
-                workResult = await PerformOperations();
+                workResult = await PerformOperationsAsync();
                 lblCurrentTask.Text = "Operations completed!";
             }
             catch (Exception exc)
@@ -123,7 +123,7 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        protected abstract Task<WorkOutcome> PerformOperations();
+        protected abstract Task<WorkOutcome> PerformOperationsAsync();
         protected abstract void HandleOperationsError();
         
         private void AppendResultLogMessage()
@@ -179,11 +179,8 @@ namespace CemuUpdateTool.Forms
             lblCurrentTask.Text = "Cancelling...";
             cTokenSource.Cancel();
         }
-
-        /*
-         *  Shows a MessageBox with the final result of the task
-         */
-        protected void ShowWorkResultDialog()
+        
+        private void ShowWorkResultDialog()
         {
             switch (workResult)
             {
@@ -203,27 +200,47 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        protected void HandleDownloadProgress(object sender, System.Net.DownloadProgressChangedEventArgs evtArgs)
+        protected void AttachProgressEventHandlersToWorker(Worker worker)
         {
-            // Set maximum progress bar value according to file size (happens only the first time)
-            overallProgressBar.Maximum = (int)evtArgs.TotalBytesToReceive;
-
-            // Update percent label and progress bar
-            lblPercent.Text = evtArgs.ProgressPercentage + "%";
-            overallProgressBar.Value = (int)evtArgs.BytesReceived;
-
-            // Refresh log textbox to make sure that log is always updated
-            logUpdater.UpdateTextBox();
+            worker.WorkStart += UpdateCurrentTaskLabel;
+            worker.LogMessage += AppendLogMessageToTextBox;
+            worker.ProgressChange += SetProgressBarCurrentAndMaximum;
+            worker.ProgressIncrement += IncrementProgressBarValue;
         }
-
-        /*
-         *  Callback method that updates current task label according to the next task
-         *  It also updates log textbox in order to prevent messages not being written if progress bar isn't updated during a task
-         */
-        protected void ChangeProgressLabelText(string newLabelText)
+        
+        private void UpdateCurrentTaskLabel(string newLabelText)
         {
             lblCurrentTask.Text = $"{newLabelText}...";
             logUpdater.AppendLogMessage($"-- {newLabelText} --");
+            logUpdater.UpdateTextBox();
+        }
+        
+        private void SetProgressBarCurrentAndMaximum(int currentProgress, int maximumProgress)
+        {
+            overallProgressBar.Maximum = maximumProgress;
+            overallProgressBar.Value = currentProgress;
+            UpdatePercentageLabel();
+        }
+
+        private void IncrementProgressBarValue(int incrementValue)
+        {
+            overallProgressBar.Value += incrementValue;
+            UpdatePercentageLabel();
+        }
+
+        private void UpdatePercentageLabel()
+        {
+            lblPercent.Text = CalculatePercentage(overallProgressBar.Value, overallProgressBar.Maximum) + "%";
+        }
+        
+        private decimal CalculatePercentage(int numerator, int denominator)
+        {
+            return Math.Floor((decimal) numerator / denominator * 100);
+        }
+
+        private void AppendLogMessageToTextBox(string message, bool newLine)
+        {
+            logUpdater.AppendLogMessage(message, newLine);
             logUpdater.UpdateTextBox();
         }
 
