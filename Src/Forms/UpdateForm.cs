@@ -1,45 +1,53 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using CemuUpdateTool.Settings;
+using CemuUpdateTool.Utils;
 using CemuUpdateTool.Workers;
 
 namespace CemuUpdateTool.Forms
 {
     /*
-     *  UpdateForm
-     *  Window that provides Update functionality.
+     *  Window that provides Update functionality
      */
-    partial class UpdateForm : OperationsForm
+    sealed partial class UpdateForm : OperationsForm
     {
+        private Updater updater;
+        
         public UpdateForm() : base()
         {
             InitializeComponent();
-            txtBoxCemuFolder.ContextMenuStrip = new ContextMenuStrip();     // remove default menu strip
+            RemoveDefaultTextBoxContextMenus();
         }
 
-        private void CheckFolderTextBoxContent(object sender, EventArgs e)
+        protected override void RemoveDefaultTextBoxContextMenus()
+        {
+            base.RemoveDefaultTextBoxContextMenus();
+            txtBoxCemuFolder.ContextMenuStrip = new ContextMenuStrip();
+        }
+
+        private void CheckCemuFolderTextBoxContent(object sender, EventArgs e)
         {
             if (!DirectoryContainsACemuInstallation(txtBoxCemuFolder.Text, out string reason))
             {
                 errProviderFolders.SetError(txtBoxCemuFolder, reason);
                 btnStart.Enabled = false;
-
-                lblCemuVersion.Visible = false;
-                lblVersionNr.Text = "";
+                ResetCemuVersionLabels();
             }
-            // Display Cemu version label and enable start button
             else
             {
                 errProviderFolders.SetError(txtBoxCemuFolder, "");
-
-                lblCemuVersion.Visible = true;
-                lblVersionNr.Text = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxCemuFolder.Text, "Cemu.exe")), 3).ToString();
-
                 btnStart.Enabled = true;
+                UpdateCemuVersionLabelsAccordingToSelectedFolder();
             }
+        }
+
+        private void UpdateCemuVersionLabelsAccordingToSelectedFolder()
+        {
+            VersionNumber selectedFolderCemuVersion = 
+                FileUtils.RetrieveExecutableVersionNumber(Path.Combine(txtBoxCemuFolder.Text, "Cemu.exe"));
+            lblCemuVersion.Visible = true;
+            lblCemuVersionNumber.Text = selectedFolderCemuVersion.ToString();
         }
 
         private void SelectCemuFolder(object sender, EventArgs e)
@@ -48,54 +56,47 @@ namespace CemuUpdateTool.Forms
             if (chosenFolder != null)
                 txtBoxCemuFolder.Text = chosenFolder;
         }
-        
-        protected override void HandleOperationsError()
-        {
-            // nothing to do here
-        }
 
         protected override async Task<WorkOutcome> PerformOperationsAsync()
         {
-            var updater = new Updater(txtBoxCemuFolder.Text, cTokenSource.Token);
-            AttachProgressEventHandlersToWorker(updater);
-            
-            VersionNumber downloadedCemuVersion = await Task.Run(
-                () => updater.PerformUpdateOperations(chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked)
-            );
-            
-            // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
-            VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
-            if (previousLastKnownCemuVersion != downloadedCemuVersion)
-            {
-                Options.Download[OptionKey.LastKnownCemuVersion] = downloadedCemuVersion.ToString();
-                try
-                {
-                    Options.WriteOptionsToCurrentlySelectedFile();
-                }
-                catch (Exception optionsUpdateExc)
-                {
-                    logUpdater.AppendLogMessage($"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
-                }
-            }
+            VersionNumber downloadedCemuVersion = await PerformUpdateOperationsAsync();
+            UpdateLastKnownCemuVersionOption(downloadedCemuVersion);
+            TryUpdateOptionsFile();
 
             if (updater.ErrorsEncountered > 0)
                 return WorkOutcome.CompletedWithErrors;
-
+            
             return WorkOutcome.Success;
+        }
+
+        private async Task<VersionNumber> PerformUpdateOperationsAsync()
+        {
+            updater = new Updater(txtBoxCemuFolder.Text, cTokenSource.Token);
+            AttachProgressEventHandlersToWorker(updater);
+            VersionNumber downloadedCemuVersion = await Task.Run(
+                () => updater.PerformUpdateOperations(chkBoxDeletePrecompiled.Checked, chkBoxUpdGameProfiles.Checked)
+            );
+            return downloadedCemuVersion;
         }
 
         protected override void ResetControls()
         {
             base.ResetControls();
-
-            // Reset Cemu version label
+            ResetCemuVersionLabels();
+            ResetCemuFolderTextBox();
+        }
+        
+        private void ResetCemuVersionLabels()
+        {
             lblCemuVersion.Visible = false;
-            lblVersionNr.Text = "";
+            lblCemuVersionNumber.Text = "";
+        }
 
-            // Reset textBox (I need to detach & reattach event handlers otherwise errorProviders will be triggered)
-            txtBoxCemuFolder.TextChanged -= CheckFolderTextBoxContent;
+        private void ResetCemuFolderTextBox()
+        {
+            txtBoxCemuFolder.TextChanged -= CheckCemuFolderTextBoxContent;
             txtBoxCemuFolder.Text = "";
-            txtBoxCemuFolder.TextChanged += CheckFolderTextBoxContent;
+            txtBoxCemuFolder.TextChanged += CheckCemuFolderTextBoxContent;
         }
 
         // These "fake overrides" are needed on Visual Studio to avoid form designer errors

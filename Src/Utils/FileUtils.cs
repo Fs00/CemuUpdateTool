@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using CemuUpdateTool.Workers;
@@ -163,6 +164,12 @@ namespace CemuUpdateTool.Utils
         public static bool IsDirectoryEmpty(string directoryPath)
         {
             return !Directory.EnumerateFileSystemEntries(directoryPath).Any();
+        }
+
+        public static VersionNumber RetrieveExecutableVersionNumber(string executablePath)
+        {
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(executablePath);
+            return new VersionNumber(fileVersionInfo, 3);   // build number is excluded
         }
     }
 }

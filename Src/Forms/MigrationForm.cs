@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,206 +11,202 @@ using CemuUpdateTool.Workers;
 namespace CemuUpdateTool.Forms
 {
     /*
-     *  MigrationForm
      *  Window that provides Migrate and Download & Migrate functionality.
      */
-    partial class MigrationForm : OperationsForm
+    sealed partial class MigrationForm : OperationsForm
     {
-        private bool srcFolderTxtBoxValidated = false,
-                     destFolderTxtBoxValidated = false;     // true when content of the textbox is verified to be correct
-
-        private VersionNumber srcCemuExeVersion, destCemuExeVersion;
-
+        private bool sourceFolderTxtBoxValidated = false,
+                     destinationFolderTxtBoxValidated = false;
+        private VersionNumber sourceCemuVersion, destinationCemuVersion;
+        
         private Migrator migrator;
-
-        private bool DownloadMode { get; }    // if true, newer version of Cemu will be downloaded before migrating
+        private readonly bool downloadMode;    // if true, newer version of Cemu will be downloaded before migrating
 
         public MigrationForm(bool downloadMode) : base()
         {
             InitializeComponent();
-            DownloadMode = downloadMode;
+            this.downloadMode = downloadMode;
 
-            // Set controls according to the mode chosen
-            if (DownloadMode)
-            {
-                lblTitle.Text = "Download & Migrate";
-                lblDestCemuVersion.Visible = true;
-                comboBoxVersion.SelectedIndex = 0;      // display "Latest" in combobox
-
-                // Place destination version label at the left of the combobox (otherwise the label would be covered by it)
-                var newLocation = lblDestCemuVersion.Location;
-                newLocation.X = comboBoxVersion.Location.X - lblDestCemuVersion.Size.Width - 3;
-                lblDestCemuVersion.Location = newLocation;
-
-                // Align source version labels
-                newLocation = lblSrcCemuVersion.Location;
-                newLocation.X = lblDestCemuVersion.Location.X;
-                lblSrcCemuVersion.Location = newLocation;
-
-                newLocation = lblSrcVersionNr.Location;
-                newLocation.X = comboBoxVersion.Location.X;
-                lblSrcVersionNr.Location = newLocation;
-            }
+            if (this.downloadMode)
+                SetControlsForDownloadMode();
             else
-            {
-                lblTitle.Text = "Migrate";
-                comboBoxVersion.Visible = false;
-            }
+                SetControlsForMigrateMode();
 
-            // Remove default (and useless) menu strips
-            txtBoxSrcFolder.ContextMenuStrip = new ContextMenuStrip();
-            txtBoxDestFolder.ContextMenuStrip = new ContextMenuStrip();
+            RemoveDefaultTextBoxContextMenus();
+        }
+        
+        private void SetControlsForDownloadMode()
+        {
+            lblTitle.Text = "Download & Migrate";
+            lblDestinationCemuVersion.Visible = true;
+            DisplayLatestTextInDestinationVersionCombobox();
+            AdaptDestinationVersionLabelPositionToCombobox();  // Avoids the combobox covering destination version label
+            AlignSourceVersionLabelsWithDestinationOnes();
         }
 
-        /*
-         *  Folder selection using FolderBrowserDialog for source Cemu folder
-         */
-        private void SelectSrcCemuFolder(object sender, EventArgs e)
+        private void AdaptDestinationVersionLabelPositionToCombobox()
         {
-            // Open folder picker
-            string chosenFolder = ChooseFolderWithPicker(txtBoxSrcFolder.Text);
-
-            // Check whether result is different to the other selected folder (it mustn't be equal)
-            if (chosenFolder != null)
-            {
-                if (chosenFolder != txtBoxDestFolder.Text)
-                    txtBoxSrcFolder.Text = chosenFolder;
-                else
-                    MessageBox.Show("Source and destination folder must be different.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            Point newLocation = lblDestinationCemuVersion.Location;
+            newLocation.X = comboBoxDestinationVersion.Location.X - lblDestinationCemuVersion.Size.Width - 3;
+            lblDestinationCemuVersion.Location = newLocation;
         }
 
-        /*
-         *  Folder selection using FolderBrowserDialog for destination Cemu folder
-         */
-        private void SelectDestCemuFolder(object sender, EventArgs e)
+        private void AlignSourceVersionLabelsWithDestinationOnes()
         {
-            // Open folder picker
-            string chosenFolder = ChooseFolderWithPicker(txtBoxDestFolder.Text);
+            Point newLocation = lblSourceCemuVersion.Location;
+            newLocation.X = lblDestinationCemuVersion.Location.X;
+            lblSourceCemuVersion.Location = newLocation;
 
-            // Check whether result is different to the other selected folder (it mustn't be equal)
-            if (chosenFolder != null)
-            {
-                if (chosenFolder != txtBoxSrcFolder.Text)
-                    txtBoxDestFolder.Text = chosenFolder;
-                else
-                    MessageBox.Show("Source and destination folder must be different.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            newLocation = lblSourceCemuVersionNumber.Location;
+            newLocation.X = comboBoxDestinationVersion.Location.X;
+            lblSourceCemuVersionNumber.Location = newLocation;
         }
 
-        private void CheckSrcFolderTextBoxContent(object sender, EventArgs e)
+        private void SetControlsForMigrateMode()
         {
-            if (!DirectoryContainsACemuInstallation(txtBoxSrcFolder.Text, out string reason))
+            lblTitle.Text = "Migrate";
+            comboBoxDestinationVersion.Visible = false;
+        }
+
+        protected override void RemoveDefaultTextBoxContextMenus()
+        {
+            base.RemoveDefaultTextBoxContextMenus();
+            txtBoxSourceFolder.ContextMenuStrip = new ContextMenuStrip();
+            txtBoxDestinationFolder.ContextMenuStrip = new ContextMenuStrip();
+        }
+        
+        private void SelectCemuFolder(object sender, EventArgs e)
+        {
+            var cemuFolderTextBox = GetTextBoxNearTo((Button) sender);
+            string chosenFolder = ChooseFolderWithPicker(cemuFolderTextBox.Text);
+            if (chosenFolder == null)
+                return;
+            
+            if (chosenFolder != GetOtherCemuFolderTextBox(cemuFolderTextBox).Text)
+                cemuFolderTextBox.Text = chosenFolder;
+            else
+                MessageBox.Show("Source and destination folder must be different.", "Error!", 
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private TextBox GetTextBoxNearTo(Button button)
+        {
+            if (button == btnSelectSourceFolder)
+                return txtBoxSourceFolder;
+            if (button == btnSelectDestinationFolder)
+                return txtBoxDestinationFolder;
+            
+            throw new ArgumentException("The button has no text boxes near itself.");
+        }
+
+        private TextBox GetOtherCemuFolderTextBox(TextBox thisTextBox)
+        {
+            if (thisTextBox == txtBoxSourceFolder)
+                return txtBoxDestinationFolder;
+            if (thisTextBox == txtBoxDestinationFolder)
+                return txtBoxSourceFolder;
+            
+            throw new ArgumentException($"Argument {nameof(thisTextBox)} is not a Cemu folder text box.");
+        }
+
+        private void CheckSourceFolderTextBoxContent(object sender, EventArgs e)
+        {
+            if (!DirectoryContainsACemuInstallation(txtBoxSourceFolder.Text, out string reason))
             {
-                errProviderFolders.SetError(txtBoxSrcFolder, reason);
-                srcFolderTxtBoxValidated = false;
+                errProviderFolders.SetError(txtBoxSourceFolder, reason);
+                sourceFolderTxtBoxValidated = false;
                 btnStart.Enabled = false;
-
-                lblSrcCemuVersion.Visible = false;
-                lblSrcVersionNr.Text = "";
+                HideSourceCemuVersionLabel();
             }
-            // Display Cemu version label and verify if all user inputs are OK
             else
             {
-                errProviderFolders.SetError(txtBoxSrcFolder, "");
-                srcFolderTxtBoxValidated = true;
-
-                srcCemuExeVersion = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxSrcFolder.Text, "Cemu.exe")), 3);
-                lblSrcCemuVersion.Visible = true;
-                lblSrcVersionNr.Text = srcCemuExeVersion.ToString();
-
-                if (srcFolderTxtBoxValidated && destFolderTxtBoxValidated && (txtBoxSrcFolder.Text != txtBoxDestFolder.Text))
-                    btnStart.Enabled = true;
-                else
-                    btnStart.Enabled = false;
+                errProviderFolders.SetError(txtBoxSourceFolder, "");
+                sourceFolderTxtBoxValidated = true;
+                DisplaySourceCemuVersion();
+                EnableStartButtonIfAllInputIsValid();
             }
         }
 
-        private void CheckDestFolderTextBoxContent(object sender, EventArgs e)
+        private void HideSourceCemuVersionLabel()
         {
-            bool contentOk;
-            string reason;
+            lblSourceCemuVersion.Visible = false;
+            lblSourceCemuVersionNumber.Text = "";
+        }
 
-            // If we're in DownloadMode, check if the directory exists
-            // Otherwise, check if the folder is also a valid Cemu installation
-            if (DownloadMode)
+        private void DisplaySourceCemuVersion()
+        {
+            sourceCemuVersion = FileUtils.RetrieveExecutableVersionNumber(Path.Combine(txtBoxSourceFolder.Text, "Cemu.exe"));
+            lblSourceCemuVersion.Visible = true;
+            lblSourceCemuVersionNumber.Text = sourceCemuVersion.ToString();
+        }
+
+        private void CheckDestinationFolderTextBoxContent(object sender, EventArgs e)
+        {
+            if (!DestinationFolderTextBoxContentIsValid(out string reason))
             {
-                contentOk = txtBoxDestFolder.Text != "" && Directory.Exists(txtBoxDestFolder.Text);
+                errProviderFolders.SetError(txtBoxDestinationFolder, reason);
+                destinationFolderTxtBoxValidated = false;
+                btnStart.Enabled = false;
+                if (!downloadMode)
+                    HideDestinationCemuVersionLabel();
+            }
+            else
+            {
+                errProviderFolders.SetError(txtBoxDestinationFolder, "");
+                destinationFolderTxtBoxValidated = true;
+                if (!downloadMode)
+                    DisplayDestinationCemuVersion();
+
+                EnableStartButtonIfAllInputIsValid();
+            }
+        }
+
+        private bool DestinationFolderTextBoxContentIsValid(out string reason)
+        {
+            reason = null;
+            if (downloadMode)
+            {
+                if (txtBoxDestinationFolder.Text != "" && Directory.Exists(txtBoxDestinationFolder.Text))
+                    return true;
+                
                 reason = "Directory does not exist";
+                return false;
             }
-            else
-                contentOk = DirectoryContainsACemuInstallation(txtBoxDestFolder.Text, out reason);
 
-            if (!contentOk)
-            {
-                errProviderFolders.SetError(txtBoxDestFolder, reason);
-                destFolderTxtBoxValidated = false;
+            return DirectoryContainsACemuInstallation(txtBoxDestinationFolder.Text, out reason);
+        }
+        
+        private void HideDestinationCemuVersionLabel()
+        {
+            lblDestinationCemuVersion.Visible = false;
+            lblDestinationCemuVersionNumber.Text = "";
+        }
+        
+        private void DisplayDestinationCemuVersion()
+        {
+            destinationCemuVersion =
+                FileUtils.RetrieveExecutableVersionNumber(Path.Combine(txtBoxDestinationFolder.Text, "Cemu.exe"));
+            lblDestinationCemuVersion.Visible = true;
+            lblDestinationCemuVersionNumber.Text = destinationCemuVersion.ToString();
+        }
+
+        private void EnableStartButtonIfAllInputIsValid()
+        {
+            if (sourceFolderTxtBoxValidated && destinationFolderTxtBoxValidated &&
+                txtBoxSourceFolder.Text != txtBoxDestinationFolder.Text)
+                btnStart.Enabled = true;
+            else
                 btnStart.Enabled = false;
-
-                if (!DownloadMode)
-                {
-                    lblDestCemuVersion.Visible = false;
-                    lblDestVersionNr.Text = "";
-                }
-            }
-            // Display Cemu version label (only if the form is not in download mode) and verify if all user inputs are OK
-            else
-            {
-                errProviderFolders.SetError(txtBoxDestFolder, "");
-                destFolderTxtBoxValidated = true;
-
-                if (!DownloadMode)
-                {
-                    destCemuExeVersion = new VersionNumber(FileVersionInfo.GetVersionInfo(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")), 3);
-                    lblDestCemuVersion.Visible = true;
-                    lblDestVersionNr.Text = destCemuExeVersion.ToString();
-                }
-
-                if ((srcFolderTxtBoxValidated && destFolderTxtBoxValidated) && (txtBoxSrcFolder.Text != txtBoxDestFolder.Text))
-                    btnStart.Enabled = true;
-                else
-                    btnStart.Enabled = false;
-            }
         }
 
         protected override async Task<WorkOutcome> PerformOperationsAsync()
         {
-            // Perform download operations if we are in download mode
-            if (DownloadMode)
-            {
-                var downloader = new Downloader(txtBoxDestFolder.Text, cTokenSource.Token);
-                AttachProgressEventHandlersToWorker(downloader);
-                destCemuExeVersion = await Task.Run(() => downloader.PerformDownloadOperations(destCemuExeVersion));
+            if (downloadMode)
+                await PerformDownloadOperationsAsync();
+            await PerformMigrationOperationsAsync();
 
-                // Update settings file with the new value of lastKnownCemuVersion (if it's changed)
-                VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion], out VersionNumber previousLastKnownCemuVersion);
-                if (previousLastKnownCemuVersion != destCemuExeVersion)
-                {
-                    Options.Download[OptionKey.LastKnownCemuVersion] = destCemuExeVersion.ToString();
-                    try
-                    {
-                        Options.WriteOptionsToCurrentlySelectedFile();
-                    }
-                    catch (Exception optionsUpdateExc)
-                    {
-                        logUpdater.AppendLogMessage($"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
-                    }
-                }
-            }
-
-            migrator = new Migrator(txtBoxSrcFolder.Text, txtBoxDestFolder.Text, srcCemuExeVersion, cTokenSource.Token);
-            AttachProgressEventHandlersToWorker(migrator);
-            await Task.Run(() => migrator.PerformMigrationOperations());
-
-            // Ask if user wants to create Cemu desktop shortcut
             if (Options.Migration[OptionKey.AskForDesktopShortcut])
-            {
-                DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                bool isNewCemuVersionAtLeast110 = destCemuExeVersion.Major > 1 || destCemuExeVersion.Minor >= 10;
-                if (choice == DialogResult.Yes)     // mlc01 folder external path is passed only if needed
-                    migrator.CreateDesktopShortcut(destCemuExeVersion.ToString(),
-                      (isNewCemuVersionAtLeast110 && Options.Migration[OptionKey.UseCustomMlcFolderIfSupported]) ? Options.CustomMlcFolderPath : null);
-            }
+                CreateDesktopShortcutIfUserWantsTo();
 
             if (migrator.ErrorsEncountered > 0)
                 return WorkOutcome.CompletedWithErrors;
@@ -218,43 +214,81 @@ namespace CemuUpdateTool.Forms
             return WorkOutcome.Success;
         }
 
+        private async Task PerformMigrationOperationsAsync()
+        {
+            migrator = new Migrator(txtBoxSourceFolder.Text, txtBoxDestinationFolder.Text, sourceCemuVersion, cTokenSource.Token);
+            AttachProgressEventHandlersToWorker(migrator);
+            await Task.Run(migrator.PerformMigrationOperations);
+        }
+
+        private async Task PerformDownloadOperationsAsync()
+        {
+            var downloader = new Downloader(txtBoxDestinationFolder.Text, cTokenSource.Token);
+            AttachProgressEventHandlersToWorker(downloader);
+            destinationCemuVersion = await Task.Run(() => downloader.PerformDownloadOperations(destinationCemuVersion));
+
+            UpdateLastKnownCemuVersionOption(destinationCemuVersion);
+            TryUpdateOptionsFile();
+        }
+        
+        private void CreateDesktopShortcutIfUserWantsTo()
+        {
+            DialogResult choice = MessageBox.Show("Do you want to create a desktop shortcut?", "",
+                                                  MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (choice == DialogResult.Yes)
+                migrator.CreateDesktopShortcut(destinationCemuVersion);
+        }
+
         protected override bool ArePreliminaryChecksSuccessful()
         {
-            // If not in download mode, warn the user if old Cemu version is not older than new one
-            if (!DownloadMode)
+            if (downloadMode)
             {
-                if (srcCemuExeVersion > destCemuExeVersion)
-                {
-                    DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
-                                                          "This may cause severe incompatibility issues. Do you want to continue?", "Unsafe operation requested",
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                    if (choice == DialogResult.No)
-                        return false;
-                }
+                if (DirectoryContainsACemuInstallation(txtBoxDestinationFolder.Text, out string _) &&
+                    !UserWantsToOverwriteExistingCemuInstallation())
+                    return false;
             }
-            // If in download mode, warn the user if the destination folder contains a Cemu installation
             else
             {
-                if (File.Exists(Path.Combine(txtBoxDestFolder.Text, "Cemu.exe")))
-                {
-                    DialogResult choice = MessageBox.Show("The chosen destination folder already contains a Cemu installation. " +
-                                                          "Do you want to overwrite it?", "Cemu installation already present",
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                    if (choice == DialogResult.No)
-                        return false;
-                }
+                if (sourceCemuVersion > destinationCemuVersion && !UserWantsToMigrateFromNewerToOlderVersion())
+                    return false;
             }
 
-            if (!Options.FoldersToMigrate.GetAllEnabled().Any() && !Options.FilesToMigrate.GetAllEnabled().Any())
-            {
-                MessageBox.Show("It seems that there are neither folders nor single files to copy. Probably you set up options incorrectly.",
-                    "Empty folders and files lists", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (IsThereNothingToMigrate())
                 return false;
-            }
 
             return true;
+        }
+        
+        private static bool UserWantsToOverwriteExistingCemuInstallation()
+        {
+            DialogResult choice = MessageBox.Show("The chosen destination folder already contains a Cemu installation. " +
+                                                  "Do you want to overwrite it?", "Cemu installation already present",
+                                                  MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            return choice == DialogResult.Yes;
+        }
+        
+        private static bool UserWantsToMigrateFromNewerToOlderVersion()
+        {
+            DialogResult choice = MessageBox.Show("You're trying to migrate from a newer Cemu version to an older one. " +
+                                                  "This may cause severe incompatibility issues. Do you want to continue?",
+                                                  "Unsafe operation requested",
+                                                  MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            return choice == DialogResult.Yes;
+        }
+
+        private static bool IsThereNothingToMigrate()
+        {
+            if (!Options.FoldersToMigrate.GetAllEnabled().Any() && !Options.FilesToMigrate.GetAllEnabled().Any())
+            {
+                MessageBox.Show(
+                    "It seems that there are neither folders nor single files to copy. " +
+                    "Probably you set up options incorrectly.",
+                    "Empty folders and files lists", MessageBoxButtons.OK, MessageBoxIcon.Error
+                );
+                return true;
+            }
+            
+            return false;
         }
 
         protected override void HandleOperationsError()
@@ -263,13 +297,13 @@ namespace CemuUpdateTool.Forms
             {
                 if (migrator.CreatedFiles.Count > 0 || migrator.CreatedDirectories.Count > 0)
                 {
-                    // Ask if the user wants to remove files that have been created
-                    DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?", "Operation stopped", MessageBoxButtons.YesNo);
+                    DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?",
+                                                          "Operation stopped", MessageBoxButtons.YesNo);
                     if (choice == DialogResult.Yes)
                     {
                         migrator.DeleteCreatedFilesAndFolders();
-                        if (DownloadMode)
-                            FileUtils.RemoveDirectoryContents(txtBoxDestFolder.Text);
+                        if (downloadMode)
+                            FileUtils.RemoveDirectoryContents(txtBoxDestinationFolder.Text);
                     }
                 }
             }
@@ -282,33 +316,43 @@ namespace CemuUpdateTool.Forms
         protected override void ResetControls()
         {
             base.ResetControls();
+            ResetCemuVersionLabels();
+            ResetCemuFolderTextBoxes();
+        }
+        
+        private void ResetCemuVersionLabels()
+        {
+            lblSourceCemuVersionNumber.Text = "";
+            lblDestinationCemuVersionNumber.Text = "";
+            lblSourceCemuVersion.Visible = false;
+            if (!downloadMode)
+                lblDestinationCemuVersion.Visible = false;
+        }
 
-            // Reset Cemu version labels
-            lblSrcVersionNr.Text = "";
-            lblDestVersionNr.Text = "";
-            lblSrcCemuVersion.Visible = false;
-            if (!DownloadMode)
-                lblDestCemuVersion.Visible = false;
-
-            // Reset textboxes (I need to detach & reattach event handlers otherwise errorProviders will be triggered) and buttons
-            txtBoxSrcFolder.TextChanged -= CheckSrcFolderTextBoxContent;
-            txtBoxSrcFolder.Text = "";
-            txtBoxSrcFolder.TextChanged += CheckSrcFolderTextBoxContent;
-            txtBoxDestFolder.TextChanged -= CheckDestFolderTextBoxContent;
-            txtBoxDestFolder.Text = "";
-            txtBoxDestFolder.TextChanged += CheckDestFolderTextBoxContent;
-
-            // Reset textboxes' validated state
-            srcFolderTxtBoxValidated = false;
-            destFolderTxtBoxValidated = false;
+        private void ResetCemuFolderTextBoxes()
+        {
+            txtBoxSourceFolder.TextChanged -= CheckSourceFolderTextBoxContent;
+            txtBoxSourceFolder.Text = "";
+            txtBoxSourceFolder.TextChanged += CheckSourceFolderTextBoxContent;
+            txtBoxDestinationFolder.TextChanged -= CheckDestinationFolderTextBoxContent;
+            txtBoxDestinationFolder.Text = "";
+            txtBoxDestinationFolder.TextChanged += CheckDestinationFolderTextBoxContent;
+            
+            sourceFolderTxtBoxValidated = false;
+            destinationFolderTxtBoxValidated = false;
         }
 
         private void ParseSuppliedVersionInCombobox(object sender, EventArgs e)
         {
             // If the parsing goes wrong, the combobox sets automatically its value to "Latest"
-            // And if the user selects "Latest", the parsing will obviously fail resetting destCemuExeVersion to null
-            if (!VersionNumber.TryParse(comboBoxVersion.Text, out destCemuExeVersion))
-                comboBoxVersion.SelectedIndex = 0;
+            // And if the user selects "Latest", version number parsing will fail resetting destinationCemuVersion to null
+            if (!VersionNumber.TryParse(comboBoxDestinationVersion.Text, out destinationCemuVersion))
+                DisplayLatestTextInDestinationVersionCombobox();
+        }
+
+        private void DisplayLatestTextInDestinationVersionCombobox()
+        {
+            comboBoxDestinationVersion.SelectedIndex = 0;
         }
 
         private void OpenOptionsForm(object sender, EventArgs e)

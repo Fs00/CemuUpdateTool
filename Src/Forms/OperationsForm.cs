@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CemuUpdateTool.Settings;
 using CemuUpdateTool.Workers;
 
 namespace CemuUpdateTool.Forms
@@ -15,8 +16,8 @@ namespace CemuUpdateTool.Forms
     abstract partial class OperationsForm : Form
     {
         protected CancellationTokenSource cTokenSource;
-        protected readonly TextBoxLogger logUpdater;       // used to update txtBoxLog asynchronously
         
+        private readonly TextBoxLogger logUpdater;       // used to update txtBoxLog asynchronously
         private readonly Stopwatch stopwatch;     // used to measure how much time the task took to complete
 
         private WorkOutcome workResult;
@@ -29,17 +30,19 @@ namespace CemuUpdateTool.Forms
 
             stopwatch = new Stopwatch();
             logUpdater = new TextBoxLogger(txtBoxLog);
+        }
 
-            // Remove default (and useless) menu strips
+        protected virtual void RemoveDefaultTextBoxContextMenus()
+        {
             txtBoxLog.ContextMenuStrip = new ContextMenuStrip();
         }
 
-        protected void Back(object sender, EventArgs evt)
+        private void Back(object sender, EventArgs evt)
         {
             ContainerForm.ShowHomeForm();
         }
 
-        protected void OpenHelpForm(object sender, EventArgs evt)
+        private void OpenHelpForm(object sender, EventArgs evt)
         {
             new HelpForm(this).Show();
         }
@@ -98,9 +101,9 @@ namespace CemuUpdateTool.Forms
         private async Task TryPerformOperationsAsync()
         {
             cTokenSource = new CancellationTokenSource();
-            stopwatch.Start();
             try
             {
+                stopwatch.Start();
                 workResult = await PerformOperationsAsync();
                 lblCurrentTask.Text = "Operations completed!";
             }
@@ -124,7 +127,7 @@ namespace CemuUpdateTool.Forms
         }
 
         protected abstract Task<WorkOutcome> PerformOperationsAsync();
-        protected abstract void HandleOperationsError();
+        protected virtual void HandleOperationsError() {}
         
         private void AppendResultLogMessage()
         {
@@ -132,13 +135,13 @@ namespace CemuUpdateTool.Forms
             {
                 case WorkOutcome.Success:
                     logUpdater.AppendLogMessage(
-                        $"\r\nOperations terminated without errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.",
+                        $"\r\nOperations terminated without errors after {stopwatch.Elapsed.TotalSeconds} seconds.",
                         newLine: false
                     );
                     break;
                 case WorkOutcome.CompletedWithErrors:
                     logUpdater.AppendLogMessage(
-                        $"\r\nOperations terminated with errors after {(float)stopwatch.ElapsedMilliseconds / 1000} seconds.",
+                        $"\r\nOperations terminated with errors after {stopwatch.Elapsed.TotalSeconds} seconds.",
                         newLine: false
                     );
                     break;
@@ -148,6 +151,27 @@ namespace CemuUpdateTool.Forms
                 case WorkOutcome.CancelledByUser:
                     logUpdater.AppendLogMessage("\r\nOperations cancelled due to user request.", false);
                     break;
+            }
+        }
+        
+        protected static void UpdateLastKnownCemuVersionOption(VersionNumber downloadedCemuVersion)
+        {
+            VersionNumber.TryParse(Options.Download[OptionKey.LastKnownCemuVersion],
+                                   out VersionNumber previousLastKnownCemuVersion);
+            if (previousLastKnownCemuVersion != downloadedCemuVersion)
+                Options.Download[OptionKey.LastKnownCemuVersion] = downloadedCemuVersion.ToString();
+        }
+
+        protected void TryUpdateOptionsFile()
+        {
+            try
+            {
+                Options.WriteOptionsToCurrentlySelectedFile();
+            }
+            catch (Exception optionsUpdateExc)
+            {
+                logUpdater.AppendLogMessage(
+                    $"WARNING: Unable to update settings file with the latest known Cemu version: {optionsUpdateExc.Message}");
             }
         }
 
@@ -281,7 +305,7 @@ namespace CemuUpdateTool.Forms
          *  Resizes the form when txtBoxLog's visible state changes
          *  Note: this event handler must be added only on inherited forms, otherwise the designer will crash
          */
-        protected virtual void ResizeFormOnLogTextBoxVisibleChanged(object sender, EventArgs evt)
+        protected void ResizeFormOnLogTextBoxVisibleChanged(object sender, EventArgs evt)
         {
             // Avoid triggering the event before the form is shown
             if (ContainerForm.IsFormCurrentlyDisplayed(this))

@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.lblVersionNr = new System.Windows.Forms.Label();
+            this.lblCemuVersionNumber = new System.Windows.Forms.Label();
             this.lblCemuVersion = new System.Windows.Forms.Label();
             this.btnSelectFolder = new System.Windows.Forms.Button();
             this.txtBoxCemuFolder = new System.Windows.Forms.TextBox();
@@ -107,15 +107,15 @@
             // 
             // lblVersionNr
             // 
-            this.lblVersionNr.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.lblCemuVersionNumber.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblVersionNr.Location = new System.Drawing.Point(482, 75);
-            this.lblVersionNr.Name = "lblVersionNr";
-            this.lblVersionNr.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.lblVersionNr.Size = new System.Drawing.Size(40, 15);
-            this.lblVersionNr.TabIndex = 11;
-            this.lblVersionNr.Text = "    ";
-            this.lblVersionNr.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.lblCemuVersionNumber.Location = new System.Drawing.Point(482, 75);
+            this.lblCemuVersionNumber.Name = "lblCemuVersionNumber";
+            this.lblCemuVersionNumber.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.lblCemuVersionNumber.Size = new System.Drawing.Size(40, 15);
+            this.lblCemuVersionNumber.TabIndex = 11;
+            this.lblCemuVersionNumber.Text = "    ";
+            this.lblCemuVersionNumber.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // lblCemuVersion
             // 
@@ -145,7 +145,7 @@
             this.txtBoxCemuFolder.Name = "txtBoxCemuFolder";
             this.txtBoxCemuFolder.Size = new System.Drawing.Size(411, 23);
             this.txtBoxCemuFolder.TabIndex = 1;
-            this.txtBoxCemuFolder.TextChanged += new System.EventHandler(this.CheckFolderTextBoxContent);
+            this.txtBoxCemuFolder.TextChanged += new System.EventHandler(this.CheckCemuFolderTextBoxContent);
             this.txtBoxCemuFolder.DragDrop += new System.Windows.Forms.DragEventHandler(this.PasteContentIntoTextBoxOnDragDrop);
             this.txtBoxCemuFolder.DragEnter += new System.Windows.Forms.DragEventHandler(this.ChangeCursorEffectOnTextBoxDragEnter);
             // 
@@ -184,7 +184,7 @@
             this.ClientSize = new System.Drawing.Size(537, 458);
             this.Controls.Add(this.chkBoxDeletePrecompiled);
             this.Controls.Add(this.chkBoxUpdGameProfiles);
-            this.Controls.Add(this.lblVersionNr);
+            this.Controls.Add(this.lblCemuVersionNumber);
             this.Controls.Add(this.lblCemuVersion);
             this.Controls.Add(this.lblCemuFolder);
             this.Controls.Add(this.txtBoxCemuFolder);
@@ -194,7 +194,7 @@
             this.Controls.SetChildIndex(this.txtBoxCemuFolder, 0);
             this.Controls.SetChildIndex(this.lblCemuFolder, 0);
             this.Controls.SetChildIndex(this.lblCemuVersion, 0);
-            this.Controls.SetChildIndex(this.lblVersionNr, 0);
+            this.Controls.SetChildIndex(this.lblCemuVersionNumber, 0);
             this.Controls.SetChildIndex(this.btnStart, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.lblCurrentTask, 0);
@@ -220,7 +220,7 @@
         private System.Windows.Forms.Label lblCemuFolder;
         private System.Windows.Forms.Button btnSelectFolder;
         private System.Windows.Forms.Label lblCemuVersion;
-        private System.Windows.Forms.Label lblVersionNr;
+        private System.Windows.Forms.Label lblCemuVersionNumber;
         private System.Windows.Forms.CheckBox chkBoxUpdGameProfiles;
         private System.Windows.Forms.CheckBox chkBoxDeletePrecompiled;
     }

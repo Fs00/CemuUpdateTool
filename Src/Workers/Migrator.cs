@@ -6,9 +6,7 @@ using System.Threading;
 using CemuUpdateTool.Settings;
 using CemuUpdateTool.Utils;
 using CemuUpdateTool.Workers.Operations;
-using IWshRuntimeLibrary;
 using Microsoft.Win32;
-using File = System.IO.File;
 
 namespace CemuUpdateTool.Workers
 {
@@ -202,20 +200,18 @@ namespace CemuUpdateTool.Workers
             return keyValue;
         }
 
-        public void CreateDesktopShortcut(string cemuVersion, string mlcExternalPath)
+        public void CreateDesktopShortcut(VersionNumber cemuVersion)
         {
             WshShell shell = new WshShell();
             IWshShortcut shortcut = shell.CreateShortcut(
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"Cemu {cemuVersion}.lnk")
             );
-
-            // Set shortcut attributes
+            shortcut.Description = "The Wii U emulator";
             shortcut.TargetPath = Path.Combine(destinationCemuInstallationPath, "Cemu.exe");
             shortcut.WorkingDirectory = destinationCemuInstallationPath;
-            if (mlcExternalPath != null)
-                shortcut.Arguments = $"-mlc \"{mlcExternalPath}\"";
-            shortcut.Description = "The Wii U emulator";
-
+            if (cemuVersion >= new VersionNumber(1, 10) && Options.Migration[OptionKey.UseCustomMlcFolderIfSupported])
+                shortcut.Arguments = $@"-mlc ""{Options.CustomMlcFolderPath}""";
+            
             shortcut.Save();
         }
 
@@ -223,7 +219,7 @@ namespace CemuUpdateTool.Workers
         {
             foreach (FileInfo copiedFile in CreatedFiles)
                 copiedFile.Delete();
-            foreach (DirectoryInfo copiedDir in Enumerable.Reverse(CreatedDirectories))
+            foreach (DirectoryInfo copiedDir in CreatedDirectories.Reverse())
                 copiedDir.Delete();
 
             OnLogMessage(LogMessageType.Information, "Created files and directories deleted successfully.");
