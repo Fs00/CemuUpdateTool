@@ -6,7 +6,9 @@ using System.Threading;
 using CemuUpdateTool.Settings;
 using CemuUpdateTool.Utils;
 using CemuUpdateTool.Workers.Operations;
+using IWshRuntimeLibrary;
 using Microsoft.Win32;
+using File = System.IO.File;
 
 namespace CemuUpdateTool.Workers
 {

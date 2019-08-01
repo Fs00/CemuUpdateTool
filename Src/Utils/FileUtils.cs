@@ -46,7 +46,7 @@ namespace CemuUpdateTool.Utils
             {
                 string destinationFilePath = Path.Combine(destinationDirectoryPath, file.Name);
                 if (worker == null)
-                    file.CopyTo(destinationFilePath);
+                    file.CopyTo(destinationFilePath, overwrite: true);
                 else
                     file.CopyToAndReportOutcomeToWorker(destinationFilePath, worker);
             }

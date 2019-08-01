@@ -50,7 +50,7 @@ namespace CemuUpdateTool.Forms
         protected string ChooseFolderWithPicker(string previouslySelectedFolder)
         {
             var folderPicker = new FolderBrowserDialog {
-                RootFolder = Environment.SpecialFolder.MyComputer
+                RootFolder = Environment.SpecialFolder.Desktop
             };
             if (!string.IsNullOrEmpty(previouslySelectedFolder) && Directory.Exists(previouslySelectedFolder))
                 folderPicker.SelectedPath = previouslySelectedFolder;
@@ -135,13 +135,13 @@ namespace CemuUpdateTool.Forms
             {
                 case WorkOutcome.Success:
                     logUpdater.AppendLogMessage(
-                        $"\r\nOperations terminated without errors after {stopwatch.Elapsed.TotalSeconds} seconds.",
+                        $"\r\nOperations terminated without errors after {Math.Round(stopwatch.Elapsed.TotalSeconds, 2)} seconds.",
                         newLine: false
                     );
                     break;
                 case WorkOutcome.CompletedWithErrors:
                     logUpdater.AppendLogMessage(
-                        $"\r\nOperations terminated with errors after {stopwatch.Elapsed.TotalSeconds} seconds.",
+                        $"\r\nOperations terminated with errors after {Math.Round(stopwatch.Elapsed.TotalSeconds, 2)} seconds.",
                         newLine: false
                     );
                     break;

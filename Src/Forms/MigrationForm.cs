@@ -20,6 +20,7 @@ namespace CemuUpdateTool.Forms
         private VersionNumber sourceCemuVersion, destinationCemuVersion;
         
         private Migrator migrator;
+        private bool migrationOperationsStarted;
         private readonly bool downloadMode;    // if true, newer version of Cemu will be downloaded before migrating
 
         public MigrationForm(bool downloadMode) : base()
@@ -214,13 +215,6 @@ namespace CemuUpdateTool.Forms
             return WorkOutcome.Success;
         }
 
-        private async Task PerformMigrationOperationsAsync()
-        {
-            migrator = new Migrator(txtBoxSourceFolder.Text, txtBoxDestinationFolder.Text, sourceCemuVersion, cTokenSource.Token);
-            AttachProgressEventHandlersToWorker(migrator);
-            await Task.Run(migrator.PerformMigrationOperations);
-        }
-
         private async Task PerformDownloadOperationsAsync()
         {
             var downloader = new Downloader(txtBoxDestinationFolder.Text, cTokenSource.Token);
@@ -229,6 +223,14 @@ namespace CemuUpdateTool.Forms
 
             UpdateLastKnownCemuVersionOption(destinationCemuVersion);
             TryUpdateOptionsFile();
+        }
+        
+        private async Task PerformMigrationOperationsAsync()
+        {
+            migrator = new Migrator(txtBoxSourceFolder.Text, txtBoxDestinationFolder.Text, sourceCemuVersion, cTokenSource.Token);
+            AttachProgressEventHandlersToWorker(migrator);
+            migrationOperationsStarted = true;
+            await Task.Run(migrator.PerformMigrationOperations);
         }
         
         private void CreateDesktopShortcutIfUserWantsTo()
@@ -291,11 +293,19 @@ namespace CemuUpdateTool.Forms
             return false;
         }
 
+        protected override void PrepareControlsForOperations()
+        {
+            base.PrepareControlsForOperations();
+            migrationOperationsStarted = false;
+        }
+
         protected override void HandleOperationsError()
         {
             try
             {
-                if (migrator.CreatedFiles.Count > 0 || migrator.CreatedDirectories.Count > 0)
+                // We must check if migration operations are started because otherwise accessing migrator would throw
+                // a NullReferenceException (not yet instantiated) or we would read data from an old Migrator instance
+                if (migrationOperationsStarted && (migrator.CreatedFiles.Count > 0 || migrator.CreatedDirectories.Count > 0))
                 {
                     DialogResult choice = MessageBox.Show("Do you want to delete files that have already been created?",
                                                           "Operation stopped", MessageBoxButtons.YesNo);
