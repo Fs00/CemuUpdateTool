@@ -293,12 +293,6 @@ namespace CemuUpdateTool.Forms
             return false;
         }
 
-        protected override void PrepareControlsForOperations()
-        {
-            base.PrepareControlsForOperations();
-            migrationOperationsStarted = false;
-        }
-
         protected override void HandleOperationsError()
         {
             try
@@ -322,14 +316,32 @@ namespace CemuUpdateTool.Forms
                 MessageBox.Show($"An error occurred when deleting created files: {cleanupExc.Message}", "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        
+        protected override void PrepareControlsForOperations()
+        {
+            base.PrepareControlsForOperations();
+            btnOptions.Enabled = false;
+            LockFolderTextBoxesAndSelectionButtons();
+            migrationOperationsStarted = false;
+        }
+
+        private void LockFolderTextBoxesAndSelectionButtons()
+        {
+            txtBoxSourceFolder.ReadOnly = true;
+            txtBoxDestinationFolder.ReadOnly = true;
+            btnSelectSourceFolder.Enabled = false;
+            btnSelectDestinationFolder.Enabled = false;
+        }
 
         protected override void ResetControls()
         {
             base.ResetControls();
+            btnOptions.Enabled = true;
             ResetCemuVersionLabels();
             ResetCemuFolderTextBoxes();
+            UnlockFolderTextBoxesAndSelectionButtons();
         }
-        
+
         private void ResetCemuVersionLabels()
         {
             lblSourceCemuVersionNumber.Text = "";
@@ -350,6 +362,14 @@ namespace CemuUpdateTool.Forms
             
             sourceFolderTxtBoxValidated = false;
             destinationFolderTxtBoxValidated = false;
+        }
+        
+        private void UnlockFolderTextBoxesAndSelectionButtons()
+        {
+            txtBoxSourceFolder.ReadOnly = false;
+            txtBoxDestinationFolder.ReadOnly = false;
+            btnSelectSourceFolder.Enabled = true;
+            btnSelectDestinationFolder.Enabled = true;
         }
 
         private void ParseSuppliedVersionInCombobox(object sender, EventArgs e)

@@ -79,13 +79,34 @@ namespace CemuUpdateTool.Forms
             return downloadedCemuVersion;
         }
 
+        protected override void PrepareControlsForOperations()
+        {
+            base.PrepareControlsForOperations();
+            LockFolderTextBoxAndSelectionButton();
+            SetCheckBoxesEnabledState(false);
+        }
+
+        private void LockFolderTextBoxAndSelectionButton()
+        {
+            txtBoxCemuFolder.ReadOnly = true;
+            btnSelectFolder.Enabled = false;
+        }
+        
+        private void SetCheckBoxesEnabledState(bool enabled)
+        {
+            chkBoxDeletePrecompiled.Enabled = enabled;
+            chkBoxUpdGameProfiles.Enabled = enabled;
+        }
+
         protected override void ResetControls()
         {
             base.ResetControls();
             ResetCemuVersionLabels();
             ResetCemuFolderTextBox();
+            UnlockFolderTextBoxAndSelectionButton();
+            SetCheckBoxesEnabledState(true);
         }
-        
+
         private void ResetCemuVersionLabels()
         {
             lblCemuVersion.Visible = false;
@@ -97,6 +118,12 @@ namespace CemuUpdateTool.Forms
             txtBoxCemuFolder.TextChanged -= CheckCemuFolderTextBoxContent;
             txtBoxCemuFolder.Text = "";
             txtBoxCemuFolder.TextChanged += CheckCemuFolderTextBoxContent;
+        }
+        
+        private void UnlockFolderTextBoxAndSelectionButton()
+        {
+            txtBoxCemuFolder.ReadOnly = false;
+            btnSelectFolder.Enabled = true;
         }
 
         // These "fake overrides" are needed on Visual Studio to avoid form designer errors
