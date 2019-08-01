@@ -1,7 +1,7 @@
 # Cemu Update Tool
-![GitHub release](https://img.shields.io/github/release/Fs00/CemuUpdateTool)
-![GitHub downloads count](https://img.shields.io/github/downloads/Fs00/CemuUpdateTool/total)
-![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/Fs00/CemuUpdateTool/master)
+[![GitHub latest release](https://img.shields.io/github/release/Fs00/CemuUpdateTool)](https://github.com/Fs00/CemuUpdateTool/releases/latest)
+[![GitHub downloads count](https://img.shields.io/github/downloads/Fs00/CemuUpdateTool/total)](https://github.com/Fs00/CemuUpdateTool/releases)
+[![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/Fs00/CemuUpdateTool/master)](https://www.codefactor.io/repository/github/Fs00/CemuUpdateTool)
 
 This tool, written using WinForms API, has the main goal to allow the user to migrate data quickly from an older Cemu installation to a newer one, thanks to a simple and intuitive GUI. It has also other features, including automatic download and extraction of the latest version of Cemu, desktop shortcut creation and compatibility options setting for Cemu.exe.  
 The behavior of the tool is deeply customizable with a substantial number of options, which can also be saved to a file so that will be loaded automatically at startup.  
