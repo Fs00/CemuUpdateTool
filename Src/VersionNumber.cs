@@ -13,7 +13,7 @@ namespace CemuUpdateTool
      */
     public class VersionNumber : IEquatable<VersionNumber>, IComparable<VersionNumber>
     {
-        public static VersionNumber Empty { get => new VersionNumber(); }
+        public static VersionNumber Empty => new VersionNumber();
 
         private readonly List<int> segments;
         public int Length => segments.Count;
@@ -22,14 +22,14 @@ namespace CemuUpdateTool
          *  Indexer for segments list
          *  Every value assignation to segments list must be done using this indexer, since values are checked only here
          */
-        public int this[int i]
+        public int this[int index]
         {
-            get => segments[i];
+            get => segments[index];
             set
             {
                 if (value < 0)
-                    throw new ArgumentOutOfRangeException("Segment values must not be negative.");
-                segments[i] = value;
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                segments[index] = value;
             }
         }
 
@@ -104,7 +104,7 @@ namespace CemuUpdateTool
         public VersionNumber(params int[] segments)
         {
             if (segments == null)
-                throw new ArgumentNullException("Segments array is null.");
+                throw new ArgumentNullException(nameof(segments));
 
             this.segments = new List<int>(segments.Length);
             foreach (int number in segments)
@@ -156,6 +156,31 @@ namespace CemuUpdateTool
             this[Length-1] -= 1;
         }
         #endregion
+
+        public VersionNumber GetCopyOfLength(int copyLength)
+        {
+            VersionNumber copy = new VersionNumber(this);
+            if (this.Length > copyLength)
+                copy.RemoveLastSegments(amount: this.Length - copyLength);
+            else if (this.Length < copyLength)
+                copy.AppendZeroSegments(amount: copyLength - this.Length);
+            return copy;
+        }
+
+        private void RemoveLastSegments(int amount)
+        {
+            if (amount > Length)
+                throw new ArgumentOutOfRangeException(nameof(amount));
+            
+            for (int i = 0; i < amount; i++)
+                RemoveLastSegment();
+        }
+
+        private void AppendZeroSegments(int amount)
+        {
+            for (int i = 0; i < amount; i++)
+                AppendSegment(0);
+        }
 
         /*
          *  Method used to check if a version is a sub-version of another (e.g. 1.5.3 is a subversion of 1 and 1.5)
@@ -248,30 +273,16 @@ namespace CemuUpdateTool
          */
         public string ToString(char separator)
         {
-            return ToString(Length, separator);
-        }
-
-        /*
-         *  Overload that allows to supply an arbitrary number of segments to print only a part of the version number (e.g. 1.6 for 1.6.2)
-         *  or some extra ".0"s after the version number (e.g. 1.2.0 for 1.2)
-         */
-        public string ToString(int segmentsCount, char separator = '.')
-        {
-            if (Length == 0 || segmentsCount == 0)
+            if (Length == 0)
                 return string.Empty;
 
             StringBuilder output = new StringBuilder();
-            for (int i = 0; i < segmentsCount; i++)
+            for (int i = 0; i < Length; i++)
             {
-                if (i >= Length)
-                    output.Append("0");
-                else
-                    output.Append(segments[i]);
-
-                if (i < segmentsCount - 1)
+                output.Append(segments[i]);
+                if (i < Length - 1)
                     output.Append(separator);
             }
-
             return output.ToString();
         }
         #endregion

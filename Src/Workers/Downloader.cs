@@ -56,7 +56,11 @@ namespace CemuUpdateTool.Workers
             if (cemuVersionToBeDownloaded == null)
                 cemuVersionToBeDownloaded = DiscoverLatestCemuVersion();
             else
+            {
+                if (cemuVersionToBeDownloaded.Length != 3)
+                    cemuVersionToBeDownloaded = cemuVersionToBeDownloaded.GetCopyOfLength(3);
                 EnsureSuppliedCemuVersionExists(cemuVersionToBeDownloaded);
+            }
 
             DownloadCemuArchive(cemuVersionToBeDownloaded);
             ExtractDownloadedArchive(cemuVersionToBeDownloaded);

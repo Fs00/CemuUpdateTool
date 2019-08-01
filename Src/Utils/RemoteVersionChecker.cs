@@ -90,11 +90,9 @@ namespace CemuUpdateTool.Utils
 
         public bool RemoteVersionExists(VersionNumber version)
         {
-            string requestUrl = urlPrefix + version.ToString(maxVersionLength) + urlSuffix;
+            string requestUrl = urlPrefix + version.GetCopyOfLength(maxVersionLength) + urlSuffix;
             using (HttpWebResponse response = WebUtils.SendHttpRequest(HttpMethod.Head, requestUrl, cancellationToken))
-            {
                 return response.StatusCode == HttpStatusCode.OK;
-            }
         }
     }
 }
