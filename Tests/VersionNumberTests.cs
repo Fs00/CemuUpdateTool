@@ -61,7 +61,7 @@ namespace CemuUpdateTool.Tests
             new VersionNumber(-1,0,5);  // must throw ArgumentException because of -1
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ToStringTest()
         {
             string vNumber1 = "1.5.2";
@@ -74,25 +74,24 @@ namespace CemuUpdateTool.Tests
             Assert.AreEqual(version2.ToString(), vNumber2);
         }
 
-        [TestMethod()]
-        public void ToStringCustomLength()
+        [TestMethod]
+        public void CopyOfLength()
         {
             VersionNumber version = new VersionNumber(1,7,1);
 
-            Assert.AreEqual("1.7", version.ToString(2));
-            Assert.AreEqual("1.7.1.0.0", version.ToString(5));
-            Assert.AreEqual(string.Empty, version.ToString(0));
+            Assert.AreEqual("1.7", version.GetCopyOfLength(2).ToString());
+            Assert.AreEqual("1.7.1.0.0", version.GetCopyOfLength(5).ToString());
+            Assert.AreEqual(string.Empty, version.GetCopyOfLength(0).ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ToStringEmpty()
         {
             VersionNumber empty = VersionNumber.Empty;
-            Assert.AreEqual(string.Empty, empty.ToString(3));
             Assert.AreEqual(string.Empty, empty.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void IncrementDecrementOperatorsTest()
         {
@@ -105,7 +104,7 @@ namespace CemuUpdateTool.Tests
             version2--;     // throws because last segment is 0
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void CompareTo_SameLength()
         {
             VersionNumber version1 = new VersionNumber(1, 5, 4);
@@ -116,7 +115,7 @@ namespace CemuUpdateTool.Tests
             Assert.AreEqual(0, version1.CompareTo(version1));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void CompareTo_DifferentLengthSameValue()
         {
             VersionNumber version1 = new VersionNumber(1, 3);
@@ -126,7 +125,7 @@ namespace CemuUpdateTool.Tests
             Assert.AreEqual(0, version2.CompareTo(version1));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void CompareTo_DifferentLengthSameCommonSegments()
         {
             VersionNumber version1 = new VersionNumber(1, 7, 0, 1);
@@ -136,7 +135,7 @@ namespace CemuUpdateTool.Tests
             Assert.AreEqual(-1, version2.CompareTo(version1));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ComparisonOperators_NullsLeft()
         {
             VersionNumber versionNumber = new VersionNumber(1, 0);
@@ -148,7 +147,7 @@ namespace CemuUpdateTool.Tests
             Assert.IsFalse(null > versionNumber);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ComparisonOperators_NullsRight()
         {
             VersionNumber versionNumber = new VersionNumber(1, 0);
@@ -160,7 +159,7 @@ namespace CemuUpdateTool.Tests
             Assert.IsFalse(versionNumber < null);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void IsSubVersion()
         {
             VersionNumber version = new VersionNumber(1, 5);
@@ -173,7 +172,7 @@ namespace CemuUpdateTool.Tests
             Assert.IsFalse(subVersion.IsSubVersionOf(randomVersion));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void IsSubVersion_EmptyAndNull()
         {
             VersionNumber subVersion = new VersionNumber(1, 5, 3, 1);

@@ -1,8 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Diagnostics;
 using CemuUpdateTool.Utils;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CemuUpdateTool.Tests
 {
