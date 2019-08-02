@@ -120,7 +120,7 @@
   <metadata name="toolTipInfo.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>183, 17</value>
   </metadata>
-  <data name="chkBoxCustomMlc01Path.ToolTip" xml:space="preserve">
+  <data name="chkBoxCustomMlcPath.ToolTip" xml:space="preserve">
     <value>If this option is checked, the program won't copy mlc01 subfolders and the path (which is optional) will be used when creating Cemu shortcut on desktop. Remember that this will work only for Cemu versions higher than 1.10.</value>
   </data>
   <metadata name="errProviderMlcFolder.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

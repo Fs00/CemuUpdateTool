@@ -29,47 +29,47 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OptionsForm));
+            System.ComponentModel.ComponentResourceManager resources =
+                new System.ComponentModel.ComponentResourceManager(typeof(OptionsForm));
             this.grpBoxProgramOpts = new System.Windows.Forms.GroupBox();
             this.chkBoxSettingsOnFile = new System.Windows.Forms.CheckBox();
-            this.btnDeleteSettingsFile = new System.Windows.Forms.Button();
             this.radioBtnAppDataFolder = new System.Windows.Forms.RadioButton();
-            this.radioBtnExecFolder = new System.Windows.Forms.RadioButton();
+            this.radioBtnLocalFolder = new System.Windows.Forms.RadioButton();
             this.lblFileLocation = new System.Windows.Forms.Label();
             this.btnSaveOpts = new System.Windows.Forms.Button();
             this.btnDiscard = new System.Windows.Forms.Button();
             this.toolTipInfo = new System.Windows.Forms.ToolTip(this.components);
-            this.chkBoxCustomMlc01Path = new System.Windows.Forms.CheckBox();
+            this.chkBoxCustomMlcPath = new System.Windows.Forms.CheckBox();
             this.btnRestoreDefaultOpts = new System.Windows.Forms.Button();
             this.errProviderMlcFolder = new System.Windows.Forms.ErrorProvider(this.components);
-            this.txtBoxCustomMlc01Path = new System.Windows.Forms.TextBox();
+            this.txtBoxCustomMlcPath = new System.Windows.Forms.TextBox();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.foldersTab = new System.Windows.Forms.TabPage();
             this.grpBoxCustomEntries = new System.Windows.Forms.GroupBox();
             this.lblTotalCustomFiles = new System.Windows.Forms.Label();
-            this.lblCustomFilesCnt = new System.Windows.Forms.Label();
+            this.lblCustomFilesCount = new System.Windows.Forms.Label();
             this.btnManageFolders = new System.Windows.Forms.Button();
             this.lblTotalCustomFolders = new System.Windows.Forms.Label();
-            this.lblCustomFoldersCnt = new System.Windows.Forms.Label();
+            this.lblCustomFoldersCount = new System.Windows.Forms.Label();
             this.btnManageFiles = new System.Windows.Forms.Button();
             this.chkBoxControllerProfiles = new System.Windows.Forms.CheckBox();
             this.chkBoxCemuSettings = new System.Windows.Forms.CheckBox();
             this.chkBoxGameProfiles = new System.Windows.Forms.CheckBox();
-            this.chkBoxGfxPacks = new System.Windows.Forms.CheckBox();
+            this.chkBoxGraphicPacks = new System.Windows.Forms.CheckBox();
             this.chkBoxShaderCaches = new System.Windows.Forms.CheckBox();
             this.chkBoxSavegames = new System.Windows.Forms.CheckBox();
-            this.chkBoxDLCUpds = new System.Windows.Forms.CheckBox();
+            this.chkBoxDLCAndUpdates = new System.Windows.Forms.CheckBox();
             this.featuresTab = new System.Windows.Forms.TabPage();
             this.grpBoxMigration = new System.Windows.Forms.GroupBox();
             this.chkBoxNoFullscreenOptimiz = new System.Windows.Forms.CheckBox();
             this.chkBoxOverrideHiDPIBehaviour = new System.Windows.Forms.CheckBox();
             this.chkBoxRunAsAdmin = new System.Windows.Forms.CheckBox();
-            this.chkBoxCompatOpts = new System.Windows.Forms.CheckBox();
+            this.chkBoxCompatOptions = new System.Windows.Forms.CheckBox();
             this.chkBoxDeletePrevContent = new System.Windows.Forms.CheckBox();
             this.chkBoxDesktopShortcut = new System.Windows.Forms.CheckBox();
             this.downloadTab = new System.Windows.Forms.TabPage();
             this.lblHttp = new System.Windows.Forms.Label();
-            this.lblUriError = new System.Windows.Forms.Label();
+            this.lblCemuDownloadUrlInvalid = new System.Windows.Forms.Label();
             this.lblSampleVersion = new System.Windows.Forms.Label();
             this.txtBoxUrlSuffix = new System.Windows.Forms.TextBox();
             this.txtBoxBaseUrl = new System.Windows.Forms.TextBox();
@@ -77,7 +77,7 @@
             this.lblWarning = new System.Windows.Forms.Label();
             this.btnHelp = new System.Windows.Forms.Button();
             this.grpBoxProgramOpts.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.errProviderMlcFolder)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize) (this.errProviderMlcFolder)).BeginInit();
             this.tabControl.SuspendLayout();
             this.foldersTab.SuspendLayout();
             this.grpBoxCustomEntries.SuspendLayout();
@@ -88,13 +88,14 @@
             // 
             // grpBoxProgramOpts
             // 
-            this.grpBoxProgramOpts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.grpBoxProgramOpts.Anchor =
+                ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Bottom |
+                                                       System.Windows.Forms.AnchorStyles.Left)));
             this.grpBoxProgramOpts.Controls.Add(this.chkBoxSettingsOnFile);
-            this.grpBoxProgramOpts.Controls.Add(this.btnDeleteSettingsFile);
             this.grpBoxProgramOpts.Controls.Add(this.radioBtnAppDataFolder);
-            this.grpBoxProgramOpts.Controls.Add(this.radioBtnExecFolder);
+            this.grpBoxProgramOpts.Controls.Add(this.radioBtnLocalFolder);
             this.grpBoxProgramOpts.Controls.Add(this.lblFileLocation);
-            this.grpBoxProgramOpts.Location = new System.Drawing.Point(14, 216);
+            this.grpBoxProgramOpts.Location = new System.Drawing.Point(14, 220);
             this.grpBoxProgramOpts.Name = "grpBoxProgramOpts";
             this.grpBoxProgramOpts.Size = new System.Drawing.Size(342, 143);
             this.grpBoxProgramOpts.TabIndex = 2;
@@ -104,29 +105,21 @@
             // chkBoxSettingsOnFile
             // 
             this.chkBoxSettingsOnFile.AutoSize = true;
+            this.chkBoxSettingsOnFile.Checked = true;
+            this.chkBoxSettingsOnFile.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkBoxSettingsOnFile.Location = new System.Drawing.Point(20, 28);
             this.chkBoxSettingsOnFile.Name = "chkBoxSettingsOnFile";
             this.chkBoxSettingsOnFile.Size = new System.Drawing.Size(138, 19);
             this.chkBoxSettingsOnFile.TabIndex = 1;
             this.chkBoxSettingsOnFile.Text = "Store settings in a file";
             this.chkBoxSettingsOnFile.UseVisualStyleBackColor = true;
-            this.chkBoxSettingsOnFile.CheckedChanged += new System.EventHandler(this.UpdateOptionsFileLocationRadioButtons);
-            // 
-            // btnDeleteSettingsFile
-            // 
-            this.btnDeleteSettingsFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDeleteSettingsFile.Location = new System.Drawing.Point(167, 105);
-            this.btnDeleteSettingsFile.Name = "btnDeleteSettingsFile";
-            this.btnDeleteSettingsFile.Size = new System.Drawing.Size(167, 27);
-            this.btnDeleteSettingsFile.TabIndex = 4;
-            this.btnDeleteSettingsFile.Text = "Delete current settings file";
-            this.btnDeleteSettingsFile.UseVisualStyleBackColor = true;
-            this.btnDeleteSettingsFile.Click += new System.EventHandler(this.DeleteSettingsFile);
+            this.chkBoxSettingsOnFile.CheckedChanged +=
+                new System.EventHandler(this.UpdateOptionsFileLocationControlsEnabledState);
             // 
             // radioBtnAppDataFolder
             // 
             this.radioBtnAppDataFolder.AutoSize = true;
-            this.radioBtnAppDataFolder.Location = new System.Drawing.Point(164, 77);
+            this.radioBtnAppDataFolder.Location = new System.Drawing.Point(40, 106);
             this.radioBtnAppDataFolder.Name = "radioBtnAppDataFolder";
             this.radioBtnAppDataFolder.Size = new System.Drawing.Size(125, 19);
             this.radioBtnAppDataFolder.TabIndex = 3;
@@ -134,23 +127,24 @@
             this.toolTipInfo.SetToolTip(this.radioBtnAppDataFolder, "(%AppData%\\Fs00\\CemuUpdateTool)");
             this.radioBtnAppDataFolder.UseVisualStyleBackColor = true;
             // 
-            // radioBtnExecFolder
+            // radioBtnExecutableFolder
             // 
-            this.radioBtnExecFolder.AutoSize = true;
-            this.radioBtnExecFolder.Checked = true;
-            this.radioBtnExecFolder.Location = new System.Drawing.Point(36, 77);
-            this.radioBtnExecFolder.Name = "radioBtnExecFolder";
-            this.radioBtnExecFolder.Size = new System.Drawing.Size(115, 19);
-            this.radioBtnExecFolder.TabIndex = 2;
-            this.radioBtnExecFolder.TabStop = true;
-            this.radioBtnExecFolder.Text = "Executable folder";
-            this.radioBtnExecFolder.UseVisualStyleBackColor = true;
-            this.radioBtnExecFolder.CheckedChanged += new System.EventHandler(this.CheckIfOptionsFileLocationHasChanged);
+            this.radioBtnLocalFolder.AutoSize = true;
+            this.radioBtnLocalFolder.Checked = true;
+            this.radioBtnLocalFolder.Location = new System.Drawing.Point(40, 81);
+            this.radioBtnLocalFolder.Name = "radioBtnLocalFolder";
+            this.radioBtnLocalFolder.Size = new System.Drawing.Size(115, 19);
+            this.radioBtnLocalFolder.TabIndex = 2;
+            this.radioBtnLocalFolder.TabStop = true;
+            this.radioBtnLocalFolder.Text = "Executable folder";
+            this.radioBtnLocalFolder.UseVisualStyleBackColor = true;
+            this.radioBtnLocalFolder.CheckedChanged +=
+                new System.EventHandler(this.CheckIfOptionsFileLocationHasChanged);
             // 
             // lblFileLocation
             // 
             this.lblFileLocation.AutoSize = true;
-            this.lblFileLocation.Location = new System.Drawing.Point(16, 55);
+            this.lblFileLocation.Location = new System.Drawing.Point(20, 59);
             this.lblFileLocation.Name = "lblFileLocation";
             this.lblFileLocation.Size = new System.Drawing.Size(117, 15);
             this.lblFileLocation.TabIndex = 0;
@@ -169,7 +163,9 @@
             // 
             // btnDiscard
             // 
-            this.btnDiscard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnDiscard.Anchor =
+                ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Bottom |
+                                                       System.Windows.Forms.AnchorStyles.Right)));
             this.btnDiscard.Location = new System.Drawing.Point(281, 418);
             this.btnDiscard.Name = "btnDiscard";
             this.btnDiscard.Size = new System.Drawing.Size(112, 29);
@@ -184,21 +180,24 @@
             this.toolTipInfo.InitialDelay = 300;
             this.toolTipInfo.ReshowDelay = 100;
             // 
-            // chkBoxCustomMlc01Path
+            // chkBoxCustomMlcPath
             // 
-            this.chkBoxCustomMlc01Path.AutoSize = true;
-            this.chkBoxCustomMlc01Path.Location = new System.Drawing.Point(18, 201);
-            this.chkBoxCustomMlc01Path.Name = "chkBoxCustomMlc01Path";
-            this.chkBoxCustomMlc01Path.Size = new System.Drawing.Size(233, 19);
-            this.chkBoxCustomMlc01Path.TabIndex = 8;
-            this.chkBoxCustomMlc01Path.Text = "Use custom mlc01 folder path (v1.10+):";
-            this.toolTipInfo.SetToolTip(this.chkBoxCustomMlc01Path, resources.GetString("chkBoxCustomMlc01Path.ToolTip"));
-            this.chkBoxCustomMlc01Path.UseVisualStyleBackColor = true;
-            this.chkBoxCustomMlc01Path.CheckedChanged += new System.EventHandler(this.UpdateCustomMlc01PathTextboxState);
+            this.chkBoxCustomMlcPath.AutoSize = true;
+            this.chkBoxCustomMlcPath.Location = new System.Drawing.Point(18, 201);
+            this.chkBoxCustomMlcPath.Name = "chkBoxCustomMlcPath";
+            this.chkBoxCustomMlcPath.Size = new System.Drawing.Size(233, 19);
+            this.chkBoxCustomMlcPath.TabIndex = 8;
+            this.chkBoxCustomMlcPath.Text = "Use custom mlc01 folder path (v1.10+):";
+            this.toolTipInfo.SetToolTip(this.chkBoxCustomMlcPath, resources.GetString("chkBoxCustomMlcPath.ToolTip"));
+            this.chkBoxCustomMlcPath.UseVisualStyleBackColor = true;
+            this.chkBoxCustomMlcPath.CheckedChanged +=
+                new System.EventHandler(this.UpdateCustomMlcPathTextBoxEnabledState);
             // 
             // btnRestoreDefaultOpts
             // 
-            this.btnRestoreDefaultOpts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnRestoreDefaultOpts.Anchor =
+                ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Bottom |
+                                                       System.Windows.Forms.AnchorStyles.Left)));
             this.btnRestoreDefaultOpts.Location = new System.Drawing.Point(13, 418);
             this.btnRestoreDefaultOpts.Name = "btnRestoreDefaultOpts";
             this.btnRestoreDefaultOpts.Size = new System.Drawing.Size(111, 29);
@@ -212,14 +211,15 @@
             this.errProviderMlcFolder.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
             this.errProviderMlcFolder.ContainerControl = this;
             // 
-            // txtBoxCustomMlc01Path
+            // txtBoxCustomMlcPath
             // 
-            this.errProviderMlcFolder.SetIconPadding(this.txtBoxCustomMlc01Path, -20);
-            this.txtBoxCustomMlc01Path.Location = new System.Drawing.Point(38, 226);
-            this.txtBoxCustomMlc01Path.Name = "txtBoxCustomMlc01Path";
-            this.txtBoxCustomMlc01Path.Size = new System.Drawing.Size(315, 23);
-            this.txtBoxCustomMlc01Path.TabIndex = 9;
-            this.txtBoxCustomMlc01Path.TextChanged += new System.EventHandler(this.CheckCustomMlc01PathForInvalidChars);
+            this.txtBoxCustomMlcPath.Enabled = false;
+            this.errProviderMlcFolder.SetIconPadding(this.txtBoxCustomMlcPath, -20);
+            this.txtBoxCustomMlcPath.Location = new System.Drawing.Point(38, 226);
+            this.txtBoxCustomMlcPath.Name = "txtBoxCustomMlcPath";
+            this.txtBoxCustomMlcPath.Size = new System.Drawing.Size(315, 23);
+            this.txtBoxCustomMlcPath.TabIndex = 9;
+            this.txtBoxCustomMlcPath.TextChanged += new System.EventHandler(this.CheckCustomMlcPathForInvalidChars);
             // 
             // tabControl
             // 
@@ -235,15 +235,15 @@
             // foldersTab
             // 
             this.foldersTab.Controls.Add(this.grpBoxCustomEntries);
-            this.foldersTab.Controls.Add(this.txtBoxCustomMlc01Path);
-            this.foldersTab.Controls.Add(this.chkBoxCustomMlc01Path);
+            this.foldersTab.Controls.Add(this.txtBoxCustomMlcPath);
+            this.foldersTab.Controls.Add(this.chkBoxCustomMlcPath);
             this.foldersTab.Controls.Add(this.chkBoxControllerProfiles);
             this.foldersTab.Controls.Add(this.chkBoxCemuSettings);
             this.foldersTab.Controls.Add(this.chkBoxGameProfiles);
-            this.foldersTab.Controls.Add(this.chkBoxGfxPacks);
+            this.foldersTab.Controls.Add(this.chkBoxGraphicPacks);
             this.foldersTab.Controls.Add(this.chkBoxShaderCaches);
             this.foldersTab.Controls.Add(this.chkBoxSavegames);
-            this.foldersTab.Controls.Add(this.chkBoxDLCUpds);
+            this.foldersTab.Controls.Add(this.chkBoxDLCAndUpdates);
             this.foldersTab.Location = new System.Drawing.Point(4, 24);
             this.foldersTab.Name = "foldersTab";
             this.foldersTab.Padding = new System.Windows.Forms.Padding(3);
@@ -254,12 +254,14 @@
             // 
             // grpBoxCustomEntries
             // 
-            this.grpBoxCustomEntries.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.grpBoxCustomEntries.Anchor =
+                ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Bottom |
+                                                       System.Windows.Forms.AnchorStyles.Left)));
             this.grpBoxCustomEntries.Controls.Add(this.lblTotalCustomFiles);
-            this.grpBoxCustomEntries.Controls.Add(this.lblCustomFilesCnt);
+            this.grpBoxCustomEntries.Controls.Add(this.lblCustomFilesCount);
             this.grpBoxCustomEntries.Controls.Add(this.btnManageFolders);
             this.grpBoxCustomEntries.Controls.Add(this.lblTotalCustomFolders);
-            this.grpBoxCustomEntries.Controls.Add(this.lblCustomFoldersCnt);
+            this.grpBoxCustomEntries.Controls.Add(this.lblCustomFoldersCount);
             this.grpBoxCustomEntries.Controls.Add(this.btnManageFiles);
             this.grpBoxCustomEntries.Location = new System.Drawing.Point(18, 267);
             this.grpBoxCustomEntries.Name = "grpBoxCustomEntries";
@@ -274,19 +276,19 @@
             this.lblTotalCustomFiles.AutoSize = true;
             this.lblTotalCustomFiles.Location = new System.Drawing.Point(216, 61);
             this.lblTotalCustomFiles.Name = "lblTotalCustomFiles";
-            this.lblTotalCustomFiles.Size = new System.Drawing.Size(36, 15);
+            this.lblTotalCustomFiles.Size = new System.Drawing.Size(37, 15);
             this.lblTotalCustomFiles.TabIndex = 17;
             this.lblTotalCustomFiles.Text = "Total:";
             // 
             // lblCustomFilesCnt
             // 
-            this.lblCustomFilesCnt.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.lblCustomFilesCnt.AutoSize = true;
-            this.lblCustomFilesCnt.Location = new System.Drawing.Point(250, 61);
-            this.lblCustomFilesCnt.Name = "lblCustomFilesCnt";
-            this.lblCustomFilesCnt.Size = new System.Drawing.Size(13, 15);
-            this.lblCustomFilesCnt.TabIndex = 18;
-            this.lblCustomFilesCnt.Text = "0";
+            this.lblCustomFilesCount.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lblCustomFilesCount.AutoSize = true;
+            this.lblCustomFilesCount.Location = new System.Drawing.Point(250, 61);
+            this.lblCustomFilesCount.Name = "lblCustomFilesCount";
+            this.lblCustomFilesCount.Size = new System.Drawing.Size(13, 15);
+            this.lblCustomFilesCount.TabIndex = 18;
+            this.lblCustomFilesCount.Text = "0";
             // 
             // btnManageFolders
             // 
@@ -297,7 +299,7 @@
             this.btnManageFolders.TabIndex = 10;
             this.btnManageFolders.Text = "Manage custom folders";
             this.btnManageFolders.UseVisualStyleBackColor = true;
-            this.btnManageFolders.Click += new System.EventHandler(this.OpenManageFoldersDialog);
+            this.btnManageFolders.Click += new System.EventHandler(this.OpenManageCustomFoldersDialog);
             // 
             // lblTotalCustomFolders
             // 
@@ -305,19 +307,19 @@
             this.lblTotalCustomFolders.AutoSize = true;
             this.lblTotalCustomFolders.Location = new System.Drawing.Point(216, 28);
             this.lblTotalCustomFolders.Name = "lblTotalCustomFolders";
-            this.lblTotalCustomFolders.Size = new System.Drawing.Size(36, 15);
+            this.lblTotalCustomFolders.Size = new System.Drawing.Size(37, 15);
             this.lblTotalCustomFolders.TabIndex = 12;
             this.lblTotalCustomFolders.Text = "Total:";
             // 
             // lblCustomFoldersCnt
             // 
-            this.lblCustomFoldersCnt.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.lblCustomFoldersCnt.AutoSize = true;
-            this.lblCustomFoldersCnt.Location = new System.Drawing.Point(250, 28);
-            this.lblCustomFoldersCnt.Name = "lblCustomFoldersCnt";
-            this.lblCustomFoldersCnt.Size = new System.Drawing.Size(13, 15);
-            this.lblCustomFoldersCnt.TabIndex = 16;
-            this.lblCustomFoldersCnt.Text = "0";
+            this.lblCustomFoldersCount.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lblCustomFoldersCount.AutoSize = true;
+            this.lblCustomFoldersCount.Location = new System.Drawing.Point(250, 28);
+            this.lblCustomFoldersCount.Name = "lblCustomFoldersCount";
+            this.lblCustomFoldersCount.Size = new System.Drawing.Size(13, 15);
+            this.lblCustomFoldersCount.TabIndex = 16;
+            this.lblCustomFoldersCount.Text = "0";
             // 
             // btnManageFiles
             // 
@@ -328,7 +330,7 @@
             this.btnManageFiles.TabIndex = 11;
             this.btnManageFiles.Text = "Manage custom files";
             this.btnManageFiles.UseVisualStyleBackColor = true;
-            this.btnManageFiles.Click += new System.EventHandler(this.OpenManageFilesDialog);
+            this.btnManageFiles.Click += new System.EventHandler(this.OpenManageCustomFilesDialog);
             // 
             // chkBoxControllerProfiles
             // 
@@ -360,15 +362,15 @@
             this.chkBoxGameProfiles.Text = "Copy gameProfiles";
             this.chkBoxGameProfiles.UseVisualStyleBackColor = true;
             // 
-            // chkBoxGfxPacks
+            // chkBoxGraphicPacks
             // 
-            this.chkBoxGfxPacks.AutoSize = true;
-            this.chkBoxGfxPacks.Location = new System.Drawing.Point(18, 65);
-            this.chkBoxGfxPacks.Name = "chkBoxGfxPacks";
-            this.chkBoxGfxPacks.Size = new System.Drawing.Size(127, 19);
-            this.chkBoxGfxPacks.TabIndex = 2;
-            this.chkBoxGfxPacks.Text = "Copy graphicPacks";
-            this.chkBoxGfxPacks.UseVisualStyleBackColor = true;
+            this.chkBoxGraphicPacks.AutoSize = true;
+            this.chkBoxGraphicPacks.Location = new System.Drawing.Point(18, 65);
+            this.chkBoxGraphicPacks.Name = "chkBoxGraphicPacks";
+            this.chkBoxGraphicPacks.Size = new System.Drawing.Size(127, 19);
+            this.chkBoxGraphicPacks.TabIndex = 2;
+            this.chkBoxGraphicPacks.Text = "Copy graphicPacks";
+            this.chkBoxGraphicPacks.UseVisualStyleBackColor = true;
             // 
             // chkBoxShaderCaches
             // 
@@ -390,15 +392,15 @@
             this.chkBoxSavegames.Text = "Copy savegames";
             this.chkBoxSavegames.UseVisualStyleBackColor = true;
             // 
-            // chkBoxDLCUpds
+            // chkBoxDLCAndUpdates
             // 
-            this.chkBoxDLCUpds.AutoSize = true;
-            this.chkBoxDLCUpds.Location = new System.Drawing.Point(18, 115);
-            this.chkBoxDLCUpds.Name = "chkBoxDLCUpds";
-            this.chkBoxDLCUpds.Size = new System.Drawing.Size(147, 19);
-            this.chkBoxDLCUpds.TabIndex = 4;
-            this.chkBoxDLCUpds.Text = "Copy DLC and updates";
-            this.chkBoxDLCUpds.UseVisualStyleBackColor = true;
+            this.chkBoxDLCAndUpdates.AutoSize = true;
+            this.chkBoxDLCAndUpdates.Location = new System.Drawing.Point(18, 115);
+            this.chkBoxDLCAndUpdates.Name = "chkBoxDLCAndUpdates";
+            this.chkBoxDLCAndUpdates.Size = new System.Drawing.Size(147, 19);
+            this.chkBoxDLCAndUpdates.TabIndex = 4;
+            this.chkBoxDLCAndUpdates.Text = "Copy DLC and updates";
+            this.chkBoxDLCAndUpdates.UseVisualStyleBackColor = true;
             // 
             // featuresTab
             // 
@@ -417,7 +419,7 @@
             this.grpBoxMigration.Controls.Add(this.chkBoxNoFullscreenOptimiz);
             this.grpBoxMigration.Controls.Add(this.chkBoxOverrideHiDPIBehaviour);
             this.grpBoxMigration.Controls.Add(this.chkBoxRunAsAdmin);
-            this.grpBoxMigration.Controls.Add(this.chkBoxCompatOpts);
+            this.grpBoxMigration.Controls.Add(this.chkBoxCompatOptions);
             this.grpBoxMigration.Controls.Add(this.chkBoxDeletePrevContent);
             this.grpBoxMigration.Controls.Add(this.chkBoxDesktopShortcut);
             this.grpBoxMigration.Location = new System.Drawing.Point(14, 13);
@@ -457,16 +459,19 @@
             this.chkBoxRunAsAdmin.Text = "Run as admin";
             this.chkBoxRunAsAdmin.UseVisualStyleBackColor = true;
             // 
-            // chkBoxCompatOpts
+            // chkBoxCompatOptions
             // 
-            this.chkBoxCompatOpts.AutoSize = true;
-            this.chkBoxCompatOpts.Location = new System.Drawing.Point(15, 88);
-            this.chkBoxCompatOpts.Name = "chkBoxCompatOpts";
-            this.chkBoxCompatOpts.Size = new System.Drawing.Size(300, 19);
-            this.chkBoxCompatOpts.TabIndex = 10;
-            this.chkBoxCompatOpts.Text = "Set compatibility options for new Cemu installation:";
-            this.chkBoxCompatOpts.UseVisualStyleBackColor = true;
-            this.chkBoxCompatOpts.CheckedChanged += new System.EventHandler(this.UpdateCompatOptionsCheckboxesState);
+            this.chkBoxCompatOptions.AutoSize = true;
+            this.chkBoxCompatOptions.Checked = true;
+            this.chkBoxCompatOptions.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkBoxCompatOptions.Location = new System.Drawing.Point(15, 88);
+            this.chkBoxCompatOptions.Name = "chkBoxCompatOptions";
+            this.chkBoxCompatOptions.Size = new System.Drawing.Size(300, 19);
+            this.chkBoxCompatOptions.TabIndex = 10;
+            this.chkBoxCompatOptions.Text = "Set compatibility options for new Cemu installation:";
+            this.chkBoxCompatOptions.UseVisualStyleBackColor = true;
+            this.chkBoxCompatOptions.CheckedChanged +=
+                new System.EventHandler(this.UpdateCompatOptionsCheckboxesEnabledState);
             // 
             // chkBoxDeletePrevContent
             // 
@@ -491,7 +496,7 @@
             // downloadTab
             // 
             this.downloadTab.Controls.Add(this.lblHttp);
-            this.downloadTab.Controls.Add(this.lblUriError);
+            this.downloadTab.Controls.Add(this.lblCemuDownloadUrlInvalid);
             this.downloadTab.Controls.Add(this.lblSampleVersion);
             this.downloadTab.Controls.Add(this.txtBoxUrlSuffix);
             this.downloadTab.Controls.Add(this.txtBoxBaseUrl);
@@ -514,14 +519,15 @@
             this.lblHttp.TabIndex = 6;
             this.lblHttp.Text = "http://";
             // 
-            // lblUriError
+            // lblCemuDownloadUrlInvalid
             // 
-            this.lblUriError.ForeColor = System.Drawing.Color.Red;
-            this.lblUriError.Location = new System.Drawing.Point(17, 162);
-            this.lblUriError.Name = "lblUriError";
-            this.lblUriError.Size = new System.Drawing.Size(334, 34);
-            this.lblUriError.TabIndex = 5;
-            this.lblUriError.Text = "The URL you entered isn\'t valid, thus won\'t be saved when you close the window.";
+            this.lblCemuDownloadUrlInvalid.ForeColor = System.Drawing.Color.Red;
+            this.lblCemuDownloadUrlInvalid.Location = new System.Drawing.Point(17, 162);
+            this.lblCemuDownloadUrlInvalid.Name = "lblCemuDownloadUrlInvalid";
+            this.lblCemuDownloadUrlInvalid.Size = new System.Drawing.Size(334, 34);
+            this.lblCemuDownloadUrlInvalid.TabIndex = 5;
+            this.lblCemuDownloadUrlInvalid.Text =
+                "The URL you entered isn\'t valid, thus won\'t be saved when you close the window.";
             // 
             // lblSampleVersion
             // 
@@ -538,7 +544,7 @@
             this.txtBoxUrlSuffix.Name = "txtBoxUrlSuffix";
             this.txtBoxUrlSuffix.Size = new System.Drawing.Size(59, 23);
             this.txtBoxUrlSuffix.TabIndex = 3;
-            this.txtBoxUrlSuffix.TextChanged += new System.EventHandler(this.CheckIfDownloadUrlIsValid);
+            this.txtBoxUrlSuffix.TextChanged += new System.EventHandler(this.CheckIfCemuDownloadUrlIsValid);
             // 
             // txtBoxBaseUrl
             // 
@@ -546,7 +552,7 @@
             this.txtBoxBaseUrl.Name = "txtBoxBaseUrl";
             this.txtBoxBaseUrl.Size = new System.Drawing.Size(187, 23);
             this.txtBoxBaseUrl.TabIndex = 2;
-            this.txtBoxBaseUrl.TextChanged += new System.EventHandler(this.CheckIfDownloadUrlIsValid);
+            this.txtBoxBaseUrl.TextChanged += new System.EventHandler(this.CheckIfCemuDownloadUrlIsValid);
             // 
             // lblUrl
             // 
@@ -559,14 +565,15 @@
             // 
             // lblWarning
             // 
-            this.lblWarning.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWarning.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold,
+                System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.lblWarning.Location = new System.Drawing.Point(17, 15);
             this.lblWarning.Name = "lblWarning";
             this.lblWarning.Size = new System.Drawing.Size(334, 81);
             this.lblWarning.TabIndex = 0;
-            this.lblWarning.Text = "NOTE: Do not edit the address below unless Cemu repository has changed.\r\nChanging" +
-    " this option when not necessary will make the program unable to download new Cem" +
-    "u versions!";
+            this.lblWarning.Text =
+                "NOTE: Do not edit the address below unless Cemu repository has changed.\r\nChanging" +
+                " this option when not necessary will make the program unable to download new Cem" + "u versions!";
             // 
             // btnHelp
             // 
@@ -593,15 +600,16 @@
             this.Controls.Add(this.btnRestoreDefaultOpts);
             this.Controls.Add(this.btnDiscard);
             this.Controls.Add(this.btnSaveOpts);
-            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular,
+                System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Icon = ((System.Drawing.Icon) (resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "OptionsForm";
             this.Text = "Options";
             this.grpBoxProgramOpts.ResumeLayout(false);
             this.grpBoxProgramOpts.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.errProviderMlcFolder)).EndInit();
+            ((System.ComponentModel.ISupportInitialize) (this.errProviderMlcFolder)).EndInit();
             this.tabControl.ResumeLayout(false);
             this.foldersTab.ResumeLayout(false);
             this.foldersTab.PerformLayout();
@@ -613,14 +621,13 @@
             this.downloadTab.ResumeLayout(false);
             this.downloadTab.PerformLayout();
             this.ResumeLayout(false);
-
         }
 
         #endregion
+
         private System.Windows.Forms.GroupBox grpBoxProgramOpts;
-        private System.Windows.Forms.Button btnDeleteSettingsFile;
         private System.Windows.Forms.RadioButton radioBtnAppDataFolder;
-        private System.Windows.Forms.RadioButton radioBtnExecFolder;
+        private System.Windows.Forms.RadioButton radioBtnLocalFolder;
         private System.Windows.Forms.Label lblFileLocation;
         private System.Windows.Forms.Button btnSaveOpts;
         private System.Windows.Forms.Button btnDiscard;
@@ -630,13 +637,13 @@
         private System.Windows.Forms.ErrorProvider errProviderMlcFolder;
         private System.Windows.Forms.TabControl tabControl;
         private System.Windows.Forms.TabPage foldersTab;
-        private System.Windows.Forms.TextBox txtBoxCustomMlc01Path;
-        private System.Windows.Forms.CheckBox chkBoxCustomMlc01Path;
+        private System.Windows.Forms.TextBox txtBoxCustomMlcPath;
+        private System.Windows.Forms.CheckBox chkBoxCustomMlcPath;
         private System.Windows.Forms.CheckBox chkBoxCemuSettings;
         private System.Windows.Forms.CheckBox chkBoxShaderCaches;
-        private System.Windows.Forms.CheckBox chkBoxDLCUpds;
+        private System.Windows.Forms.CheckBox chkBoxDLCAndUpdates;
         private System.Windows.Forms.CheckBox chkBoxSavegames;
-        private System.Windows.Forms.CheckBox chkBoxGfxPacks;
+        private System.Windows.Forms.CheckBox chkBoxGraphicPacks;
         private System.Windows.Forms.CheckBox chkBoxGameProfiles;
         private System.Windows.Forms.CheckBox chkBoxControllerProfiles;
         private System.Windows.Forms.TabPage featuresTab;
@@ -647,7 +654,7 @@
         private System.Windows.Forms.CheckBox chkBoxNoFullscreenOptimiz;
         private System.Windows.Forms.CheckBox chkBoxOverrideHiDPIBehaviour;
         private System.Windows.Forms.CheckBox chkBoxRunAsAdmin;
-        private System.Windows.Forms.CheckBox chkBoxCompatOpts;
+        private System.Windows.Forms.CheckBox chkBoxCompatOptions;
         private System.Windows.Forms.Label lblWarning;
         private System.Windows.Forms.Label lblSampleVersion;
         private System.Windows.Forms.TextBox txtBoxUrlSuffix;
@@ -656,12 +663,12 @@
         private System.Windows.Forms.Button btnManageFiles;
         private System.Windows.Forms.Button btnManageFolders;
         private System.Windows.Forms.Label lblTotalCustomFolders;
-        private System.Windows.Forms.Label lblCustomFoldersCnt;
+        private System.Windows.Forms.Label lblCustomFoldersCount;
         private System.Windows.Forms.GroupBox grpBoxCustomEntries;
         private System.Windows.Forms.Label lblHttp;
-        private System.Windows.Forms.Label lblUriError;
+        private System.Windows.Forms.Label lblCemuDownloadUrlInvalid;
         private System.Windows.Forms.Button btnHelp;
         private System.Windows.Forms.Label lblTotalCustomFiles;
-        private System.Windows.Forms.Label lblCustomFilesCnt;
+        private System.Windows.Forms.Label lblCustomFilesCount;
     }
 }

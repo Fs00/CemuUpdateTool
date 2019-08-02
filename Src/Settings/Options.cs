@@ -18,7 +18,7 @@ namespace CemuUpdateTool.Settings
         public static IToggleableOptionsList FilesToMigrate { private set; get; }
         public static IOptionsGroup<bool> Migration { private set; get; }
         public static IOptionsGroup<string> Download { private set; get; }
-        public static string CustomMlcFolderPath { set; get; } = "";      // mlc01 folder's custom path for Cemu 1.10+
+        public static string CustomMlcFolderPath { set; get; } = "";    // mlc01 folder's custom path for Cemu 1.10+
         public static string CurrentOptionsFilePath { set; get; } = "";
 
         private const string OPTIONS_FILE_NAME = "settings.dat";
@@ -41,9 +41,9 @@ namespace CemuUpdateTool.Settings
                     { FolderOption.ControllerProfiles, true },
                     { FolderOption.GameProfiles, false },
                     { FolderOption.GraphicPacks, true },
-                    { FolderOption.OldSavegames, true },
-                    { FolderOption.Savegames, true },
-                    { FolderOption.DLCUpdates, true },
+                    { FolderOption.GameSavesBeforeCemu1_11, true },
+                    { FolderOption.GameSavesAfterCemu1_11, true },
+                    { FolderOption.DLCAndUpdates, true },
                     { FolderOption.TransferableCaches, true }
                 }
             );
@@ -149,21 +149,16 @@ namespace CemuUpdateTool.Settings
                 File.WriteAllText(CurrentOptionsFilePath, serializedOptions);
             }
         }
-
-        /*
-         *  Deletes the options file, returning true if the file existed and has been removed, otherwise false
-         */
-        public static bool DeleteOptionsFile()
+        
+        public static void DeleteOptionsFile()
         {
-            if (!string.IsNullOrEmpty(CurrentOptionsFilePath) && File.Exists(CurrentOptionsFilePath))
+            if (!string.IsNullOrEmpty(CurrentOptionsFilePath))
             {
                 File.Delete(CurrentOptionsFilePath);
                 if (CurrentOptionsFilePath == AppDataOptionsFilePath)
                     DeleteFs00AppDataFolderIfEmpty();
-                return true;
+                CurrentOptionsFilePath = "";
             }
-            else
-                return false;
         }
 
         private static void DeleteFs00AppDataFolderIfEmpty()

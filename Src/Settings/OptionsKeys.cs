@@ -23,9 +23,9 @@
         public const string ControllerProfiles = "controllerProfiles";
         public const string GameProfiles = "gameProfiles";
         public const string GraphicPacks = "graphicPacks";
-        public const string OldSavegames = @"mlc01\emulatorSave";       // savegame directory before Cemu 1.11
-        public const string Savegames = @"mlc01\usr\save";              // savegame directory since Cemu 1.11
-        public const string DLCUpdates = @"mlc01\usr\title";
+        public const string GameSavesBeforeCemu1_11 = @"mlc01\emulatorSave";
+        public const string GameSavesAfterCemu1_11 = @"mlc01\usr\save";
+        public const string DLCAndUpdates = @"mlc01\usr\title";
         public const string TransferableCaches = @"shaderCache\transferable";
     }
 
