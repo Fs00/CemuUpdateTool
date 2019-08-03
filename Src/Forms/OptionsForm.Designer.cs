@@ -1,4 +1,4 @@
-﻿namespace CemuUpdateTool.Forms
+namespace CemuUpdateTool.Forms
 {
     partial class OptionsForm
     {
@@ -127,7 +127,7 @@
             this.toolTipInfo.SetToolTip(this.radioBtnAppDataFolder, "(%AppData%\\Fs00\\CemuUpdateTool)");
             this.radioBtnAppDataFolder.UseVisualStyleBackColor = true;
             // 
-            // radioBtnExecutableFolder
+            // radioBtnLocalFolder
             // 
             this.radioBtnLocalFolder.AutoSize = true;
             this.radioBtnLocalFolder.Checked = true;
@@ -280,7 +280,7 @@
             this.lblTotalCustomFiles.TabIndex = 17;
             this.lblTotalCustomFiles.Text = "Total:";
             // 
-            // lblCustomFilesCnt
+            // lblCustomFilesCount
             // 
             this.lblCustomFilesCount.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCustomFilesCount.AutoSize = true;
@@ -311,7 +311,7 @@
             this.lblTotalCustomFolders.TabIndex = 12;
             this.lblTotalCustomFolders.Text = "Total:";
             // 
-            // lblCustomFoldersCnt
+            // lblCustomFoldersCount
             // 
             this.lblCustomFoldersCount.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCustomFoldersCount.AutoSize = true;
@@ -595,6 +595,7 @@
             this.AutoSize = true;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(407, 457);
+            this.ControlBox = false;
             this.Controls.Add(this.btnHelp);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.btnRestoreDefaultOpts);
