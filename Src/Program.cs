@@ -8,6 +8,12 @@ namespace CemuUpdateTool
 {
     static class Program
     {
+        public static float GetScreenDPIScaleFactor()
+        {
+            using (var gfx = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+                return gfx.DpiX / 96;
+        }
+
         [STAThread]
         static void Main(string[] args)
         {
@@ -19,11 +25,17 @@ namespace CemuUpdateTool
             AppDomain.CurrentDomain.UnhandledException += HandleFatalExceptionAndExit;
             #endif
 
+            TryLoadOptionsFromFile(args);
+            Application.Run(new ContainerForm(new HomeForm()));
+        }
+
+        private static void TryLoadOptionsFromFile(string[] launchArgs)
+        {
             try
             {
                 // If the application is launched with the 'prefer-appdata-config' parameter, options are loaded
                 // from %AppData% folder even if local file exists
-                bool preferAppDataFile = args.Length > 0 && args[0].TrimStart('-', '/') == "prefer-appdata-config";
+                bool preferAppDataFile = launchArgs.Length > 0 && launchArgs[0].TrimStart('-', '/') == "prefer-appdata-config";
                 if (Options.OptionsFileFound(preferAppDataFile))
                     Options.LoadFromCurrentlySelectedFile();
             }
@@ -31,14 +43,6 @@ namespace CemuUpdateTool
             {
                 ShowOptionsLoadErrorDialog(exc);
             }
-
-            Application.Run(new ContainerForm(new HomeForm()));
-        }
-
-        public static float GetScreenDPIScaleFactor()
-        {
-            using (var gfx = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
-                return gfx.DpiX / 96;
         }
 
         private static void ShowOptionsLoadErrorDialog(Exception optionsLoadException)
@@ -58,20 +62,9 @@ namespace CemuUpdateTool
 
         private static void HandleFatalExceptionAndExit(object _, UnhandledExceptionEventArgs eventArgs)
         {
-            var fatalException = (Exception) eventArgs.ExceptionObject;
+            var fatalException = (Exception)eventArgs.ExceptionObject;
             ShowFatalErrorDialog(fatalException);
-            try
-            {
-                ProduceCrashlog(fatalException);
-            }
-            catch (Exception crashlogCreationExc)
-            {
-                MessageBox.Show(
-                    $"An error occurred when producing crash log: {crashlogCreationExc.Message}",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error
-                );
-            }
-
+            TryProduceCrashlog(fatalException);
             Environment.Exit(-1);
         }
 
@@ -87,11 +80,21 @@ namespace CemuUpdateTool
             );
         }
 
-        private static void ProduceCrashlog(Exception fatalException)
+        private static void TryProduceCrashlog(Exception fatalException)
         {
-            var crashLogger = new CrashlogGenerator(fatalException);
-            crashLogger.GenerateLogContent();
-            crashLogger.WriteContentToTextFileInCurrentDirectory();
+            try
+            {
+                var crashLogger = new CrashlogGenerator(fatalException);
+                crashLogger.GenerateLogContent();
+                crashLogger.WriteContentToTextFileInCurrentDirectory();
+            }
+            catch (Exception crashlogCreationExc)
+            {
+                MessageBox.Show(
+                    $"An error occurred when producing crash log: {crashlogCreationExc.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error
+                );
+            }
         }
     }
 }

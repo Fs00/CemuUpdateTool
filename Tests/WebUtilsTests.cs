@@ -9,7 +9,7 @@ namespace CemuUpdateTool.Tests
     public class WebUtilsTests
     {
         // TO BE UPDATED WHEN THERE'S A NEW CEMU VERSION
-        private readonly VersionNumber latestKnownCemuVersion = new VersionNumber(1, 15, 10);
+        private readonly VersionNumber latestKnownCemuVersion = new VersionNumber(1, 15, 11);
 
         private const string CEMU_URL_PREFIX = "http://cemu.info/releases/cemu_";
         private const string CEMU_URL_SUFFIX = ".zip";

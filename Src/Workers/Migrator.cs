@@ -156,7 +156,7 @@ namespace CemuUpdateTool.Workers
                     sourceFile.CopyToAndReportOutcomeToWorker(Path.Combine(destinationCemuInstallationPath, fileRelativePath), this);
                 else
                     OnLogMessage(LogMessageType.Information,
-                        $"File {fileRelativePath} doesn't exist in source Cemu installation: skipped.");
+                                 $"File {fileRelativePath} doesn't exist in source Cemu installation: skipped.");
             }
         }
 
@@ -165,7 +165,11 @@ namespace CemuUpdateTool.Workers
             string keyValue = BuildCompatibilityRegistryKeyValue();
             if (string.IsNullOrEmpty(keyValue))
                 return;
+            TryWriteCompatibilityRegistryKey(keyValue);
+        }
 
+        private void TryWriteCompatibilityRegistryKey(string keyValue)
+        {
             string destinationCemuExecutablePath = Path.Combine(destinationCemuInstallationPath, "Cemu.exe");
             try
             {
@@ -176,17 +180,13 @@ namespace CemuUpdateTool.Workers
                     key.SetValue(destinationCemuExecutablePath, keyValue);
                 }
 
-                OnLogMessage(
-                    LogMessageType.Information,
-                    $"Compatibility options for {destinationCemuExecutablePath} set in the Windows Registry correctly."
-                );
+                OnLogMessage(LogMessageType.Information,
+                    $"Compatibility options for {destinationCemuExecutablePath} set in the Windows Registry correctly.");
             }
             catch (Exception exc)
             {
-                OnLogMessage(
-                    LogMessageType.Error,
-                    $"Unable to set compatibility options for {destinationCemuExecutablePath} in the Windows Registry: {exc.Message}"
-                );
+                OnLogMessage(LogMessageType.Error,
+                    $"Unable to set compatibility options for {destinationCemuExecutablePath} in the Windows Registry: {exc.Message}");
             }
         }
 
