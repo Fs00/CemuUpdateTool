@@ -75,18 +75,19 @@
             this.linkLblQuestions.LinkArea = new System.Windows.Forms.LinkArea(83, 0);
             this.linkLblQuestions.Location = new System.Drawing.Point(12, 276);
             this.linkLblQuestions.Name = "linkLblQuestions";
-            this.linkLblQuestions.Size = new System.Drawing.Size(458, 21);
+            this.linkLblQuestions.Size = new System.Drawing.Size(457, 21);
             this.linkLblQuestions.TabIndex = 7;
-            this.linkLblQuestions.Text = "More questions? Don\'t hesitate to ask me on Discord or in the official forum thre" +
-    "ad";
+            this.linkLblQuestions.Text = "More questions? Don\'t hesitate to ask me in the official forum thread or on GitHu" +
+    "b.";
             this.linkLblQuestions.UseCompatibleTextRendering = true;
+            this.linkLblQuestions.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelClicked);
             // 
             // HelpForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(586, 309);
+            this.ClientSize = new System.Drawing.Size(587, 309);
             this.Controls.Add(this.linkLblQuestions);
             this.Controls.Add(this.richTxtBoxHelp);
             this.Controls.Add(this.btnClose);

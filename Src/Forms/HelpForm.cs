@@ -5,7 +5,6 @@ using System.Windows.Forms;
 namespace CemuUpdateTool.Forms
 {
     /*
-     *  HelpForm
      *  Displays an RTF-formatted help text related to the form that opened it
      */
     public partial class HelpForm : Form
@@ -13,15 +12,21 @@ namespace CemuUpdateTool.Forms
         public HelpForm(Form launcher)
         {
             InitializeComponent();
-
             Icon = System.Drawing.SystemIcons.Question;
-            linkLblQuestions.Links.Add(62, 26, "http://forum.cemu.info/showthread.php/684");
-            linkLblQuestions.Links.Add(44, 7, "http://discordapp.com");
+            AddLinksToBottomLabel();
+            LoadHelpText(launcher);
+            SetTextBoxPadding();
+        }
 
-            // Initialize the resource manager used to load text
-            ResourceManager textResources = new ResourceManager("CemuUpdateTool.resources.HelpFormTexts", GetType().Assembly);
+        private void AddLinksToBottomLabel()
+        {
+            linkLblQuestions.Links.Add(48, 21, "http://forum.cemu.info/showthread.php/684");
+            linkLblQuestions.Links.Add(76, 6, "http://github.com/Fs00/CemuUpdateTool/issues");
+        }
 
-            // Load the RTF text according to the form that launched HelpForm
+        private void LoadHelpText(Form launcher)
+        {
+            var textResources = new ResourceManager("CemuUpdateTool.resources.HelpFormTexts", GetType().Assembly);
             string loadedRtfString = textResources.GetString("baseRtfText");
             if (launcher is HomeForm)
                 loadedRtfString += textResources.GetString("homeFormText");
@@ -32,8 +37,10 @@ namespace CemuUpdateTool.Forms
             else if (launcher is UpdateForm)
                 loadedRtfString += textResources.GetString("updateFormText");
             richTxtBoxHelp.Rtf = loadedRtfString;
+        }
 
-            // Set textbox left/right padding
+        private void SetTextBoxPadding()
+        {
             richTxtBoxHelp.SelectAll();
             richTxtBoxHelp.SelectionIndent += 8;
             richTxtBoxHelp.SelectionRightIndent += 8;

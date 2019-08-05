@@ -4,30 +4,30 @@ using System.Reflection;
 
 namespace CemuUpdateTool.Forms
 {
-    /*
-     *  AboutForm
-     *  Displays info about the program
-     */
     public partial class AboutForm : Form
     {
         public AboutForm()
         {
             InitializeComponent();
-            Icon = SystemIcons.Information;     // set form icon
+            Icon = SystemIcons.Information;
             lblVersion.Text += Application.ProductVersion + $" ({GetReleaseDate()})";
-
-            // Add links to labels
-            linklblForum.Links.Add(36, 26, "http://forum.cemu.info/showthread.php/684");
-            linkLblDonate.Links.Add(27, 15, "https://paypal.me/Fs00");
+            AddLinksToLabels();
         }
 
         private string GetReleaseDate()
         {
-            var attributes = GetType().Assembly.GetCustomAttributes(typeof(AssemblyReleaseDateAttribute), false);
-            if (attributes != null)
-                return (attributes[0] as AssemblyReleaseDateAttribute).ToString();
+            object[] attributes = GetType().Assembly.GetCustomAttributes(typeof(AssemblyReleaseDateAttribute), false);
+            if (attributes.Length > 0)
+                return ((AssemblyReleaseDateAttribute) attributes[0]).ToString();
 
             return "";
+        }
+
+        private void AddLinksToLabels()
+        {
+            linkLblMadeBy.Links.Add(25, 4, "http://github.com/Fs00");
+            linklblForum.Links.Add(36, 26, "http://forum.cemu.info/showthread.php/684");
+            linkLblDonate.Links.Add(27, 15, "https://paypal.me/Fs00");
         }
 
         private void LinkLabelClicked(object sender, LinkLabelLinkClickedEventArgs e)
