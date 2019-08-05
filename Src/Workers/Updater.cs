@@ -1,61 +1,94 @@
 ﻿using CemuUpdateTool.Utils;
 using System;
 using System.IO;
-using System.Net;
 using System.Threading;
 
 namespace CemuUpdateTool.Workers
 {
     sealed class Updater : Downloader
     {
-        private readonly string cemuInstallationPath;
+        private readonly string cemuInstallationToBeUpdatedPath;
 
-        public Updater(string cemuInstallationPath, CancellationToken cancToken)
+        public Updater(string cemuInstallationToBeUpdatedPath, CancellationToken cancToken)
             : base(Path.Combine(Path.GetTempPath(), "cemu_update"), cancToken)
         {
-            this.cemuInstallationPath = cemuInstallationPath;
+            this.cemuInstallationToBeUpdatedPath = cemuInstallationToBeUpdatedPath;
+        }
+
+        public VersionNumber PerformUpdateOperations(bool removePrecompiledCaches, bool updateGameProfiles)
+        {
+            try
+            {
+                return PerformActualUpdateOperations(removePrecompiledCaches, updateGameProfiles);
+            }
+            finally
+            {
+                TryDeleteTemporaryCemuInstallation();
+            }
         }
 
         /*
-         *  Performs update operations, which include Cemu executable replacing, resources folder update (avoids not updated translations) and, upon user request,
-         *  precompiled removal and game profiles update.
          *  Returns the version number of the downloaded Cemu version in order to update the latest known Cemu version in options.
          */
-        public VersionNumber PerformUpdateOperations(bool removePrecompiledCaches, bool updateGameProfiles)
+        public VersionNumber PerformActualUpdateOperations(bool removePrecompiledCaches, bool updateGameProfiles)
         {
-            VersionNumber downloadedCemuVer = PerformDownloadOperations();
-
-            // Replace Cemu.exe from the downloaded Cemu version
-            var downloadedCemuExe = new FileInfo(Path.Combine(downloadedCemuInstallation, "Cemu.exe"));
-            downloadedCemuExe.CopyToAndReportOutcomeToWorker(Path.Combine(cemuInstallationPath, "Cemu.exe"), this);
-
-            // Copy 'resources' folder to the updated Cemu installation to avoid old translations being used
-            OnWorkStart("Updating translation files");
-            FileUtils.CopyDirectory(Path.Combine(downloadedCemuInstallation, "resources"), Path.Combine(cemuInstallationPath, "resources"), this);
+            VersionNumber downloadedCemuVersion = PerformDownloadOperations();
+            ReplaceOldCemuExecutable();
+            ReplaceOldTranslationFiles();
 
             if (removePrecompiledCaches)
-            {
-                OnWorkStart("Removing precompiled caches");
-                FileUtils.RemoveDirectoryContents(Path.Combine(cemuInstallationPath, "shaderCache", "precompiled"), this);
-            }
+                RemoveOldPrecompiledCaches();
 
             if (updateGameProfiles)
-            {
-                OnWorkStart("Updating game profiles");
-                FileUtils.CopyDirectory(Path.Combine(downloadedCemuInstallation, "gameProfiles"), Path.Combine(cemuInstallationPath, "gameProfiles"), this);
-            }
+                ReplaceOldGameProfiles();
 
-            // Clean up temporary downloaded Cemu folder
+            return downloadedCemuVersion;
+        }
+
+        private void ReplaceOldCemuExecutable()
+        {
+            OnWorkStart("Updating Cemu executable");
+            var downloadedCemuExecutable = new FileInfo(Path.Combine(downloadedCemuInstallation, "Cemu.exe"));
+            downloadedCemuExecutable.CopyToAndReportOutcomeToWorker(Path.Combine(cemuInstallationToBeUpdatedPath, "Cemu.exe"), this);
+        }
+
+        private void ReplaceOldTranslationFiles()
+        {
+            OnWorkStart("Updating translation files");
+            FileUtils.CopyDirectory(
+                Path.Combine(downloadedCemuInstallation, "resources"),
+                Path.Combine(cemuInstallationToBeUpdatedPath, "resources"),
+                this
+            );
+        }
+
+        private void RemoveOldPrecompiledCaches()
+        {
+            OnWorkStart("Removing precompiled caches");
+            FileUtils.RemoveDirectoryContents(Path.Combine(cemuInstallationToBeUpdatedPath, "shaderCache", "precompiled"), this);
+        }
+
+        private void ReplaceOldGameProfiles()
+        {
+            OnWorkStart("Updating game profiles");
+            FileUtils.CopyDirectory(
+                Path.Combine(downloadedCemuInstallation, "gameProfiles"),
+                Path.Combine(cemuInstallationToBeUpdatedPath, "gameProfiles"),
+                this
+            );
+        }
+
+        private void TryDeleteTemporaryCemuInstallation()
+        {
             try
             {
-                Directory.Delete(downloadedCemuInstallation, true);
+                if (Directory.Exists(downloadedCemuInstallation))
+                    Directory.Delete(downloadedCemuInstallation, recursive: true);
             }
             catch (Exception exc)
             {
                 OnLogMessage(LogMessageType.Error, $"Unexpected error during deletion of temporary downloaded Cemu folder: {exc.Message}");
             }
-
-            return downloadedCemuVer;
         }
     }
 }

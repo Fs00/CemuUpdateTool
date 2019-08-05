@@ -150,7 +150,7 @@ namespace CemuUpdateTool.Workers
             {
                 case LatestRemoteVersionSearchOperation remoteVersionSearch:
                     OnLogMessage(LogMessageType.Information,
-                        $"Latest Cemu version found is {remoteVersionSearch.LatestVersionFound}.");
+                                 $"Latest Cemu version found is {remoteVersionSearch.LatestVersionFound}.");
                     break;
                 case FileDownloadOperation _:
                     OnLogMessage(LogMessageType.Information, "Done!");
