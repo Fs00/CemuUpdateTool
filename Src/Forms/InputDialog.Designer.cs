@@ -49,7 +49,7 @@
             this.btnOk.TabIndex = 2;
             this.btnOk.Text = "OK";
             this.btnOk.UseVisualStyleBackColor = true;
-            this.btnOk.Click += new System.EventHandler(this.ValidateInputAndClose);
+            this.btnOk.Click += new System.EventHandler(this.ValidateInputAndCloseIfCorrect);
             this.btnCancel.Anchor =
                 ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Bottom |
                                                        System.Windows.Forms.AnchorStyles.Right)));

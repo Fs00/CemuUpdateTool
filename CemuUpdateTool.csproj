@@ -95,11 +95,11 @@
     <Compile Include="Src\Forms\InputDialog.Designer.cs">
       <DependentUpon>InputDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Src\Forms\DictionaryEditingForm.cs">
+    <Compile Include="Src\Forms\OptionsDictionaryEditingForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Src\Forms\DictionaryEditingForm.Designer.cs">
-      <DependentUpon>DictionaryEditingForm.cs</DependentUpon>
+    <Compile Include="Src\Forms\OptionsDictionaryEditingForm.Designer.cs">
+      <DependentUpon>OptionsDictionaryEditingForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Src\Forms\OperationsForm.cs">
       <SubType>Form</SubType>
@@ -174,8 +174,8 @@
     <EmbeddedResource Include="Src\Forms\InputDialog.resx">
       <DependentUpon>InputDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Src\Forms\DictionaryEditingForm.resx">
-      <DependentUpon>DictionaryEditingForm.cs</DependentUpon>
+    <EmbeddedResource Include="Src\Forms\OptionsDictionaryEditingForm.resx">
+      <DependentUpon>OptionsDictionaryEditingForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Src\Forms\MigrationForm.resx">
       <DependentUpon>MigrationForm.cs</DependentUpon>

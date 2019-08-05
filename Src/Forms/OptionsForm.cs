@@ -335,7 +335,8 @@ namespace CemuUpdateTool.Forms
                     .ToDictionary(folder => folder, folder => Options.FoldersToMigrate[folder]);
             }
             
-            new DictionaryEditingForm(updatedCustomFolders, Options.AllDefaultFoldersToMigrate()).ShowDialog();
+            new OptionsDictionaryEditingForm("Manage custom folders", updatedCustomFolders, Options.AllDefaultFoldersToMigrate())
+                .ShowDialog();
             lblCustomFoldersCount.Text = updatedCustomFolders.Count.ToString();
         }
 
@@ -348,7 +349,8 @@ namespace CemuUpdateTool.Forms
                     .ToDictionary(file => file, file => Options.FilesToMigrate[file]);
             }
 
-            new DictionaryEditingForm(updatedCustomFiles, Options.AllDefaultFilesToMigrate()).ShowDialog();
+            new OptionsDictionaryEditingForm("Manage custom files", updatedCustomFiles, Options.AllDefaultFilesToMigrate())
+                .ShowDialog();
             lblCustomFilesCount.Text = updatedCustomFiles.Count.ToString();
         }
 

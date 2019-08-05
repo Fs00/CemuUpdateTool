@@ -4,23 +4,26 @@ using System.Windows.Forms;
 namespace CemuUpdateTool.Forms
 {
     /*
-     *  InputDialog
-     *  Dialog which lets the user to input a value and checks for its validity. The function that validates the input is provided by the caller
-     *  In this program it's used only for strings, but potentially could be used for any data type
+     *  Dialog which lets the user to insert a value and checks for its validity.
+     *  The function that validates the input is provided by the caller.
      */
     public partial class InputDialog<T> : Form
     {
         public T InputValue { private set; get; }
 
         public delegate bool ValidationDelegate(string input, out T value, out string reason);
-        ValidationDelegate InputIsValidated;
+        private readonly ValidationDelegate InputIsValid;
 
         public InputDialog(ValidationDelegate validationDelegate)
         {
             InitializeComponent();
-            InputIsValidated = validationDelegate;
+            InputIsValid = validationDelegate;
+            SetMinAndMaxSizeAccordingToScreenDPI();
+        }
 
-            // Set minimum and maximum size according to scale factor to avoid vertical resizing of the window
+        private void SetMinAndMaxSizeAccordingToScreenDPI()
+        {
+            // Avoids vertical resizing of the window on higher DPIs
             float scaleFactor = Program.GetScreenDPIScaleFactor();
             MinimumSize = new System.Drawing.Size((int)(240 * scaleFactor), Size.Height);
             MaximumSize = new System.Drawing.Size((int)(600 * scaleFactor), Size.Height);
@@ -32,9 +35,9 @@ namespace CemuUpdateTool.Forms
             Close();
         }
 
-        private void ValidateInputAndClose(object sender = null, EventArgs e = null)
+        private void ValidateInputAndCloseIfCorrect(object sender, EventArgs e)
         {
-            if (InputIsValidated(txtBoxInput.Text.Trim(' '), out T value, out string reason))
+            if (InputIsValid(txtBoxInput.Text.Trim(' '), out T value, out string reason))
             {
                 InputValue = value;
                 DialogResult = DialogResult.OK;

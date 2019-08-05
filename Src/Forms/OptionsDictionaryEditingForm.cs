@@ -6,23 +6,30 @@ using System.Windows.Forms;
 namespace CemuUpdateTool.Forms
 {
     /*
-     *  DictionaryEditingForm
-     *  Allows the user to edit custom files and folders dictionaries by adding/removing entries and checking/unchecking them
+     *  Allows the user to edit custom files and folders dictionaries (and more in general any <string, bool> dictionary)
+     *  by adding/removing entries and checking/unchecking them
      */
-    public partial class DictionaryEditingForm : Form
+    public partial class OptionsDictionaryEditingForm : Form
     {
-        Dictionary<string, bool> dictionary;        // dictionary that is edited
-        IEnumerable<string> forbiddenValues;        // contains the list of keys which aren't allowed to be added (in our case default options)
+        private readonly Dictionary<string, bool> editedDictionary;
+        private readonly IEnumerable<string> forbiddenValues;
 
-        public DictionaryEditingForm(Dictionary<string, bool> dictionary, IEnumerable<string> forbiddenValues)
+        public OptionsDictionaryEditingForm(string formTitle,
+                                            Dictionary<string, bool> editedDictionary,
+                                            IEnumerable<string> forbiddenValues)
         {
             InitializeComponent();
 
-            this.dictionary = dictionary;
+            Text = formTitle;
+            this.editedDictionary = editedDictionary;
             this.forbiddenValues = forbiddenValues;
 
-            // Populate ListView with dictionary elements
-            foreach (var entry in dictionary)
+            PopulateListView();
+        }
+
+        private void PopulateListView()
+        {
+            foreach (var entry in editedDictionary)
             {
                 ListViewItem addedItem = listView.Items.Add(entry.Key);
                 addedItem.Checked = entry.Value;
@@ -35,7 +42,7 @@ namespace CemuUpdateTool.Forms
          */
         private void AddElement(object sender, EventArgs e)
         {
-            var inputDialog = new InputDialog<string>(IsInputOK);
+            var inputDialog = new InputDialog<string>(IsInputValid);
             DialogResult choice = inputDialog.ShowDialog();
             if (choice == DialogResult.OK)
             {
@@ -45,16 +52,13 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        /*
-         *  Removes the selected element from the ListView and from the dictionary
-         */
         private void RemoveElement(object sender, EventArgs e)
         {
             if (listView.SelectedItems.Count > 0)
             {
                 ListViewItem selectedElement = listView.SelectedItems[0];
                 listView.Items.Remove(selectedElement);
-                dictionary.Remove(selectedElement.Text);
+                editedDictionary.Remove(selectedElement.Text);
             }
         }
 
@@ -71,45 +75,41 @@ namespace CemuUpdateTool.Forms
         }
         
         /*
-         *  Validation delegate for the InputDialog.
-         *  It checks if the string is a valid file name, it's not included in forbiddenValues and it's not already added
+         *  Validation function for the InputDialog
          */
-        private bool IsInputOK(string input, out string value, out string reason)
+        private bool IsInputValid(string input, out string value, out string reason)
         {
             value = null;
             if (string.IsNullOrEmpty(input))
-            {
                 reason = "the string is empty";
-                return false;
-            }
             else if (input.IndexOfAny(System.IO.Path.GetInvalidPathChars()) > -1 || input.EndsWith(@"\") || input.EndsWith("/"))
-            {
-                reason = "the string is not a valid path or file name. Make sure that the path does not contain forbidden chars and that does not end with a backslash or a slash";
-                return false;
-            }
+                reason = "the string is not a valid path or file name. Make sure that the path does not contain forbidden chars " +
+                         "and that does not end with a backslash or a slash";
             else if (forbiddenValues.Contains(input))
-            {
                 reason = "this value is already included in default options";
-                return false;
-            }
-            else if (dictionary.ContainsKey(input))
-            {
+            else if (editedDictionary.ContainsKey(input))
                 reason = "this value has already been added";
-                return false;
+            else
+            {
+                value = input;
+                reason = null;
             }
 
-            value = input;
-            reason = "";
-            return true;
+            return value != null;
         }
 
         /*
          *  Handler for the ItemChecked ListView event
-         *  Warning: It is called also when an item is added
+         *  Take note that it is called also when an item is added
          */
-        private void UpdateCheckedStateInDictionary(object sender, ItemCheckedEventArgs e)
+        private void UpdateCheckedStateInDictionary(object sender, ItemCheckedEventArgs evt)
         {
-            dictionary[e.Item.Text] = e.Item.Checked;
+            editedDictionary[evt.Item.Text] = evt.Item.Checked;
+        }
+
+        private void ResizeListViewColumnOnFormResize(object sender, EventArgs e)
+        {
+            listView.Columns[0].Width = listView.Width - 7;
         }
     }
 }

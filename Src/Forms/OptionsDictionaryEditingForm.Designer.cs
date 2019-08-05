@@ -1,6 +1,6 @@
 ﻿namespace CemuUpdateTool.Forms
 {
-    partial class DictionaryEditingForm
+    partial class OptionsDictionaryEditingForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DictionaryEditingForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OptionsDictionaryEditingForm));
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
             this.btnEnableAll = new System.Windows.Forms.Button();
@@ -92,6 +92,7 @@
             this.listView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.headerEntry});
             this.listView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.listView.HideSelection = false;
             this.listView.LabelWrap = false;
             this.listView.Location = new System.Drawing.Point(12, 12);
             this.listView.MultiSelect = false;
@@ -108,7 +109,7 @@
             this.headerEntry.Text = "Entry";
             this.headerEntry.Width = 250;
             // 
-            // DictionaryEditingForm
+            // OptionsDictionaryEditingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
@@ -123,9 +124,10 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(275, 200);
-            this.Name = "DictionaryEditingForm";
+            this.Name = "OptionsDictionaryEditingForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Manage custom entries";
+            this.SizeChanged += new System.EventHandler(this.ResizeListViewColumnOnFormResize);
             this.ResumeLayout(false);
 
         }
