@@ -73,11 +73,15 @@ namespace CemuUpdateTool.Utils
                 case WebExceptionStatus.NameResolutionFailure:
                     return "Name resolution failure. This can be due to absent internet connection or wrong Cemu website option.";
                 case WebExceptionStatus.ConnectFailure:
-                    return "Connection failure. Is your internet connection working?";
+                    return "Unable to connect to the server. If you are using a firewall or a proxy, try disable it.";
                 case WebExceptionStatus.Timeout:
                     return "Request timed out. Could be a temporary server error as well as missing internet connection.";
                 case WebExceptionStatus.ConnectionClosed:
                     return "The connection was unexpectedly closed by server. Retry later.";
+                case WebExceptionStatus.ProtocolError:
+                    return "The remote server responded with an error.";
+                case WebExceptionStatus.ServerProtocolViolation:
+                    return "The remote server sent an invalid response.";
                 default:
                     return excStatus + ".";
             }
