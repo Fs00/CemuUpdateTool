@@ -42,13 +42,15 @@ namespace CemuUpdateTool.Forms
          */
         private void AddElement(object sender, EventArgs e)
         {
-            var inputDialog = new InputDialog<string>(IsInputValid);
-            DialogResult choice = inputDialog.ShowDialog();
-            if (choice == DialogResult.OK)
+            using (var inputDialog = new InputDialog<string>(IsInputValid))
             {
-                ListViewItem addedItem = listView.Items.Add(inputDialog.InputValue);
-                // Here we don't need to add the item to the dictionary since the ItemChecked event handler is called, which creates the entry (see below)
-                addedItem.Checked = true;
+                DialogResult choice = inputDialog.ShowDialog();
+                if (choice == DialogResult.OK)
+                {
+                    ListViewItem addedItem = listView.Items.Add(inputDialog.InputValue);
+                    // We don't need to add the item to the dictionary manually since the ItemChecked event handler does it (see below)
+                    addedItem.Checked = true;
+                }
             }
         }
 

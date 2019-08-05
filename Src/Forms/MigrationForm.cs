@@ -387,7 +387,8 @@ namespace CemuUpdateTool.Forms
 
         private void OpenOptionsForm(object sender, EventArgs e)
         {
-            new OptionsForm().ShowDialog();
+            using (var form = new OptionsForm())
+                form.ShowDialog();
         }
 
         // These "fake overrides" are needed on Visual Studio to avoid form designer errors
