@@ -9,7 +9,7 @@ namespace CemuUpdateTool.Forms
      *  Allows the user to edit custom files and folders dictionaries (and more in general any <string, bool> dictionary)
      *  by adding/removing entries and checking/unchecking them
      */
-    public partial class OptionsDictionaryEditingForm : Form
+    public sealed partial class OptionsDictionaryEditingForm : Form
     {
         private readonly Dictionary<string, bool> editedDictionary;
         private readonly IEnumerable<string> forbiddenValues;

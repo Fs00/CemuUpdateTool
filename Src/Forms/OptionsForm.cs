@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
 using System.Windows.Forms;
-using CemuUpdateTool.Utils;
 using CemuUpdateTool.Settings;
 using System.IO;
 
@@ -16,7 +15,7 @@ namespace CemuUpdateTool.Forms
     {
         private bool optionsFileLocationChanged;
 
-        // These will contain the unsaved changes made to custom files/folders if the user edits them
+        // These will contain the unsaved changes made to custom files/folders if the user edits them, otherwise null
         private Dictionary<string, bool> updatedCustomFolders, updatedCustomFiles;
 
         public OptionsForm()
@@ -45,6 +44,7 @@ namespace CemuUpdateTool.Forms
             txtBoxBaseUrl.ContextMenuStrip = new ContextMenuStrip();
         }
 
+        #region Methods to update UI according to options
         private void SetCheckboxesAccordingToOptions()
         {
             SetFoldersCheckboxes();
@@ -63,6 +63,12 @@ namespace CemuUpdateTool.Forms
             chkBoxDLCAndUpdates.Checked = Options.FoldersToMigrate.IsEnabled(FolderOption.DLCAndUpdates);
             chkBoxShaderCaches.Checked = Options.FoldersToMigrate.IsEnabled(FolderOption.TransferableCaches);
             SetGameSavesFolderCheckbox();
+        }
+
+        private void RefreshCustomEntriesStats()
+        {
+            lblCustomFoldersCount.Text = Options.AllCustomFoldersToMigrate().Count().ToString();
+            lblCustomFilesCount.Text = Options.AllCustomFilesToMigrate().Count().ToString();
         }
 
         private void SetGameSavesFolderCheckbox()
@@ -130,7 +136,17 @@ namespace CemuUpdateTool.Forms
             txtBoxBaseUrl.Text = Options.Download[OptionKey.CemuBaseUrl].Remove(0, 7);
             txtBoxUrlSuffix.Text = Options.Download[OptionKey.CemuUrlSuffix];
         }
-        
+        #endregion
+
+        private void SaveOptionsAndClose(object sender, EventArgs e)
+        {
+            SetOptionsAccordingToCheckboxes();
+            UpdateCustomOptions();
+            TryWriteOptionsToFile();
+            Close();
+        }
+
+        #region Methods to update options according to UI
         private void SetOptionsAccordingToCheckboxes()
         {
             SetFoldersOptions();
@@ -144,19 +160,6 @@ namespace CemuUpdateTool.Forms
 
             if (!lblCemuDownloadUrlInvalid.Visible)
                 SetDownloadOptions();
-        }
-        
-        private static void TryDeleteOptionsFile()
-        {
-            try
-            {
-                Options.DeleteOptionsFile();
-            }
-            catch (Exception exc)
-            {
-                MessageBox.Show($"An error occurred when deleting previous options file: {exc.Message}", "",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
 
         private void SetFoldersOptions()
@@ -220,6 +223,77 @@ namespace CemuUpdateTool.Forms
                 TryLoadExistingOptionsFileIfUserWantsTo();
         }
 
+        private static void TryDeleteOptionsFile()
+        {
+            try
+            {
+                Options.DeleteOptionsFile();
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show($"An error occurred when deleting previous options file: {exc.Message}", "",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void SetDownloadOptions()
+        {
+            Options.Download[OptionKey.CemuBaseUrl] = "http://" + txtBoxBaseUrl.Text;
+            Options.Download[OptionKey.CemuUrlSuffix] = txtBoxUrlSuffix.Text;
+        }
+
+        private void UpdateCustomOptions()
+        {
+            if (updatedCustomFolders != null)
+            {
+                RemoveSpecifiedEntriesFromOptionsList(Options.FoldersToMigrate, Options.AllCustomFoldersToMigrate());
+                AddDictionaryEntriesToOptionsList(Options.FoldersToMigrate, updatedCustomFolders);
+            }
+
+            if (updatedCustomFiles != null)
+            {
+                RemoveSpecifiedEntriesFromOptionsList(Options.FilesToMigrate, Options.AllCustomFilesToMigrate());
+                AddDictionaryEntriesToOptionsList(Options.FilesToMigrate, updatedCustomFiles);
+            }
+        }
+
+        private static void RemoveSpecifiedEntriesFromOptionsList(IToggleableOptionsList list, IEnumerable<string> entriesToRemove)
+        {
+            // This copy prevents exceptions when entriesToRemove is an iterator on the list that is edited
+            string[] entriesToRemoveCopy = entriesToRemove.ToArray();
+            foreach (string entry in entriesToRemoveCopy)
+                list.Remove(entry);
+        }
+
+        private static void AddDictionaryEntriesToOptionsList(IToggleableOptionsList list, Dictionary<string, bool> dictionary)
+        {
+            foreach (var entry in dictionary)
+            {
+                list.Add(entry.Key);
+                list[entry.Key] = entry.Value;
+            }
+        }
+        #endregion
+
+        private void TryWriteOptionsToFile()
+        {
+            try
+            {
+                if (chkBoxSettingsOnFile.Checked)
+                    Options.WriteOptionsToCurrentlySelectedFile();
+                else
+                    MessageBox.Show("Please take note that if you don't store options in a file, " +
+                                    "they'll be lost as soon as you exit the application.", "Warning",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show($"Unexpected error when saving options on file: {exc.Message} " +
+                                "Changes won't be preserved after closing the program.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private static void TryLoadExistingOptionsFileIfUserWantsTo()
         {
             DialogResult choice = MessageBox.Show(
@@ -236,21 +310,9 @@ namespace CemuUpdateTool.Forms
                 catch
                 {
                     MessageBox.Show("An error occurred when parsing options file. Previous settings will be kept.",
-                                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-        }
-
-        private void SetDownloadOptions()
-        {
-            Options.Download[OptionKey.CemuBaseUrl] = "http://" + txtBoxBaseUrl.Text;
-            Options.Download[OptionKey.CemuUrlSuffix] = txtBoxUrlSuffix.Text;
-        }
-
-        private void RefreshCustomEntriesStats()
-        {
-            lblCustomFoldersCount.Text = Options.AllCustomFoldersToMigrate().Count().ToString();
-            lblCustomFilesCount.Text = Options.AllCustomFilesToMigrate().Count().ToString();
         }
 
         private void RestoreDefaultOptions(object sender, EventArgs e)
@@ -266,91 +328,39 @@ namespace CemuUpdateTool.Forms
             }
         }
 
-        private void SaveOptionsAndClose(object sender, EventArgs e)
-        {
-            SetOptionsAccordingToCheckboxes();
-            UpdateCustomOptions();
-            TryWriteOptionsToFile();
-            Close();
-        }
-
-        private void TryWriteOptionsToFile()
-        {
-            try
-            {
-                if (chkBoxSettingsOnFile.Checked)
-                    Options.WriteOptionsToCurrentlySelectedFile();
-                else
-                    MessageBox.Show("Please take note that if you don't store options in a file, " +
-                                    "they'll be lost as soon as you exit the application.", "Warning",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-            catch (Exception exc)
-            {
-                MessageBox.Show($"Unexpected error when saving options on file: {exc.Message} " +
-                                "Changes won't be preserved after closing the program.", "Error",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void UpdateCustomOptions()
-        {
-            if (updatedCustomFolders != null)
-            {
-                // Delete the old custom folder options from the dictionary
-                List<string> oldCustomFolders = Options.AllCustomFoldersToMigrate().ToList();
-                foreach (string folder in oldCustomFolders)
-                    Options.FoldersToMigrate.Remove(folder);
-
-                // ... and add the updated ones
-                foreach (var folder in updatedCustomFolders)
-                {
-                    Options.FoldersToMigrate.Add(folder.Key);
-                    Options.FoldersToMigrate[folder.Key] = folder.Value;
-                }
-            }
-
-            if (updatedCustomFiles != null)
-            {
-                // Delete the old custom files options from the dictionary
-                List<string> oldCustomFiles = Options.AllCustomFilesToMigrate().ToList();
-                foreach (string file in oldCustomFiles)
-                    Options.FilesToMigrate.Remove(file);
-
-                // ... and add the updated ones
-                foreach (var file in updatedCustomFiles)
-                {
-                    Options.FilesToMigrate.Add(file.Key);
-                    Options.FilesToMigrate[file.Key] = file.Value;
-                }
-            }
-        }
-        
         private void OpenManageCustomFoldersDialog(object sender, EventArgs e)
         {
-            // Initialize the updated dictionary if it's never been edited
             if (updatedCustomFolders == null)
             {
                 updatedCustomFolders = Options.AllCustomFoldersToMigrate()
                     .ToDictionary(folder => folder, folder => Options.FoldersToMigrate[folder]);
             }
 
-            using (var form = new OptionsDictionaryEditingForm("Manage custom folders", updatedCustomFolders, Options.AllDefaultFoldersToMigrate()))
+            using (var form = new OptionsDictionaryEditingForm(
+                "Manage custom folders",
+                updatedCustomFolders,
+                Options.AllDefaultFoldersToMigrate())
+            )
                 form.ShowDialog();
+
             lblCustomFoldersCount.Text = updatedCustomFolders.Count.ToString();
         }
 
         private void OpenManageCustomFilesDialog(object sender, EventArgs e)
         {
-            // Initialize the updated dictionary if it's never been edited
             if (updatedCustomFiles == null)
             {
                 updatedCustomFiles = Options.AllCustomFilesToMigrate()
                     .ToDictionary(file => file, file => Options.FilesToMigrate[file]);
             }
 
-            using (var form = new OptionsDictionaryEditingForm("Manage custom files", updatedCustomFiles, Options.AllDefaultFilesToMigrate()))
+            using (var form = new OptionsDictionaryEditingForm(
+                "Manage custom files",
+                updatedCustomFiles, 
+                Options.AllDefaultFilesToMigrate())
+            )
                 form.ShowDialog();
+
             lblCustomFilesCount.Text = updatedCustomFiles.Count.ToString();
         }
 

@@ -44,7 +44,8 @@ namespace CemuUpdateTool.Forms
                 Close();
             }
             else
-                MessageBox.Show($"The value you inserted is not valid: {reason}.", "Invalid input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"The value you inserted is not valid: {reason}.", "Invalid input",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

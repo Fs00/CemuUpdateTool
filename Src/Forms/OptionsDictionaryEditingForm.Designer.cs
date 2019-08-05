@@ -93,6 +93,7 @@
             this.headerEntry});
             this.listView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listView.HideSelection = false;
+            this.listView.LabelEdit = false;
             this.listView.LabelWrap = false;
             this.listView.Location = new System.Drawing.Point(12, 12);
             this.listView.MultiSelect = false;
