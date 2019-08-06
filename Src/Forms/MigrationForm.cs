@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -40,33 +39,14 @@ namespace CemuUpdateTool.Forms
         {
             lblTitle.Text = "Download & Migrate";
             lblDestinationCemuVersion.Visible = true;
+            flowPanelDestination.Controls.Remove(lblDestinationCemuVersionNumber);
             DisplayLatestTextInDestinationVersionCombobox();
-            AdaptDestinationVersionLabelPositionToCombobox();  // Avoids the combobox covering destination version label
-            AlignSourceVersionLabelsWithDestinationOnes();
-        }
-
-        private void AdaptDestinationVersionLabelPositionToCombobox()
-        {
-            Point newLocation = lblDestinationCemuVersion.Location;
-            newLocation.X = comboBoxDestinationVersion.Location.X - lblDestinationCemuVersion.Size.Width - 3;
-            lblDestinationCemuVersion.Location = newLocation;
-        }
-
-        private void AlignSourceVersionLabelsWithDestinationOnes()
-        {
-            Point newLocation = lblSourceCemuVersion.Location;
-            newLocation.X = lblDestinationCemuVersion.Location.X;
-            lblSourceCemuVersion.Location = newLocation;
-
-            newLocation = lblSourceCemuVersionNumber.Location;
-            newLocation.X = comboBoxDestinationVersion.Location.X;
-            lblSourceCemuVersionNumber.Location = newLocation;
         }
 
         private void SetControlsForMigrateMode()
         {
             lblTitle.Text = "Migrate";
-            comboBoxDestinationVersion.Visible = false;
+            flowPanelDestination.Controls.Remove(comboBoxDestinationVersion);
         }
 
         protected override void RemoveDefaultTextBoxContextMenus()

@@ -35,9 +35,11 @@
             this.lblCemuFolder = new System.Windows.Forms.Label();
             this.chkBoxUpdGameProfiles = new System.Windows.Forms.CheckBox();
             this.chkBoxDeletePrecompiled = new System.Windows.Forms.CheckBox();
+            this.flowPanelVersion = new System.Windows.Forms.FlowLayoutPanel();
             ((System.ComponentModel.ISupportInitialize)(this.errProviderFolders)).BeginInit();
             this.bottomPanel.SuspendLayout();
             this.headerPanel.SuspendLayout();
+            this.flowPanelVersion.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnStart
@@ -105,14 +107,16 @@
             this.lblDescription.Text = "Select the folder that contains the Cemu installation you want to update and then" +
     " press Start.";
             // 
-            // lblVersionNr
+            // lblCemuVersionNumber
             // 
             this.lblCemuVersionNumber.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblCemuVersionNumber.Location = new System.Drawing.Point(482, 75);
+            this.lblCemuVersionNumber.AutoSize = true;
+            this.lblCemuVersionNumber.Location = new System.Drawing.Point(166, 0);
+            this.lblCemuVersionNumber.Margin = new System.Windows.Forms.Padding(0);
             this.lblCemuVersionNumber.Name = "lblCemuVersionNumber";
             this.lblCemuVersionNumber.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.lblCemuVersionNumber.Size = new System.Drawing.Size(40, 15);
+            this.lblCemuVersionNumber.Size = new System.Drawing.Size(19, 15);
             this.lblCemuVersionNumber.TabIndex = 11;
             this.lblCemuVersionNumber.Text = "    ";
             this.lblCemuVersionNumber.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -120,11 +124,13 @@
             // lblCemuVersion
             // 
             this.lblCemuVersion.AutoSize = true;
-            this.lblCemuVersion.Location = new System.Drawing.Point(403, 75);
+            this.lblCemuVersion.Location = new System.Drawing.Point(83, 0);
+            this.lblCemuVersion.Margin = new System.Windows.Forms.Padding(0);
             this.lblCemuVersion.Name = "lblCemuVersion";
             this.lblCemuVersion.Size = new System.Drawing.Size(83, 15);
             this.lblCemuVersion.TabIndex = 9;
             this.lblCemuVersion.Text = "Cemu version:";
+            this.lblCemuVersion.TextAlign = System.Drawing.ContentAlignment.TopRight;
             this.lblCemuVersion.Visible = false;
             // 
             // btnSelectFolder
@@ -178,14 +184,24 @@
             this.chkBoxDeletePrecompiled.Text = "Delete precompiled caches";
             this.chkBoxDeletePrecompiled.UseVisualStyleBackColor = true;
             // 
+            // flowPanelVersion
+            // 
+            this.flowPanelVersion.Controls.Add(this.lblCemuVersionNumber);
+            this.flowPanelVersion.Controls.Add(this.lblCemuVersion);
+            this.flowPanelVersion.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
+            this.flowPanelVersion.Location = new System.Drawing.Point(340, 75);
+            this.flowPanelVersion.Name = "flowPanelVersion";
+            this.flowPanelVersion.Size = new System.Drawing.Size(185, 15);
+            this.flowPanelVersion.TabIndex = 14;
+            this.flowPanelVersion.WrapContents = false;
+            // 
             // UpdateForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.ClientSize = new System.Drawing.Size(537, 458);
+            this.Controls.Add(this.flowPanelVersion);
             this.Controls.Add(this.chkBoxDeletePrecompiled);
             this.Controls.Add(this.chkBoxUpdGameProfiles);
-            this.Controls.Add(this.lblCemuVersionNumber);
-            this.Controls.Add(this.lblCemuVersion);
             this.Controls.Add(this.lblCemuFolder);
             this.Controls.Add(this.txtBoxCemuFolder);
             this.Controls.Add(this.btnSelectFolder);
@@ -193,8 +209,6 @@
             this.Controls.SetChildIndex(this.btnSelectFolder, 0);
             this.Controls.SetChildIndex(this.txtBoxCemuFolder, 0);
             this.Controls.SetChildIndex(this.lblCemuFolder, 0);
-            this.Controls.SetChildIndex(this.lblCemuVersion, 0);
-            this.Controls.SetChildIndex(this.lblCemuVersionNumber, 0);
             this.Controls.SetChildIndex(this.btnStart, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.lblCurrentTask, 0);
@@ -206,10 +220,13 @@
             this.Controls.SetChildIndex(this.headerPanel, 0);
             this.Controls.SetChildIndex(this.chkBoxUpdGameProfiles, 0);
             this.Controls.SetChildIndex(this.chkBoxDeletePrecompiled, 0);
+            this.Controls.SetChildIndex(this.flowPanelVersion, 0);
             ((System.ComponentModel.ISupportInitialize)(this.errProviderFolders)).EndInit();
             this.bottomPanel.ResumeLayout(false);
             this.headerPanel.ResumeLayout(false);
             this.headerPanel.PerformLayout();
+            this.flowPanelVersion.ResumeLayout(false);
+            this.flowPanelVersion.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -223,5 +240,6 @@
         private System.Windows.Forms.Label lblCemuVersionNumber;
         private System.Windows.Forms.CheckBox chkBoxUpdGameProfiles;
         private System.Windows.Forms.CheckBox chkBoxDeletePrecompiled;
+        private System.Windows.Forms.FlowLayoutPanel flowPanelVersion;
     }
 }

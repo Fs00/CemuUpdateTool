@@ -198,7 +198,7 @@ namespace CemuUpdateTool.Forms
             lblCurrentTask.Text = "Waiting for operations to start...";
         }
 
-        protected void CancelOperations(object sender = null, EventArgs evt = null)
+        private void CancelOperations(object sender = null, EventArgs evt = null)
         {
             lblCurrentTask.Text = "Cancelling...";
             cTokenSource.Cancel();
