@@ -21,6 +21,7 @@ namespace CemuUpdateTool.Forms
         public OptionsForm()
         {
             InitializeComponent();
+            ControlBox = false;   // setting this property in InitializeComponent causes wrong form size when DPI scaling is >100%
             SetCheckboxesAccordingToOptions();
             DrawIconInsideHelpButton();
             RemoveDefaultTextBoxContextMenus();

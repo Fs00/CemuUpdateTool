@@ -595,7 +595,6 @@ namespace CemuUpdateTool.Forms
             this.AutoSize = true;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(407, 457);
-            this.ControlBox = false;
             this.Controls.Add(this.btnHelp);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.btnRestoreDefaultOpts);
