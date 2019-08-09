@@ -12,6 +12,11 @@ using File = System.IO.File;
 
 namespace CemuUpdateTool.Workers
 {
+    /*
+     * Progress reporting for this Worker works as follows:
+     *  - the progress increments by 1 for every copied file
+     *  - maximum progress is equal to the number of files to copy
+     */
     sealed class Migrator : Worker
     {
         // Necessary for restoring the original situation when operation is cancelled
@@ -245,6 +250,7 @@ namespace CemuUpdateTool.Workers
         protected override void OnOperationErrorHandled(Operation operationInfo, string errorMessage)
         {
             base.OnOperationErrorHandled(operationInfo, errorMessage);
+            // Progress needs to be incremented even if a file can't be copied otherwise 100% won't be reached
             switch (operationInfo)
             {
                 case FileCopyOperation _:
