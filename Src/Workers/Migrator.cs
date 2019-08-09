@@ -238,7 +238,7 @@ namespace CemuUpdateTool.Workers
             switch (operationInfo)
             {
                 case FileCopyOperation fileCopyOperationInfo:
-                    createdFiles.Add(fileCopyOperationInfo.SourceFile);
+                    createdFiles.Add(fileCopyOperationInfo.DestinationFile);
                     OnProgressIncrement(1);
                     break;
                 case DirectoryCreationOperation directoryCreationOperationInfo:
