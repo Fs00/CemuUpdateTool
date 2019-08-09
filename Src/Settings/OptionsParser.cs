@@ -19,10 +19,10 @@ namespace CemuUpdateTool.Settings
     {
         private class OptionsParser
         {
-            private Dictionary<string, bool> parsedFoldersToMigrate = new Dictionary<string, bool>();
-            private Dictionary<string, bool> parsedFilesToMigrate = new Dictionary<string, bool>();
-            private Dictionary<string, bool> parsedMigrationOptions = new Dictionary<string, bool>();
-            private Dictionary<string, string> parsedDownloadOptions = new Dictionary<string, string>();
+            private readonly Dictionary<string, bool> parsedFoldersToMigrate = new Dictionary<string, bool>();
+            private readonly Dictionary<string, bool> parsedFilesToMigrate = new Dictionary<string, bool>();
+            private readonly Dictionary<string, bool> parsedMigrationOptions = new Dictionary<string, bool>();
+            private readonly Dictionary<string, string> parsedDownloadOptions = new Dictionary<string, string>();
             private string parsedCustomMlcFolderPath = "";
 
             private LineCountingStreamReader optionsFileStream;
@@ -45,29 +45,34 @@ namespace CemuUpdateTool.Settings
                     if (optionsFileStream.BaseStream.Length == 0)
                         throw new InvalidDataException("Options file is empty.");
 
-                    try
-                    {
-                        while (!optionsFileStream.EndOfStream)
-                        {
-                            if (IsNextCharacterSectionMarker())
-                            {
-                                string sectionId = optionsFileStream.ReadLine().TrimStart(SECTION_MARKER);
-                                OptionsFileSection section = ParseFileSectionId(sectionId);
-                                ParseFileSection(section);
-                            }
-                            else
-                                optionsFileStream.ReadLine();
-                        }
-                    }
-                    catch (Exception exc)
-                    {
-                        throw GetWrappedExceptionWithCurrentLineNumber(exc);
-                    }
+                    ParseFileContent();
 
                     if (NoDataHasBeenParsed())
                         throw new InvalidDataException("Options file didn't contain any useful information.");
 
                     AddMissingOptionsWithDefaultValue();
+                }
+            }
+
+            private void ParseFileContent()
+            {
+                try
+                {
+                    while (!optionsFileStream.EndOfStream)
+                    {
+                        if (IsNextCharacterSectionMarker())
+                        {
+                            string sectionId = optionsFileStream.ReadLine().TrimStart(SECTION_MARKER);
+                            OptionsFileSection section = ParseFileSectionId(sectionId);
+                            ParseFileSection(section);
+                        }
+                        else
+                            optionsFileStream.ReadLine();
+                    }
+                }
+                catch (Exception exc)
+                {
+                    throw GetWrappedExceptionWithCurrentLineNumber(exc);
                 }
             }
 
@@ -121,7 +126,7 @@ namespace CemuUpdateTool.Settings
                 var converterToTValue = TypeDescriptor.GetConverter(typeof(TValue));
                 while (!IsNextCharacterSectionMarker() && !optionsFileStream.EndOfStream)
                 {
-                    if (IsNextCharacterEndOfLine())
+                    if (IsCurrentLineEmpty())
                     {
                         optionsFileStream.ReadLine();
                         continue;
@@ -140,7 +145,7 @@ namespace CemuUpdateTool.Settings
                 return optionsFileStream.Peek() == SECTION_MARKER;
             }
 
-            private bool IsNextCharacterEndOfLine()
+            private bool IsCurrentLineEmpty()
             {
                 int nextCharacter = optionsFileStream.Peek();
                 return nextCharacter == CR || nextCharacter == LF;

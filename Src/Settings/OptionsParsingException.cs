@@ -13,7 +13,5 @@ namespace CemuUpdateTool.Settings
         {
             CurrentLine = lineCount;
         }
-
-        protected OptionsParsingException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
     }
 }

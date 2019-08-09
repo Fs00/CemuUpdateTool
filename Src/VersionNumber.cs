@@ -8,7 +8,6 @@ namespace CemuUpdateTool
     #pragma warning disable CS0659
     #pragma warning disable CS0661
     /*
-     *  VersionNumber
      *  Provides a mutable data structure for version numbers, which can have any number of segments (e.g. 1.6.5 has 3 segments)
      */
     public class VersionNumber : IEquatable<VersionNumber>, IComparable<VersionNumber>

@@ -30,13 +30,13 @@ namespace CemuUpdateTool
 
         private string GenerateCrashlogFileName()
         {
-            return $"cemuUpdateTool-crashlog_{thisMoment.ToString("yyyy-MM-dd_HH.mm.ss")}.txt";
+            return $"cemuUpdateTool-crashlog_{thisMoment:yyyy-MM-dd_HH.mm.ss}.txt";
         }
 
         private void GenerateSummary()
         {
             logContent.AppendLine(
-                $"Cemu Update Tool v{Application.ProductVersion} crashlog - {thisMoment.ToString(@"yyyy/MM/dd HH:mm:ss")}"
+                $"Cemu Update Tool v{Application.ProductVersion} crashlog - {thisMoment:yyyy/MM/dd HH:mm:ss}"
             );
             logContent.AppendLine("------------------------------------------------------");
 
@@ -54,7 +54,7 @@ namespace CemuUpdateTool
 
             GenerateInnerExceptionDetails();
 
-            logContent.AppendLine(string.Format("HResult: 0x{0:X8}", exceptionToLog.HResult));
+            logContent.AppendLine($"HResult: 0x{exceptionToLog.HResult:X8}");
             logContent.AppendLine("Stack trace:");
             logContent.AppendLine(exceptionToLog.StackTrace);
         }

@@ -242,7 +242,7 @@ namespace CemuUpdateTool.Workers
             }
         }
 
-        public override void OnOperationErrorHandled(Operation operationInfo, string errorMessage)
+        protected override void OnOperationErrorHandled(Operation operationInfo, string errorMessage)
         {
             base.OnOperationErrorHandled(operationInfo, errorMessage);
             switch (operationInfo)

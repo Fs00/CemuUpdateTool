@@ -18,7 +18,7 @@ namespace CemuUpdateTool.Settings
         public static IToggleableOptionsList FilesToMigrate { private set; get; }
         public static IOptionsGroup<bool> Migration { private set; get; }
         public static IOptionsGroup<string> Download { private set; get; }
-        public static string CustomMlcFolderPath { set; get; } = "";    // mlc01 folder's custom path for Cemu 1.10+
+        public static string CustomMlcFolderPath { set; get; } = "";    // used only for Cemu 1.10+
         public static string CurrentOptionsFilePath { set; get; } = "";
 
         private const string OPTIONS_FILE_NAME = "settings.dat";
@@ -142,9 +142,9 @@ namespace CemuUpdateTool.Settings
             {
                 string serializedOptions = new OptionsSerializer().Serialize();
 
-                string optionsFileDir = Path.GetDirectoryName(CurrentOptionsFilePath);
-                if (!Directory.Exists(optionsFileDir))
-                    Directory.CreateDirectory(optionsFileDir);
+                string optionsFileDirectory = Path.GetDirectoryName(CurrentOptionsFilePath);
+                if (!Directory.Exists(optionsFileDirectory))
+                    Directory.CreateDirectory(optionsFileDirectory);
 
                 File.WriteAllText(CurrentOptionsFilePath, serializedOptions);
             }

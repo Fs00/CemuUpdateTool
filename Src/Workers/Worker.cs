@@ -75,7 +75,7 @@ namespace CemuUpdateTool.Workers
             }
         }
 
-        public virtual void OnOperationErrorHandled(Operation operationInfo, string errorMessage)
+        protected virtual void OnOperationErrorHandled(Operation operationInfo, string errorMessage)
         {
             OnLogMessage(LogMessageType.Error, operationInfo.BuildFailureMessage(errorMessage));
         }
