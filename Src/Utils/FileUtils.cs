@@ -8,8 +8,7 @@ using CemuUpdateTool.Workers.Operations;
 namespace CemuUpdateTool.Utils
 {
     /*
-     *  FileUtils
-     *  Static class which contains helper methods to operate on files, directories and zip archives.
+     *  Contains helper methods to operate on files, directories and zip archives.
      *  Methods are designed to optionally log events, keep track of operation progress and be cancelled through a Worker.
      */
     public static class FileUtils
@@ -118,8 +117,9 @@ namespace CemuUpdateTool.Utils
         private static int CountFilesIncludedInAllSubdirectories(string directoryPath)
         {
             int filesCount = 0;
-            foreach (string subDirectory in Directory.GetDirectories(directoryPath))
-                filesCount += CountFilesIncludedInDirectoryRecursively(Path.Combine(directoryPath, subDirectory));
+            var directory = new DirectoryInfo(directoryPath);
+            foreach (DirectoryInfo subDirectory in directory.GetDirectories())
+                filesCount += CountFilesIncludedInDirectoryRecursively(Path.Combine(directoryPath, subDirectory.Name));
             return filesCount;
         }
 
@@ -156,7 +156,7 @@ namespace CemuUpdateTool.Utils
                 zipEntry.ExtractToFile(entryExtractionPath, overwrite: true);
         }
 
-        public static bool IsDirectory(this ZipArchiveEntry entry)
+        private static bool IsDirectory(this ZipArchiveEntry entry)
         {
             return entry.FullName.EndsWith("/");
         }

@@ -38,5 +38,26 @@ namespace CemuUpdateTool.Tests
 
             Assert.AreEqual(0, new DirectoryInfo(testDir).GetDirectories().Length);
         }
+
+        [DeploymentItem(@"Resources\DirectoryContentsTest\", @"DirectoryContentsTest\")]
+        [TestMethod]
+        public void CountFilesRecursivelyTest()
+        {
+            string testDir = @".\DirectoryContentsTest";
+
+            int filesCount = FileUtils.CountFilesIncludedInDirectoryRecursively(testDir);
+
+            Assert.AreEqual(4, filesCount);
+        }
+
+        [DeploymentItem(@"Resources\versionTest.exe")]
+        [TestMethod]
+        public void RetrieveExecutableVersionNumberTest()
+        {
+            Assert.AreEqual(
+                new VersionNumber(1,2,3), 
+                FileUtils.RetrieveExecutableVersionNumber("versionTest.exe")
+            );
+        }
     }
 }
