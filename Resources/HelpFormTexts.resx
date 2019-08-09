@@ -144,7 +144,7 @@ Inside the file, settings are organized in sections marked by a number. You will
 Starting from version 2.1, you can also define custom files to be copied, in the same way as folders. You can edit them by clicking on "Manage custom files".\line
 In addition, you can warn the tool that you're using a custom mlc01 path (which is the subfolder where Cemu puts savegames and DLCs). If that option is true, the program will ignore that folder when migrating from a version higher than 1.10 and if the custom path is set, Cemu desktop shortcut will be created adding the '-mlc' parameter accordingly.\par
 {\pntext\f2\'B7\tab}{\b Features.} This tab gives you the ability to enable/disable migration-related features - which consist in: wiping prior destination folder contents, asking for the creation of Cemu desktop shortcut and setting compatibility options for Cemu executable - as well as decide if options must be saved in a file and where (see above).\par
-{\pntext\f2\'B7\tab}\f0 {\b Download.} Here you can change the remote location where Cemu versions are downloaded. You will have to touch it only if Cemu developers change their download repository.\par</value>
+{\pntext\f2\'B7\tab}\f0 {\b Download.} Here you can change the remote location where Cemu versions are downloaded from. You will have to touch it only if Cemu developers change their download repository.\par</value>
   </data>
   <data name="updateFormText" xml:space="preserve">
     <value>{\b HOW DO I PROCEED?}\par\fs19
