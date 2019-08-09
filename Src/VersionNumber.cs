@@ -216,7 +216,7 @@ namespace CemuUpdateTool
                 return (int) ComparisonResult.ThisIsGreater;
 
             ComparisonResult commonSegmentsComparisonResult = CompareCommonSegmentsWith(other);
-            if (this.Length == other.Length)
+            if (this.Length == other.Length || commonSegmentsComparisonResult != ComparisonResult.BothInstancesAreEquivalent)
                 return (int) commonSegmentsComparisonResult;
 
             int lengthInCommon = FindLengthInCommonBetweenThisAnd(other);

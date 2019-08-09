@@ -136,6 +136,17 @@ namespace CemuUpdateTool.Tests
         }
 
         [TestMethod]
+        public void ComparisonOperators_DifferentValues()
+        {
+            VersionNumber version1 = new VersionNumber(1, 9, 1);
+            VersionNumber version2 = new VersionNumber(1, 10);
+
+            Assert.IsFalse(version1 >= version2);
+            Assert.IsTrue(version2 > version1);
+            Assert.IsTrue(version1 != version2);
+        }
+
+        [TestMethod]
         public void ComparisonOperators_NullsLeft()
         {
             VersionNumber versionNumber = new VersionNumber(1, 0);
