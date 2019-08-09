@@ -154,8 +154,11 @@ namespace CemuUpdateTool.Forms
             SetCemuSettingsFilesOptions();
             SetMigrationOptions();
 
-            if (chkBoxSettingsOnFile.Checked && optionsFileLocationChanged)
-                UpdateOptionsFileLocation();
+            if (chkBoxSettingsOnFile.Checked)
+            {
+                if (optionsFileLocationChanged)
+                    UpdateOptionsFileLocation();
+            }
             else
                 TryDeleteOptionsFile();
 
