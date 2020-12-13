@@ -10,8 +10,8 @@ To do this, the program allows the user to migrate data selectively from an olde
 - compatibility options setting for Cemu executable (no full-screen optimizations, HiDPI scaling behavior, etc.)
 - ability to update an existing Cemu installation in-place
 
-The behavior of the tool is deeply customizable with a substantial number of options.  
+The behavior of the tool is deeply customizable with a substantial number of options. See the in-app help guides for more details.  
 To download it, head to Releases. **.NET Framework 4.5** is at least required for the program to work.
 
 ### Status
-The project is not maintained anymore. Contributions to fix any bugs or to improve certain aspects of the application are always welcome.
+The project is not maintained anymore. Improvements to Cemu made most of the features of this tool no more useful.
